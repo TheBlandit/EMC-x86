@@ -1,0 +1,147 @@
+\documentclass{article}
+\usepackage{graphicx} % Required for inserting images
+\usepackage{url}
+\usepackage{listings}
+\usepackage{listings-rust}
+\usepackage{xcolor}
+\usepackage{float}
+\usepackage[a4paper, left=2cm, right=2cm, top=3cm, bottom=3cm]{geometry}
+ 
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+ 
+\lstdefinestyle{mystyle}{
+  backgroundcolor=\color{backcolour},
+  commentstyle=\color{codegreen},
+  keywordstyle=\color{magenta},
+  numberstyle=\tiny\color{codegray},
+  stringstyle=\color{codepurple},
+  basicstyle=\ttfamily\footnotesize,
+  breakatwhitespace=false,
+  breaklines=true,
+  captionpos=b,
+  keepspaces=true,
+  numbers=left,
+  numbersep=5pt,
+  showspaces=false,
+  showstringspaces=false,
+  showtabs=false,
+  tabsize=2}
+\lstset{style=mystyle}
+
+\newcommand{\subsubsubsection}[1]{%
+    \paragraph{#1} % Use paragraph for the subsubsubsection
+    \mbox{} % Add a line break
+}
+
+\title{x86 Assembly}
+\author{William Bland}
+% \date{April 2025}
+
+\begin{document}
+
+\maketitle
+
+\section{What is x86 assembly?}
+Processors run by executing binary instructions called machine code, this machine code can be made into
+a human readable format called assembly which can be turned back into machine code using a program called an assembler.
+Each processor has an architecture, this architecture describes how the processor executes the machine code (so different architectures execute code differently,
+so have different machine code and assembly languages).
+For multiple processors to be able to execute the same machine code they must have the same architecture, some popular architectures include ARM, PowerPC, RISC-V and x86.
+x86 is an example of a Complex Instruction Set Computer (CISC), this means that there are lots of instructions
+so a lot cam be done in a single instruction so is very fast, this however uses a lot of power so is the main architecture in desktop computers.
+This is in opposition to ARM which is a Reduced Instruction Set Computer (RISC) which has less instructions so has to execute many to
+perform the same task so is slower than x86, this however uses less power so is the main architecture in mobile devices and embedded systems.
+
+\section{Basics of x86 assembly}
+x86 assembly has two syntaxes: Intel and AT\&T, all code will be in Intex syntax unless stated otherwise. \\
+The code consists of an instruction followed by the registers it uses, or immediate values or a memory location.
+Also a label can be placed to be able to refer to a specific line.
+
+\section{Instructions}
+
+\section{Directives}
+
+\section{Memory}
+
+\subsection{Memory sizes and representaion}
+Bit, nibble, byte, word, dword, qword
+
+\subsection{Endianess}
+Endianess is the order of bytes in an integer
+
+\subsection{Registers}
+Resisters store small values in small regions of memory accessible to the CPU, x86 has many registers that include
+% https://wiki.osdev.org/CPU_Registers_x86-64
+
+The resiters on the same line overlap in memory (eg the 32-bit register is located in the lower half of the 64-bit register)
+
+General purpose registers
+\begin{table}[H]
+  \begin{tabular}{c|c|c|c|c|l}
+    \textbf{64-bit} & \textbf{32-bit} & \textbf{16-bit} & \textbf{Higher 8-bit} & \textbf{Lower 8-bit} & \textbf{Description} \\
+    \hline
+    RAX & EAX & AX & AH & AL & Accumulator \\
+    RBX & EBX & BX & BH & BL & Base \\
+    RCX & ECX & CX & CH & CL & Counter \\
+    RDX & EDX & DX & DH & DL & Data (often extends the A register) \\
+    RSI & ESI & SI & N/A & SIL & Source index for string operations \\
+    RDI & EDI & DI & N/A & DIL & Destination index for string operations \\
+    RSP & ESP & SP & N/A & SPL & Stack pointer \\
+    RBP & EBP & BP & N/A & BPL & Base pointer (for stack frames) \\
+    R8 & R8D & R8W & N/A & R8B & General purpose register \\
+    R9 & R9D & R9W & N/A & R9B & General purpose register \\
+    R10 & R10D & R10W & N/A & R10B & General purpose register \\
+    R11 & R11D & R11W & N/A & R11B & General purpose register \\
+    R12 & R12D & R12W & N/A & R12B & General purpose register \\
+    R13 & R13D & R13W & N/A & R13B & General purpose register \\
+    R14 & R14D & R14W & N/A & R14B & General purpose register \\
+    R15 & R15D & R15W & N/A & R15B & General purpose register
+
+  \end{tabular}
+\end{table}
+
+Instruction Pointer Registers
+RIP, EIP, IP
+
+Segment Registers:
+CS Code
+DS Data
+SS Stack
+ES Extra (string operations)
+FS General purpose
+GS General purpose
+
+\subsection{Flags}
+
+\subsection{Stack}
+
+\subsection{Heap}
+
+\subsection{Code}
+
+\subsection{Data}
+
+\subsection{Cache}
+
+\subsection{Memory locations}
+
+\subsection{Memory paging, protection and segmentation}
+
+\section{Operating modes}
+Real, protected, long, user/kernel
+
+\section{Branch prediction}
+Spectre/meltdown
+
+\section{Vonn neumann architecture}
+
+\section{Intel vs AT\&T syntax}
+
+\section{Appendix}
+
+\section{Index}
+
+\end{document}

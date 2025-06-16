@@ -4,7 +4,7 @@
 
 Key:
 Sign | Completeness
--    | -
+- | -
 \-   | Not attempted
 \+   | Partially complete
 \=   | Complete
@@ -37,3 +37,6 @@ Variable alignment and size
 Assembler, linker, object files, binaries, GOT
 AT&T vs intel
 Boolean operations / usage
+Segment registers
+Machine code
+
