@@ -67,10 +67,41 @@ Also a label can be placed to be able to refer to a specific line.
 \section{Memory}
 
 \subsection{Memory sizes and representaion}
-Bit, nibble, byte, word, dword, qword
+Processors operate on digital signals which can either be high or low and can be interpreted in binary as a 1 or a 0, a single 1 or 0 is a bit.
 
-\subsection{Endianess}
-Endianess is the order of bytes in an integer
+\begin{table}[H]
+  \centering
+  \caption{Data sizes}
+  \begin{tabular}{c|c|c|c}
+    \textbf{Name} & \textbf{Unit} & \textbf{Bits} & \textbf{Bytes} \\
+    \hline
+    bit & b & 1 & 1/8 \\
+    nibble & N/A & 4 & 1/2 \\
+    byte & B & 8 & 1 \\
+    word & N/A & 16 & 2 \\
+    dword (double word) & N/A & 32 & 4 \\
+    qword (quad word) & N/A & 64 & 8
+  \end{tabular}
+\end{table}
+
+\noindent
+Furthermore, prefixes can be added to the units to multiply the amount it stores
+\begin{table}[H]
+  \centering
+  \caption{Data prefixes}
+  \begin{tabular}{c|c|c|c}
+    \textbf{Denary name} & \textbf{Denary size} & \textbf{Binary name} & \textbf{Binary size} \\
+    \hline
+    K & $10^3$ & Ki & $2^{10}$ \\
+    M & $10^6$ & Mi & $2^{20}$ \\
+    G & $10^9$ & Gi & $2^{30}$ \\
+    T & $10^{12}$ & Ti & $2^{40}$ \\
+    P & $10^{15}$ & Pi & $2^{50}$
+  \end{tabular}
+\end{table}
+
+\noindent
+Lastly, all memory addresses point to a unique byte in memory therefore a multibyte integer (eg 64-bit) could be stored in two different orderings (its endianess). In Little-Endian (LE) ordering the least significant byte occupies the smaller address space, while in Big-Endian (BE) ordering the most significant byte occupies the smaller address space. x86 and most other computers uses LE while data transmitted over networks uses BE.
 
 \subsection{Registers}
 Resisters store small values in small regions of memory accessible to the CPU, x86 has many registers that include
