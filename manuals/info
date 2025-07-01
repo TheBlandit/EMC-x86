@@ -1,0 +1,4 @@
+V1: Arch and programming env supporting 32 and 64bit
+V2: Full Instruction set reference
+V3: Systems programming - Memory management, protection, task management, interrupts and exceptions, multiprocessor, thermal and power, debugging, performance, system management tools, virtual machine extentions (VMX) instructions, and software guard extentions (SGX)
+V4: Model specific registers
