@@ -45,6 +45,8 @@ INPUT /usr/share/texmf-dist/tex/latex/graphics-cfg/color.cfg
 INPUT /usr/share/texmf-dist/tex/latex/graphics/mathcolor.ltx
 INPUT /usr/share/texmf-dist/tex/latex/graphics/mathcolor.ltx
 INPUT /usr/share/texmf-dist/tex/latex/graphics/mathcolor.ltx
+INPUT /usr/share/texmf-dist/tex/latex/multirow/multirow.sty
+INPUT /usr/share/texmf-dist/tex/latex/multirow/multirow.sty
 INPUT /usr/share/texmf-dist/tex/latex/xcolor/xcolor.sty
 INPUT /usr/share/texmf-dist/tex/latex/xcolor/xcolor.sty
 INPUT /usr/share/texmf-dist/tex/latex/graphics-cfg/color.cfg
@@ -57,6 +59,8 @@ INPUT /usr/share/texmf-dist/tex/generic/iftex/ifvtex.sty
 INPUT /usr/share/texmf-dist/tex/generic/iftex/ifvtex.sty
 INPUT /usr/share/texmf-dist/tex/generic/iftex/iftex.sty
 INPUT /usr/share/texmf-dist/tex/generic/iftex/iftex.sty
+INPUT /usr/share/texmf-dist/tex/latex/tools/array.sty
+INPUT /usr/share/texmf-dist/tex/latex/tools/array.sty
 INPUT /usr/share/texmf-dist/tex/latex/l3backend/l3backend-pdftex.def
 INPUT /usr/share/texmf-dist/tex/latex/l3backend/l3backend-pdftex.def
 INPUT ./main.aux

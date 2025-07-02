@@ -3,9 +3,11 @@
 \usepackage{url}
 \usepackage{listings}
 \usepackage{listings-rust}
+\usepackage{multirow}
 \usepackage{xcolor}
 \usepackage{float}
 \usepackage[a4paper, left=2cm, right=2cm, top=3cm, bottom=3cm]{geometry}
+\usepackage{array}
  
 \definecolor{codegreen}{rgb}{0,0.6,0}
 \definecolor{codegray}{rgb}{0.5,0.5,0.5}
@@ -128,14 +130,14 @@ The registers on the same line overlap in memory (eg the 32-bit register is loca
     RDI & EDI & DI & N/A & DIL & Destination index for string operations \\
     RSP & ESP & SP & N/A & SPL & Stack pointer \\
     RBP & EBP & BP & N/A & BPL & Base pointer (for stack frames) \\
-    R8 & R8D & R8W & N/A & R8B & General purpose register \\
-    R9 & R9D & R9W & N/A & R9B & General purpose register \\
-    R10 & R10D & R10W & N/A & R10B & General purpose register \\
-    R11 & R11D & R11W & N/A & R11B & General purpose register \\
-    R12 & R12D & R12W & N/A & R12B & General purpose register \\
-    R13 & R13D & R13W & N/A & R13B & General purpose register \\
-    R14 & R14D & R14W & N/A & R14B & General purpose register \\
-    R15 & R15D & R15W & N/A & R15B & General purpose register
+    R8 & R8D & R8W & N/A & R8B & General purpose register (long mode) \\
+    R9 & R9D & R9W & N/A & R9B & General purpose register (long mode) \\
+    R10 & R10D & R10W & N/A & R10B & General purpose register (long mode) \\
+    R11 & R11D & R11W & N/A & R11B & General purpose register (long mode) \\
+    R12 & R12D & R12W & N/A & R12B & General purpose register (long mode) \\
+    R13 & R13D & R13W & N/A & R13B & General purpose register (long mode) \\
+    R14 & R14D & R14W & N/A & R14B & General purpose register (long mode) \\
+    R15 & R15D & R15W & N/A & R15B & General purpose register (long mode)
   \end{tabular}
 \end{table}
 
@@ -179,6 +181,7 @@ The registers on the same line overlap in memory (eg the 32-bit register is loca
 \subsection{Memory locations}
 
 \subsection{Memory paging, protection and segmentation}
+swap, page faults
 
 \section{Operating modes}
 \begin{table}[H]
@@ -217,10 +220,10 @@ The parameters for the syscall are placed in specific registers.
 \begin{table}[H]
   \centering
   \caption{Registers used for syscall parameters (not all args are used for all syscalls)}
-  \begin{tabular}{c|c|p{0.5\linewidth}}
-    \textbf{i386 Registers} & \textbf{x86-64 Register} & \textbf{Useage} \\
+  \begin{tabular}{c|c|l}
+    \textbf{i386 Registers} & \textbf{x86-64 Registers} & \textbf{Useage} \\
     \hline
-    eax & rax & Stores the number of the syscall, these are different in 32-bit and 64-bit programs \\
+    eax & rax & Syscall number (different in 32-bit and 64-bit programs) \\
     ebx & rdi & Arg1 \\
     ecx & rsi & Arg2 \\
     edx & rdx & Arg3 \\
@@ -235,16 +238,23 @@ The parameters for the syscall are placed in specific registers.
 \begin{table}[H]
   \centering
   \caption{Common Linux Syscalls}
-  \begin{tabular}{c|c|c|c|c|c|c|c|c|p{0.2\linewidth}}
-    \textbf{Name} & \textbf{eax} & \textbf{rax} & \textbf{Arg1} & \textbf{Arg2} & \textbf{Arg3} & \textbf{Arg4} & \textbf{Arg5} & \textbf{Arg6} & \textbf{Use/Description} \\
+  \begin{tabular}{|*{9}{>{\centering\arraybackslash}p{0.085\linewidth}|}}
+    \hline \textbf{Name} & \textbf{eax} & \textbf{rax} & \textbf{Arg1} & \textbf{Arg2} & \textbf{Arg3} & \textbf{Arg4} & \textbf{Arg5} & \textbf{Arg6} \\
+    \hline \texttt{write} & 4 & 1 & fd & ptr & count & - & - & - \\
+    \hline \multicolumn{9}{|p{0.97\linewidth}|}{Writes the buffer (count bytes pointed to by ptr) to the file} \\
+    \hline \texttt{exit} & 1 & 60 & error & - & - & - & - & - \\
+    \hline \multicolumn{9}{|p{0.97\linewidth}|}{Exits the program with the specified error code} \\
+    \hline \texttt{munmap} & 91 & 11 & addr & length & - & - & - & - \\
+    \hline \multicolumn{9}{|p{0.97\linewidth}|}{Frees the length bytes at the address addr, must exactly match its corresponding mmap call} \\
+    \hline \texttt{mremap} & ? & ? & ? & ? & - & - & - & - \\
+    \hline \multicolumn{9}{|p{0.97\linewidth}|}{???} \\
+    \hline \texttt{mmap} & 90 & 9 & addr & length & prot & flags & fd & offset \\
+    \hline \multicolumn{9}{|p{0.97\linewidth}|}{Allocates length (must be a multiple of the page size [4096]) bytes, if addr is NULL (0) then any location is chosen else it will attempt to allocate at addr; prot is the protection flags for the memory, it is an bitwise OR of READ (1), WRITE (2), EXECUTE (4). Flags contains the mapping flags which is a bitwise OR of each flag such as MAP\_PRIVATE (0x2, changes are private to the calling process and are not written back) and MAP\_ANONYMOUS (0x20, allocates from main memory so not backed by a file as fd is ignored), fd can be set to -1 for anonymous mappings and offset is the offset from the start of the file (must be a multiple of the page size). eax/rax contains the ptr to the memory location allocated or an error between -4096 and -1. If a fd is given, the file is added to the programs virtual address space without being loaded into main memory (similar to swap memory). Additionally huge pages can be allocated with certain mappings and caution should be used when using this to access a file since race conditions can occur between processes if the file is not locked and the changes are not immediately written so use msync or fsync} \\
     \hline
-    \texttt{write} & 4 & 1 & FD & Buffer ptr & Size of buffer & - & - & - & Writes the buffer to the file \\
-    \texttt{exit} & 1 & 60 & Error code & - & - & - & - & - & Exits the program with the specified error code \\
-    \texttt{mmap} & ? & 9 & Addr & len & prot & flags & FD & off & Allocates memory, if Addr is NULL then any location is chosen else it will attempt to allocate at Addr. It allocates len bytes
   \end{tabular}
 \end{table}
 
-A FD (file descriptor) in Linux is an integer used to refer to a file, when opening a file the kernel returns an integer to the program to refer to the file with, and the kernel keeps track of the open file. Integers 0, 1 and 2 refer to stdin, stdout and stderr respectively.
+A fd (file descriptor) in Linux is an integer used to refer to a file, when opening a file the kernel returns an integer to the program to refer to the file with, and the kernel keeps track of the open file. Integers 0, 1 and 2 refer to stdin, stdout and stderr respectively, any negative fd is invalid so to specify no file, -1 is usually used.
 
 \section{Appendix}
 
