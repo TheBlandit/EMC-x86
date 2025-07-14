@@ -58,66 +58,23 @@ This is in opposition to ARM which is a Reduced Instruction Set Computer (RISC) 
 perform the same task so is slower than x86, this however uses less power so is the main architecture in mobile devices and embedded systems.
 
 \section{Basics of x86 assembly}
-x86 assembly has two syntaxes: Intel and AT\&T, all code will be in Intex syntax unless stated otherwise. \\
-The code consists of an instruction followed by the registers it uses, or immediate values or a memory location.
-Also a label can be placed to be able to refer to a specific line.
+x86 assembly code contains one instruction per line, the line starts with the name of the instruction followed by its parameters which can either be registers, a memory address or an immediate value (a constant).
+Lines and constants can be given labels and can be referred to in instructions.
+The assembler only assembles one file at a time so if a label (symbol) is located in another file, the assembler will fail to assemble the program; this is fixed in NASM by marking the symbol in the file its defined in as global (so its accessible to the linker) and as extern in the file its used in. A program called the linker will combine these object files into a single executible and resolve all extern symbols to their global definitions. Furthermore the linker makes the executable in the correct format for the target platform (eg elf64 on linux).
+Lastly, all code written will be using the Intel syntax using the NASM assembler and will be linked using the ld linker unless stated otherwise.
 
-\section{Instructions}
-The format of the instruction is \texttt{instruction op1, op2}
-Each instruction has different limitations to what type an operand can be, these types are
-
-\begin{table}[H]
-  \centering
-  \caption{Operand types}
-  \begin{tabular}{|c|c|l|}
-    \hline \textbf{Symbol} & \textbf{Name} & \textbf{Description} \\
-    \hline
-    r & General purpose register & A register such as eax \\
-    m & Memory address & A memory address such as [eax + 4*ebx + 4] \\
-    i & Immediate & A constant value such as 80h or a pointer to a label or data section \\
-    s & Segment Register & A segment register such as es \\
-    \hline
-  \end{tabular}
-\end{table}
-
-The types of an operand or identical instructions with different names will be seperated by a \texttt{|}, the size in bits may also be appended to the type. Furthermore, some instructions have more than one row of operands, each row shows a different combination of operand types. Most instructions should only operate on a single word size (eg 64-bit), if an instruction is used with different sized operands then it may cause an assembler error, cause an invalid opcode exception, truncate the source or bit extend it (either arithmetically or logically).
-
-% TODO: jmps add, (arithmetic) xor, (logical) cmp test
+\subsection{Intel vs AT\&T syntax}
+x86 assembly has different two syntaxes: Intel and AT\&T.
 
 \begin{table}[H]
   \centering
-  \caption{Instructions}
-  \begin{tabular}{|c|p{0.5\linewidth}|c|c|}
-    \hline \textbf{Name} & \textbf{Description} & \textbf{Operand 1} & \textbf{Operand 2} \\ \hline
-    \multicolumn{4}{|c|}{Memory} \\ \hline
-    \multirow[t]{4}*{\texttt{MOV}} & \multirow[t]{4}*{Coppies the value from OP2 into OP1} & \texttt{r} & \texttt{r|m|i} \\ \cline{3-4}
-                                   & & \texttt{m} & \texttt{r|i} \\ \cline{3-4}
-                                   & & \texttt{r|m} & \texttt{s} \\ \cline{3-4}
-                                   & & \texttt{s} & \texttt{r|m} \\ \hline
-    \texttt{LEA} & Stores the address from OP2 into OP1 but unlike MOV it does not dereference the address & \texttt{r16|r32|r64} & \texttt{m} \\ \hline
-    \texttt{CMPXCHG} & Compares \texttt{AL|AX|EAX|RAX} with OP1 (dst), if equal OP2 (src) is written into OP1 and ZF is set else OP1 is written into the accumulator and ZF is cleared. If OP1 is \texttt{m} then the instruction can be prefixed with LOCK to make it atomic & \texttt{r|m} & \texttt{r} \\ \hline
-    \multirow[t]{2}*{\texttt{XCHG}} & \multirow[t]{2}*{Swaps the value held in OP1 and OP2} & \texttt{r} & \texttt{r|m} \\ \cline{3-4}
-                                   & & \texttt{r|m} & \texttt{r} \\ \hline
-    \multicolumn{4}{|c|}{Control} \\ \hline
-    \texttt{UD} & Causes an invalid opcode exception & \texttt{-} & \texttt{-} \\ \hline
-    \multicolumn{4}{|c|}{Arithmetic} \\ \hline
-    \multirow[t]{3}*{\texttt{ADD}} & \multirow[t]{3}{\linewidth}{Adds OP2 to OP1. If OP2 is \texttt{i} and its word size is less than OP1 then it is sign-extended} & \texttt{r} & \texttt{r|m} \\ \cline{3-4}
-                                   & & \texttt{r|m} & \texttt{r} \\ \cline{3-4}
-                                   & & \texttt{r|m} & \texttt{i8|i16|i32} \\ \hline
-    \multirow[t]{3}*{\texttt{ADC}} & \multirow[t]{3}{\linewidth}{Adds (OP2 + CF) to OP1. If OP2 is \texttt{i} and its word size is less than OP1 then it is sign-extended} & \texttt{r} & \texttt{r|m} \\ \cline{3-4}
-                                   & & \texttt{r|m} & \texttt{r} \\ \cline{3-4}
-                                   & & \texttt{r|m} & \texttt{i8|i16|i32} \\ \hline
-    \multirow[t]{3}*{\texttt{SUB}} & \multirow[t]{3}{\linewidth}{Subtracts OP2 from OP1. If OP2 is \texttt{i} and its word size is less than OP1 then it is sign-extended} & \texttt{r} & \texttt{r|m} \\ \cline{3-4}
-                                   & & \texttt{r|m} & \texttt{r} \\ \cline{3-4}
-                                   & & \texttt{r|m} & \texttt{i8|i16|i32} \\ \hline
-    \multicolumn{4}{|c|}{Logical} \\ \hline
+  \caption{Key differences between Intel and AT\&T syntax}
+  \begin{tabular}{|c|c|c|}
+    \hline \textbf{???} & \textbf{Intel} & \textbf{At\&T} \\ \hline
+    a & b & c \\
+    \hline
   \end{tabular}
 \end{table}
-
-\section{Sections}
-
-\subsection{Data section}
-db, equ, \$ etc
 
 \section{Memory}
 
@@ -127,15 +84,16 @@ Processors operate on digital signals which can either be high or low and can be
 \begin{table}[H]
   \centering
   \caption{Data sizes}
-  \begin{tabular}{c|c|c|c}
-    \textbf{Name} & \textbf{Unit} & \textbf{Bits} & \textbf{Bytes} \\
+  \begin{tabular}{|c|c|c|c|}
+    \hline \textbf{Name} & \textbf{Unit} & \textbf{Bits} & \textbf{Bytes} \\
     \hline
     bit & b & 1 & 1/8 \\
     nibble & - & 4 & 1/2 \\
     byte & B & 8 & 1 \\
     word & - & 16 & 2 \\
     dword (double word) & - & 32 & 4 \\
-    qword (quad word) & - & 64 & 8
+    qword (quad word) & - & 64 & 8 \\
+    \hline
   \end{tabular}
 \end{table}
 
@@ -144,14 +102,15 @@ Furthermore, prefixes can be added to the units to multiply the amount it stores
 \begin{table}[H]
   \centering
   \caption{Data prefixes}
-  \begin{tabular}{c|c|c|c}
-    \textbf{Denary name} & \textbf{Denary size} & \textbf{Binary name} & \textbf{Binary size} \\
+  \begin{tabular}{|c|c|c|c|}
+    \hline \textbf{Denary name} & \textbf{Denary size} & \textbf{Binary name} & \textbf{Binary size} \\
     \hline
     K & $10^3$ & Ki & $2^{10}$ \\
     M & $10^6$ & Mi & $2^{20}$ \\
     G & $10^9$ & Gi & $2^{30}$ \\
     T & $10^{12}$ & Ti & $2^{40}$ \\
-    P & $10^{15}$ & Pi & $2^{50}$
+    P & $10^{15}$ & Pi & $2^{50}$ \\
+    \hline
   \end{tabular}
 \end{table}
 
@@ -159,33 +118,33 @@ Furthermore, prefixes can be added to the units to multiply the amount it stores
 Lastly, all memory addresses point to a unique byte in memory therefore a multibyte integer (eg 64-bit) could be stored in two different orderings (its endianess). In Little-Endian (LE) ordering the least significant byte occupies the smaller address space, while in Big-Endian (BE) ordering the most significant byte occupies the smaller address space. x86 and most other computers uses LE while data transmitted over networks uses BE.
 
 \subsection{Registers}
-Resisters store small values in small regions of memory accessible to the CPU, x86 has many registers that include
+Resisters store small values in small regions of memory directly accessible to the current CPU thread.
 % https://wiki.osdev.org/CPU_Registers_x86-64
-
 The registers on the same line overlap in memory (eg the 32-bit register is located in the lower half of the 64-bit register)
 
 \begin{table}[H]
   \centering
   \caption{General purpose registers}
-  \begin{tabular}{c|c|c|c|c|l}
-    \textbf{64-bit} & \textbf{32-bit} & \textbf{16-bit} & \textbf{Higher 8-bit} & \textbf{Lower 8-bit} & \textbf{Description} \\
+  \begin{tabular}{|c|c|c|c|c|l|}
+    \hline \textbf{64-bit} & \textbf{32-bit} & \textbf{16-bit} & \textbf{Higher 8-bit} & \textbf{Lower 8-bit} & \textbf{Description} \\
     \hline
     RAX & EAX & AX & AH & AL & Accumulator \\
     RBX & EBX & BX & BH & BL & Base \\
     RCX & ECX & CX & CH & CL & Counter \\
     RDX & EDX & DX & DH & DL & Data (often extends the A register) \\
-    RSI & ESI & SI & N/A & SIL & Source index for string operations \\
-    RDI & EDI & DI & N/A & DIL & Destination index for string operations \\
-    RSP & ESP & SP & N/A & SPL & Stack pointer \\
-    RBP & EBP & BP & N/A & BPL & Base pointer (for stack frames) \\
-    R8 & R8D & R8W & N/A & R8B & General purpose register (long mode) \\
-    R9 & R9D & R9W & N/A & R9B & General purpose register (long mode) \\
-    R10 & R10D & R10W & N/A & R10B & General purpose register (long mode) \\
-    R11 & R11D & R11W & N/A & R11B & General purpose register (long mode) \\
-    R12 & R12D & R12W & N/A & R12B & General purpose register (long mode) \\
-    R13 & R13D & R13W & N/A & R13B & General purpose register (long mode) \\
-    R14 & R14D & R14W & N/A & R14B & General purpose register (long mode) \\
-    R15 & R15D & R15W & N/A & R15B & General purpose register (long mode)
+    RSI & ESI & SI & - & SIL & Source index for string operations \\
+    RDI & EDI & DI & - & DIL & Destination index for string operations \\
+    RSP & ESP & SP & - & SPL & Stack pointer \\
+    RBP & EBP & BP & - & BPL & Base pointer (for stack frames) \\
+    R8 & R8D & R8W & - & R8B & General purpose register (long mode) \\
+    R9 & R9D & R9W & - & R9B & General purpose register (long mode) \\
+    R10 & R10D & R10W & - & R10B & General purpose register (long mode) \\
+    R11 & R11D & R11W & - & R11B & General purpose register (long mode) \\
+    R12 & R12D & R12W & - & R12B & General purpose register (long mode) \\
+    R13 & R13D & R13W & - & R13B & General purpose register (long mode) \\
+    R14 & R14D & R14W & - & R14B & General purpose register (long mode) \\
+    R15 & R15D & R15W & - & R15B & General purpose register (long mode) \\
+    \hline
   \end{tabular}
 \end{table}
 
@@ -232,6 +191,64 @@ The registers on the same line overlap in memory (eg the 32-bit register is loca
 \subsection{Memory paging, protection and segmentation}
 % TODO: swap, page faults
 
+
+\section{Instructions}
+The format of the instruction is \texttt{instruction op1, op2}
+Each instruction has different limitations to what type an operand can be, these types are
+
+\begin{table}[H]
+  \centering
+  \caption{Operand types}
+  \begin{tabular}{|c|c|l|}
+    \hline \textbf{Symbol} & \textbf{Name} & \textbf{Description} \\
+    \hline
+    r & General purpose register & A register such as eax \\
+    m & Memory address & A memory address such as \texttt{[eax + 4*ebx + 4]} \\
+    i & Immediate & A constant value such as 80h or a pointer to a label or data section \\
+    s & Segment Register & A segment register such as es \\
+    \hline
+  \end{tabular}
+\end{table}
+
+The types of an operand or identical instructions with different names will be seperated by a \texttt{|}, the size in bits may also be appended to the type. Furthermore, some instructions have more than one row of operands, each row shows a different combination of operand types. Most instructions should only operate on a single word size (eg 64-bit), if an instruction is used with different sized operands then it may cause an assembler error, cause an invalid opcode exception, truncate the source or bit extend it (either arithmetically or logically). Furthermore many of these instructions set/clear flags, for example the OF (overflow flag) is set on signed overflow, CF (carry flag) is set on unsigned overflow and ZF (zero flag) is set when the result is zero.
+
+% TODO: (arithmetic) xor, (logical) cmp test
+
+\begin{table}[H]
+  \centering
+  \caption{Instructions}
+  \begin{tabular}{|c|p{0.5\linewidth}|c|c|}
+    \hline \textbf{Name} & \textbf{Description} & \textbf{Operand 1} & \textbf{Operand 2} \\ \hline
+    \multicolumn{4}{|c|}{Memory} \\ \hline
+    \multirow[t]{4}*{\texttt{MOV}} & \multirow[t]{4}*{Coppies the value from OP2 into OP1} & \texttt{r} & \texttt{r|m|i} \\ \cline{3-4}
+                                   & & \texttt{m} & \texttt{r|i} \\ \cline{3-4}
+                                   & & \texttt{r|m} & \texttt{s} \\ \cline{3-4}
+                                   & & \texttt{s} & \texttt{r|m} \\ \hline
+    \texttt{LEA} & Stores the address from OP2 into OP1 but unlike MOV it does not dereference the address & \texttt{r16|r32|r64} & \texttt{m} \\ \hline
+    \texttt{CMPXCHG} & Compares \texttt{AL|AX|EAX|RAX} with OP1 (dst), if equal OP2 (src) is written into OP1 and ZF is set else OP1 is written into the accumulator and ZF is cleared. If OP1 is \texttt{m} then the instruction can be prefixed with LOCK to make it atomic & \texttt{r|m} & \texttt{r} \\ \hline
+    \multirow[t]{2}*{\texttt{XCHG}} & \multirow[t]{2}*{Swaps (exchanges) the values held in OP1 and OP2} & \texttt{r} & \texttt{r|m} \\ \cline{3-4}
+                                   & & \texttt{r|m} & \texttt{r} \\ \hline
+    \multicolumn{4}{|c|}{Control} \\ \hline
+    \texttt{UD} & Causes an invalid opcode exception & \texttt{-} & \texttt{-} \\ \hline
+    \multicolumn{4}{|c|}{Arithmetic} \\ \hline
+    \multirow[t]{3}*{\texttt{ADD}} & \multirow[t]{3}{\linewidth}{Adds OP2 to OP1. If OP2 is \texttt{i} and its word size is less than OP1 then it is sign-extended} & \texttt{r} & \texttt{r|m} \\ \cline{3-4}
+                                   & & \texttt{r|m} & \texttt{r} \\ \cline{3-4}
+                                   & & \texttt{r|m} & \texttt{i8|i16|i32} \\ \hline
+    \multirow[t]{3}*{\texttt{ADC}} & \multirow[t]{3}{\linewidth}{Adds (OP2 + CF) to OP1. If OP2 is \texttt{i} and its word size is less than OP1 then it is sign-extended} & \texttt{r} & \texttt{r|m} \\ \cline{3-4}
+                                   & & \texttt{r|m} & \texttt{r} \\ \cline{3-4}
+                                   & & \texttt{r|m} & \texttt{i8|i16|i32} \\ \hline
+    \multirow[t]{3}*{\texttt{SUB}} & \multirow[t]{3}{\linewidth}{Subtracts OP2 from OP1. If OP2 is \texttt{i} and its word size is less than OP1 then it is sign-extended} & \texttt{r} & \texttt{r|m} \\ \cline{3-4}
+                                   & & \texttt{r|m} & \texttt{r} \\ \cline{3-4}
+                                   & & \texttt{r|m} & \texttt{i8|i16|i32} \\ \hline
+    \multicolumn{4}{|c|}{Logical} \\ \hline
+  \end{tabular}
+\end{table}
+
+\section{Sections}
+
+\subsection{Data section}
+db, equ, \$ etc
+
 \section{Operating modes}
 
 x86 processors have several different operating modes that they can run in, these operating modes can change the addressing mode, available instruction set and registers. x86 processors start up in real mode from address 0xFFFF0. % TODO: , however the BIOS will start running the OS (WHERE???), and UEFI????
@@ -252,12 +269,12 @@ x86 processors have several different operating modes that they can run in, thes
   \end{tabular}
 \end{table}
 
+% TODO: Virtualisation
+
 \section{Branch prediction}
 Spectre/meltdown
 
 \section{x86 architecture}
-
-\section{Intel vs AT\&T syntax}
 
 \section{Interrupts}
 
@@ -311,22 +328,24 @@ The parameters for the syscall are placed in specific registers.
 
 A fd (file descriptor) in Linux is an integer used to refer to a file, when opening a file the kernel returns an integer to the program to refer to the file with, and the kernel keeps track of the open file. Integers 0, 1 and 2 refer to stdin, stdout and stderr respectively, any negative fd is invalid so to specify no file, -1 is usually used.
 
-Example code of using syscalls can be found on page \pageref{linuxsyscalls}.
-
 \section{Appendix}
+All of the code used/written has been appended below, it includes programs that can run on Linux or baremetal
 
-\label{linuxsyscalls}
-\subsection{Linux syscalls}
+\subsection{Bash scripts used to run the code}
+64-bit Linux code (Links together files if given more than one argument)
+\lstinputlisting{../run64.sh}
+32-bit Linux code
+\lstinputlisting{../run32.sh}
 
-\subsubsection{Hello world}
-This program prints "Hello World" to the terminal then exits without an error.
+\subsection{Hello world (Linux)}
+This program writes "Hello World" to stdout then exits without an error.
 
-\noindent \newline 32-bit code:
-\lstinputlisting{../linux_syscalls/32.asm}
-64-bit code:
+\noindent \newline 64-bit code:
 \lstinputlisting{../linux_syscalls/64.asm}
+32-bit code:
+\lstinputlisting{../linux_syscalls/32.asm}
 
-\subsubsection{Difference}
+\subsection{Difference (linux)}
 This program reads two inputs from stdin and writes their difference to stdout
 
 \lstinputlisting{../subtraction/64.asm}

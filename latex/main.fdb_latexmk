@@ -1,7 +1,9 @@
 # Fdb version 4
-["pdflatex"] 1752341851.06621 "main.tex" "main.pdf" "main" 1752341851.39419 0
+["pdflatex"] 1752488493.54254 "main.tex" "main.pdf" "main" 1752488493.89988 0
   "../linux_syscalls/32.asm" 1751370108.98739 242 3c8735d4dd95ebf5121f3a726ad9d3ef ""
   "../linux_syscalls/64.asm" 1751370305.35834 634 b445a99ce4b5ac4f0f211ea78dfe8ffd ""
+  "../run32.sh" 1751369888.71643 275 05f70daeb59a7e532689120c7d6cb928 ""
+  "../run64.sh" 1752349656.90019 545 178253ad4d8dbb5f9d36a4c3eb4c843a ""
   "../subtraction/64.asm" 1752341256.5436 2107 87ef175dd24df0cf3e50ffe887f4953c ""
   "/home/william/.texlive/texmf-var/fonts/pk/ljfour/jknappen/ec/tcrm1000.600pk" 1751372102.24346 11524 2516ed8ca64999a350f10b55386637a3 ""
   "/home/william/.texlive/texmf-var/fonts/pk/ljfour/jknappen/ec/tctt0800.600pk" 1750071503.08505 7392 91bc5265cb83798a8114920cd074bf16 ""
@@ -61,8 +63,8 @@
   "/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map" 1750067255 30070 2c390b00126b1036e8876b6c3ea4d747 ""
   "/var/lib/texmf/web2c/pdftex/pdflatex.fmt" 1750068014 2008244 f3c44cab39eac8f7c815316e16059ccb ""
   "listings-rust.sty" 1750072545.44532 12271 441435634f54a6459e4e2a6911352eff ""
-  "main.aux" 1752341851.36003 4251 6dee71f932d89e493d9b809125ebde9f "pdflatex"
-  "main.tex" 1752341850.45906 17663 4b6c3b50480f5f46a2c225328e6e564f ""
+  "main.aux" 1752488493.86676 4553 d733bc1ba817f8fcb3656be01ec0bedb "pdflatex"
+  "main.tex" 1752488492.51521 19138 42c71941a1e81e4fd1ba59e3ba81a28a ""
   (generated)
   "main.aux"
   "main.log"
