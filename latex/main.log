@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2026/dev/Arch Linux) (preloaded format=pdflatex 2025.6.16)  25 JUL 2025 21:16
+This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2026/dev/Arch Linux) (preloaded format=pdflatex 2025.6.16)  28 JUL 2025 10:45
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -91,12 +91,30 @@ Package: array 2024/10/17 v2.6g Tabular extension package (FMi)
 \rotheadsize=\dimen150
 \c@nlinenum=\count278
 \TeXr@lab=\toks20
+) (/usr/share/texmf-dist/tex/latex/tools/longtable.sty
+Package: longtable 2024-10-27 v4.22 Multi-page Table package (DPC)
+\LTleft=\skip53
+\LTright=\skip54
+\LTpre=\skip55
+\LTpost=\skip56
+\LTchunksize=\count279
+\LTcapwidth=\dimen151
+\LT@head=\box56
+\LT@firsthead=\box57
+\LT@foot=\box58
+\LT@lastfoot=\box59
+\LT@gbox=\box60
+\LT@cols=\count280
+\LT@rows=\count281
+\c@LT@tables=\count282
+\c@LT@chunks=\count283
+\LT@p@ftn=\toks21
 ) (/usr/share/texmf-dist/tex/latex/multirow/multirow.sty
 Package: multirow 2024/11/12 v2.9 Span multiple rows of a table
-\multirow@colwidth=\skip53
-\multirow@cntb=\count279
-\multirow@dima=\skip54
-\bigstrutjot=\dimen151
+\multirow@colwidth=\skip57
+\multirow@cntb=\count284
+\multirow@dima=\skip58
+\bigstrutjot=\dimen152
 ) (/usr/share/texmf-dist/tex/latex/xcolor/xcolor.sty
 Package: xcolor 2024/09/29 v3.02 LaTeX color extensions (UK)
  (/usr/share/texmf-dist/tex/latex/graphics-cfg/color.cfg
@@ -116,11 +134,11 @@ Package xcolor Info: Model `Gray' substituted by `gray' on input line 1371.
 Package xcolor Info: Model `wave' substituted by `hsb' on input line 1372.
 ) (/usr/share/texmf-dist/tex/latex/float/float.sty
 Package: float 2001/11/08 v1.3d Float enhancements (AL)
-\c@float@type=\count280
-\float@exts=\toks21
-\float@box=\box56
-\@float@everytoks=\toks22
-\@floatcapt=\box57
+\c@float@type=\count285
+\float@exts=\toks22
+\float@box=\box61
+\@float@everytoks=\toks23
+\@floatcapt=\box62
 ) (/usr/share/texmf-dist/tex/latex/geometry/geometry.sty
 Package: geometry 2020/01/02 v5.9 Page Geometry
  (/usr/share/texmf-dist/tex/generic/iftex/ifvtex.sty
@@ -128,59 +146,59 @@ Package: ifvtex 2019/10/25 v1.7 ifvtex legacy package. Use iftex instead.
  (/usr/share/texmf-dist/tex/generic/iftex/iftex.sty
 Package: iftex 2024/12/12 v1.0g TeX engine tests
 ))
-\Gm@cnth=\count281
-\Gm@cntv=\count282
-\c@Gm@tempcnt=\count283
-\Gm@bindingoffset=\dimen152
-\Gm@wd@mp=\dimen153
-\Gm@odd@mp=\dimen154
-\Gm@even@mp=\dimen155
-\Gm@layoutwidth=\dimen156
-\Gm@layoutheight=\dimen157
-\Gm@layouthoffset=\dimen158
-\Gm@layoutvoffset=\dimen159
-\Gm@dimlist=\toks23
+\Gm@cnth=\count286
+\Gm@cntv=\count287
+\c@Gm@tempcnt=\count288
+\Gm@bindingoffset=\dimen153
+\Gm@wd@mp=\dimen154
+\Gm@odd@mp=\dimen155
+\Gm@even@mp=\dimen156
+\Gm@layoutwidth=\dimen157
+\Gm@layoutheight=\dimen158
+\Gm@layouthoffset=\dimen159
+\Gm@layoutvoffset=\dimen160
+\Gm@dimlist=\toks24
 ) (/usr/share/texmf-dist/tex/latex/l3backend/l3backend-pdftex.def
 File: l3backend-pdftex.def 2024-05-08 L3 backend support: PDF output (pdfTeX)
-\l__color_backend_stack_int=\count284
-\l__pdf_internal_box=\box58
+\l__color_backend_stack_int=\count289
+\l__pdf_internal_box=\box63
 ) (./main.aux)
 \openout1 = `main.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 46.
-LaTeX Font Info:    ... okay on input line 46.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 46.
-LaTeX Font Info:    ... okay on input line 46.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 46.
-LaTeX Font Info:    ... okay on input line 46.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 46.
-LaTeX Font Info:    ... okay on input line 46.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 46.
-LaTeX Font Info:    ... okay on input line 46.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 46.
-LaTeX Font Info:    ... okay on input line 46.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 46.
-LaTeX Font Info:    ... okay on input line 46.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 47.
+LaTeX Font Info:    ... okay on input line 47.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 47.
+LaTeX Font Info:    ... okay on input line 47.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 47.
+LaTeX Font Info:    ... okay on input line 47.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 47.
+LaTeX Font Info:    ... okay on input line 47.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 47.
+LaTeX Font Info:    ... okay on input line 47.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 47.
+LaTeX Font Info:    ... okay on input line 47.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 47.
+LaTeX Font Info:    ... okay on input line 47.
  (/usr/share/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
-\scratchcounter=\count285
-\scratchdimen=\dimen160
-\scratchbox=\box59
-\nofMPsegments=\count286
-\nofMParguments=\count287
-\everyMPshowfont=\toks24
-\MPscratchCnt=\count288
-\MPscratchDim=\dimen161
-\MPnumerator=\count289
-\makeMPintoPDFobject=\count290
-\everyMPtoPDFconversion=\toks25
+\scratchcounter=\count290
+\scratchdimen=\dimen161
+\scratchbox=\box64
+\nofMPsegments=\count291
+\nofMParguments=\count292
+\everyMPshowfont=\toks25
+\MPscratchCnt=\count293
+\MPscratchDim=\dimen162
+\MPnumerator=\count294
+\makeMPintoPDFobject=\count295
+\everyMPtoPDFconversion=\toks26
 ) (/usr/share/texmf-dist/tex/latex/epstopdf-pkg/epstopdf-base.sty
 Package: epstopdf-base 2020-01-24 v2.11 Base part for package epstopdf
 Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 485.
  (/usr/share/texmf-dist/tex/latex/latexconfig/epstopdf-sys.cfg
 File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Live
 ))
-\c@lstlisting=\count291
+\c@lstlisting=\count296
 
 *geometry* driver: auto-detecting
 *geometry* detected driver: pdftex
@@ -190,14 +208,14 @@ File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Live
 * layout: <same size as paper>
 * layoutoffset:(h,v)=(0.0pt,0.0pt)
 * modes: 
-* h-part:(L,W,R)=(42.67912pt, 512.14963pt, 42.67912pt)
+* h-part:(L,W,R)=(41.25641pt, 514.99506pt, 41.25641pt)
 * v-part:(T,H,B)=(56.9055pt, 731.23584pt, 56.9055pt)
 * \paperwidth=597.50787pt
 * \paperheight=845.04684pt
-* \textwidth=512.14963pt
+* \textwidth=514.99506pt
 * \textheight=731.23584pt
-* \oddsidemargin=-29.59087pt
-* \evensidemargin=-29.59087pt
+* \oddsidemargin=-31.01358pt
+* \evensidemargin=-31.01358pt
 * \topmargin=-52.36449pt
 * \headheight=12.0pt
 * \headsep=25.0pt
@@ -217,32 +235,30 @@ File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Live
 * (1in=72.27pt=25.4mm, 1cm=28.453pt)
 
 LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <12> on input line 48.
+(Font)              <12> on input line 49.
 LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <8> on input line 48.
+(Font)              <8> on input line 49.
 LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <6> on input line 48.
+(Font)              <6> on input line 49.
 LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <7> on input line 73.
+(Font)              <7> on input line 74.
 LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <5> on input line 73.
+(Font)              <5> on input line 74.
 
 
 [1
 
 {/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}]
 
-[2]
-
-[3]
+[2] [3]
 
 [4]
 
-[5] (../run64.sh) (../run32.sh) (../linux_syscalls/64.asm
+[5] (../run64.sh
 
-[6]) (../linux_syscalls/32.asm) (../subtraction/64.asm
+[6]) (../run32.sh) (../linux_syscalls/64.asm) (../linux_syscalls/32.asm)
 
-[7]
+[7] (../subtraction/64.asm
 
 [8])
 
@@ -253,15 +269,15 @@ L3 programming layer <2025-01-18>
  ***********
  ) 
 Here is how much of TeX's memory you used:
- 4554 strings out of 475171
- 66412 string characters out of 5767095
- 803440 words of memory out of 5000000
- 27506 multiletter control sequences out of 15000+600000
+ 4664 strings out of 475171
+ 67955 string characters out of 5767095
+ 780850 words of memory out of 5000000
+ 27613 multiletter control sequences out of 15000+600000
  564060 words of font info for 54 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
- 57i,17n,65p,7885b,1604s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 57i,30n,65p,7885b,1605s stack positions out of 10000i,1000n,20000p,200000b,200000s
  </home/william/.texlive/texmf-var/fonts/pk/ljfour/jknappen/ec/tctt0800.600pk> </home/william/.texlive/texmf-var/fonts/pk/ljfour/jknappen/ec/tcrm1000.600pk></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmr17.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmr5.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt10.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt8.pfb>
-Output written on main.pdf (9 pages, 152701 bytes).
+Output written on main.pdf (9 pages, 156251 bytes).
 PDF statistics:
  84 PDF objects out of 1000 (max. 8388607)
  54 compressed objects within 1 object stream

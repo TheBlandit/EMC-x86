@@ -4,10 +4,11 @@
 \usepackage{listings}
 \usepackage{listings-rust}
 \usepackage{makecell}
+\usepackage{longtable}
 \usepackage{multirow}
 \usepackage{xcolor}
 \usepackage{float}
-\usepackage[a4paper, left=1.5cm, right=1.5cm, top=2cm, bottom=2cm]{geometry}
+\usepackage[a4paper, left=1.45cm, right=1.45cm, top=2cm, bottom=2cm]{geometry}
 \usepackage{array}
  
 \definecolor{codegreen}{rgb}{0,0.6,0}
@@ -199,67 +200,98 @@ Some instructions have more than one row of operands, each row shows a different
 Furthermore many of these instructions set/clear flags, for example the OF (overflow flag) is set on signed overflow, CF (carry flag) is set on unsigned overflow and ZF (zero flag) is set when the result is zero.
 Some instructions can be prefixed with LOCK, this makes the instruction atomic and will give the thread exclusive access to the cache line it is accessing; LOCK can only be used when the destination is a memory location and the instruction supports it else it will raise a UD exception.
 
+% TODO: REGISTERS SUCH AS DX:AX, words like qword ptr.
 % TODO: (arithmetic) xor, (logical) cmp test, CACHE LINE
 % LOCK: ADD, ADC, AND, BTC, BTR, BTS, CMPXCHG, CMPXCH8B, CMPXCHG16B, DEC, INC, NEG, NOT, OR, SBB, SUB, XOR, XADD, and XCHG
 
-\newcommand{\inslinew}{4} % Num of columns
-\newcommand{\institle}[1]{\multicolumn{\inslinew}{|c|}{#1} \\ \hline}
-\newcommand{\inspad}{ & & } % Padding for rows of not-first-row operands
-\newcommand{\insend}{\\ \hline} % End of final row of operands
-\newcommand{\insmid}{\\ \cline{3-4}} % End of all other rows of operands
-\newcommand{\insop}{\texttt{-} & \texttt{-}}% & \texttt{-}} % 0 Operands
-\newcommand{\insopx}[1]{\texttt{#1} & \texttt{-}}% & \texttt{-}} % 1 Operand
-\newcommand{\insopxx}[2]{\texttt{#1} & \texttt{#2}}% & \texttt{-}} % 2 Operands
-\newcommand{\insopxxx}[3]{\texttt{#1} & \texttt{#2}}% & \texttt{#3}} % 3 Operands
+\newcommand{\insend}{\end{tabular} \setlength{\tabcolsep}{0pt} \\ \hline} % End of final row of operands
+\newcommand{\institle}[1]{
+  \begin{tabular}[t]{>{\centering\arraybackslash}p{1\linewidth}}
+  {#1} \insend
+}
+\newcommand{\inspad}{ & } % Padding for rows of not-first-row operands
+\newcommand{\inslineb}{\\ & \multicolumn{3}{c}{}}
+\newcommand{\inslinea}{\\ \cline{2-4} & \multicolumn{3}{c}{}}
+\newcommand{\insmid}{\\ \cline{2-4}} % End of all other rows of operands
+\newcommand{\insop}{\texttt{-} & \texttt{-} & \texttt{-}} % 0 Operands
+\newcommand{\insopx}[1]{\texttt{#1} & \texttt{-} & \texttt{-}} % 1 Operand
+\newcommand{\insopxx}[2]{\texttt{#1} & \texttt{#2} & \texttt{-}} % 2 Operands
+\newcommand{\insopxxx}[3]{\texttt{#1} & \texttt{#2} & \texttt{#3}} % 3 Operands
+\newcommand{\insname}[4]{
+  \setlength{\tabcolsep}{6pt}
+  \begin{tabular}[t]{p{0.555\linewidth}|>{\centering\arraybackslash}p{0.115\linewidth}|>{\centering\arraybackslash}p{0.115\linewidth}|>{\centering\arraybackslash}p{0.115\linewidth}}
+  \multirow[t]{#1}{\linewidth}{\makecell[tp{\linewidth}]{\makecell[c]{\texttt{#2} - #3} \\ #4}} &
+}
 
-\begin{table}[H]
-  \centering
-  \caption{Instructions}
-  \begin{tabular}{|c|p{0.45\linewidth}|c|c|}
-    \hline \textbf{Name} & \makecell[c]{\textbf{Description}} & \textbf{OP 1} & \textbf{OP 2} \\ \hline
-    \institle{Memory}
-    \multirow[t]{3}*{\makecell[t]{\texttt{MOV} \\ Move}} & \multirow[t]{3}*{Copies the value from OP2 into OP1} &
-      \insopxx{r}{r|m|i|s} \insmid
-      \inspad \insopxx{m}{r|i|s} \insmid
-      \inspad \insopxx{s}{r|m} \insend
-    \makecell[t]{\texttt{LEA} \\ Load Effective Address} & Stores the address from OP2 into OP1 but unlike MOV it does not dereference the address &
-      \insopxx{r16|r32|r64}{m} \insend
-    \makecell[t]{\texttt{[LOCK] CMPXCHG} \\ Compare and Exchange} & Compares \texttt{AL|AX|EAX|RAX} with OP1 (dst), if equal OP2 (src) is written into OP1 and ZF is set else OP1 is written into the accumulator and ZF is cleared &
-      \insopxx{r|m}{r} \insend
-    \multirow[t]{2}*{\makecell[t]{\texttt{[LOCK] XCHG} \\ Exchange}} & \multirow[t]{2}{\linewidth}{Swaps (exchanges) the values held in OP1 and OP2} &
-      \insopxx{r}{r|m} \insmid
-      \inspad \insopxx{r|m}{r} \insend
-    \institle{Control}
-    \makecell[t]{\texttt{UD} \\ Undefined Instruction} & Causes an invalid opcode exception &
-      \insop \insend
-    \institle{Arithmetic}
-    \multirow[t]{3}*{\makecell[t]{\texttt{[LOCK] ADD} \\ Add}} & \multirow[t]{3}{\linewidth}{Adds OP2 to OP1. If OP2 is an \texttt{immediate} value and its word size is less than OP1 then it is sign-extended} &
-      \insopxx{r}{r|m} \insmid
-      \inspad \insopxx{r|m}{r} \insmid
-      \inspad \insopxx{r|m}{i8|i16|i32} \insend
-    \makecell[t]{\texttt{[LOCK] INC} \\ Increment} & Increments the value in OP1 by 1 &
-      \insopx{r|m} \insend
-    \multirow[t]{3}*{\makecell[t]{\texttt{[LOCK] ADC} \\ Add With Carry}} & \multirow[t]{3}{\linewidth}{Adds (OP2 + CF) to OP1. If OP2 is an \texttt{immediate} value and its word size is less than OP1 then it is sign-extended} &
-      \insopxx{r}{r|m} \insmid
-      \inspad \insopxx{r|m}{r} \insmid
-      \inspad \insopxx{r|m}{i8|i16|i32} \insend
-    \multirow[t]{3}*{\makecell[t]{\texttt{[LOCK] SUB} \\ Subtract}} & \multirow[t]{3}{\linewidth}{Subtracts OP2 from OP1. If OP2 is an \texttt{immediate} value and its word size is less than OP1 then it is sign-extended} &
-      \insopxx{r}{r|m} \insmid
-      \inspad \insopxx{r|m}{r} \insmid
-      \inspad \insopxx{r|m}{i8|i16|i32} \insend
-    \makecell[t]{\texttt{[LOCK] DEC} \\ Decrement} & Decrements the value in OP1 by 1 &
-      \insopx{r|m} \insend
-    \institle{Logical}
-    \makecell[t]{\texttt{BT} \\ Bit Test} & Stores the OP2 (mod OP1 size) bit in OP1 into CF &
-      \insopxx{r|m}{r|i8} \insend
-    \makecell[t]{\texttt{[LOCK] BTC} \\ Bit Test and Complement} & Stores the OP2 (mod OP1 size) bit in OP1 into CF and complements the bit in OP2 &
-      \insopxx{r|m}{r|i8} \insend
-    \makecell[t]{\texttt{[LOCK] BTR} \\ Bit Test and Reset} & Stores the OP2 (mod OP1 size) bit in OP1 into CF and resets the bit (to 0) in OP2 &
-      \insopxx{r|m}{r|i8} \insend
-    \makecell[t]{\texttt{[LOCK] BTS} \\ Bit Test and Set} & Stores the OP2 (mod OP1 size) bit in OP1 into CF and sets the bit (to 1) in OP2 &
-      \insopxx{r|m}{r|i8} \insend
-  \end{tabular}
-\end{table}
+\setlength{\tabcolsep}{0pt}
+\begin{longtable}{|>{\centering\arraybackslash}p{0.998\linewidth}|}
+  \hline \setlength{\tabcolsep}{6pt} \begin{tabular}[t]{>{\centering\arraybackslash}p{0.555\linewidth}|>{\centering\arraybackslash}p{0.115\linewidth}|>{\centering\arraybackslash}p{0.115\linewidth}|>{\centering\arraybackslash}p{0.115\linewidth}}
+  \textbf{Instruction} & \textbf{OP 1} & \textbf{OP 2} & \textbf{OP 3} \insend
+  \institle{Memory}
+  \insname{3}{MOV}{Move}{Copies the value from OP2 into OP1}
+    \insopxx{r}{r|m|i|s} \insmid
+    \inspad \insopxx{m}{r|i|s} \insmid
+    \inspad \insopxx{s}{r|m} \insend
+  \insname{3}{LEA}{Load Effective Address}{Stores the address from OP2 into OP1 but unlike MOV it does not dereference the address}
+    \insopxx{r16|r32|r64}{m} \inslinea \inslineb \insend
+  \insname{4}{[LOCK] CMPXCHG}{Compare and Exchange}{Compares \texttt{AL|AX|EAX|RAX} with OP1 (dst), if equal OP2 (src) is written into OP1 and ZF is set else OP1 is written into the accumulator and ZF is cleared}
+    \insopxx{r|m}{r} \inslinea \inslineb \inslineb \insend
+  \insname{2}{[LOCK] XCHG}{Exchange}{Swaps (exchanges) the values held in OP1 and OP2}
+    \insopxx{r}{r|m} \insmid
+    \inspad \insopxx{r|m}{r} \insend
+  \institle{Control}
+  \insname{2}{UD}{Undefined Instruction}{Causes an invalid opcode exception}
+    \insop \inslinea \insend
+  \institle{Arithmetic}
+  \insname{3}{[LOCK] ADD}{Add}{Adds OP2 to OP1. If OP2 is an \texttt{immediate} value and its word size is less than OP1 then it is sign-extended}
+    \insopxx{r}{r|m} \insmid
+    \inspad \insopxx{r|m}{r} \insmid
+    \inspad \insopxx{r|m}{i8|i16|i32} \insend
+  \insname{2}{[LOCK] INC}{Increment}{Increments the value in OP1 by 1}
+    \insopx{r|m} \inslinea \insend
+  \insname{3}{[LOCK] ADC}{Add With Carry}{Adds (OP2 + CF) to OP1. If OP2 is an \texttt{immediate} value and its word size is less than OP1 then it is sign-extended}
+    \insopxx{r}{r|m} \insmid
+    \inspad \insopxx{r|m}{r} \insmid
+    \inspad \insopxx{r|m}{i8|i16|i32} \insend
+  \insname{3}{[LOCK] SUB}{Subtract}{Subtracts OP2 from OP1. If OP2 is an \texttt{immediate} value and its word size is less than OP1 then it is sign-extended}
+    \insopxx{r}{r|m} \insmid
+    \inspad \insopxx{r|m}{r} \insmid
+    \inspad \insopxx{r|m}{i8|i16|i32} \insend
+  \insname{2}{[LOCK] DEC}{Decrement}{Decrements the value in OP1 by 1}
+    \insopx{r|m} \inslinea \insend
+  \insname{3}{MUL}{Unsigned Multiply}{Performs unsigned integer multiplication on \texttt{AL|AX|EAX|RAX} and OP1, and stores the result in \texttt{AX|DX:AX|EDX:EAX|RDX:RAX}}
+    \insopx{r|m} \inslinea \inslineb \insend
+  \insname{6}{IMUL}{Signed Multipy}{Multiplies signed integers. In the first encoding \texttt{AL|AX|EAX|RAX} is multiplied by OP1 and is stored in \texttt{AX|DX:AX|EDX:EAX|RDX:RAX}. In the second OP1 is multiplied by OP2, the result is truncated and stored in OP1. In the third OP1 is multiplied by the product of OP2 and OP3, the result is truncated and stored in OP1}
+    \insopx{r|m} \insmid
+    \inspad \insopxx{r}{r|m} \insmid
+    \inspad \insopxxx{r}{r|m}{i8|i16|i32} \inslinea \inslineb \inslineb \insend
+  \insname{5}{DIV}{Unsigned Divide}{Divides unsigned integers, it divides \texttt{AX|DX:AX|EDX:EAX|RDX:RAX} by OP1, stores the quotient in \texttt{AL|AX|EAX|RAX} and stores the remainder in \texttt{AH|DX|EDX|RDX}. Causes a Divide Error exception if OP1 is 0 or the quotient is larger than its destination register}
+    \insopx{r|m} \inslinea \inslineb \inslineb \inslineb \insend
+  \insname{5}{IDIV}{Signed Divide}{Divides signed integers. It divides \texttt{AX|DX:AX|EDX:EAX|RDX:RAX} by OP1, stores the quotient in \texttt{AL|AX|EAX|RAX} and stores the remainder in \texttt{AH|DX|EDX|RDX}. Causes a Divide Error exception if OP1 is 0 or the quotient is larger than its destination register}
+    \insopx{r|m} \inslinea \inslineb \inslineb \inslineb \insend
+  \institle{Logical}
+  \insname{2}{BT}{Bit Test}{Stores the OP2 (mod OP1 size) bit in OP1 into CF}
+    \insopxx{r|m}{r|i8} \inslinea \insend
+  \insname{3}{[LOCK] BTC}{Bit Test and Complement}{Stores the OP2 (mod OP1 size) bit in OP1 into CF and complements the bit in OP2}
+    \insopxx{r|m}{r|i8} \inslinea \inslineb \insend
+  \insname{3}{[LOCK] BTR}{Bit Test and Reset}{Stores the OP2 (mod OP1 size) bit in OP1 into CF and resets the bit (to 0) in OP2}
+    \insopxx{r|m}{r|i8} \inslinea \inslineb \insend
+  \insname{3}{[LOCK] BTS}{Bit Test and Set}{Stores the OP2 (mod OP1 size) bit in OP1 into CF and sets the bit (to 1) in OP2}
+    \insopxx{r|m}{r|i8} \inslinea \inslineb \insend
+\end{longtable}
+\setlength{\tabcolsep}{6pt}
+
+% TODO: Finish this section a bit better
+In long mode, to access many of its features the REX prefix has to be placed before an instruction.
+REX must be encoded to access
+64-bit operands (if the instruction does not default to it)
+an extended register (R8-15, XMM8-15, YMM8-15, CR8-15, DR8-15)
+Uniform byte register (SPL, BPL, SIL, DIL)
+it cannot be encoded when using a high byte register (AH, BH, CH, DH)
+default 64-bit instructions in long mode are:
+CALL (near), ENTER, LEAVE, LGDT, LIDT, LLDT, LOOP, LOOPcc, LTR, MOV CR(n), MOV DR(n), POP r|m, POP r, POP FS, POP GS, POPFQ, PUSH i8, PUSH i32, PUSH r|m, PUSH r, PUSH FS, PUSH GS, PUSHFQ, RET (near)
+Almost every assembler automatically uses the nessissary REX prefixes when required so it is not needed to add
+It can be done by using db followed by the required byte in the line above the instruction
 
 \section{Sections}
 

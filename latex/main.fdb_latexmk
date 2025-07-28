@@ -1,10 +1,10 @@
 # Fdb version 4
-["pdflatex"] 1753474569.22334 "main.tex" "main.pdf" "main" 1753474569.64081 0
+["pdflatex"] 1753695933.48364 "main.tex" "main.pdf" "main" 1753695933.91574 0
   "../linux_syscalls/32.asm" 1751490958.34865 242 3c8735d4dd95ebf5121f3a726ad9d3ef ""
   "../linux_syscalls/64.asm" 1751490967.19568 634 b445a99ce4b5ac4f0f211ea78dfe8ffd ""
   "../run32.sh" 1751385153.5386 275 05f70daeb59a7e532689120c7d6cb928 ""
   "../run64.sh" 1752512938.34715 564 7bf655c0b056f48917317c8128058d40 ""
-  "../subtraction/64.asm" 1752511959.3932 2107 87ef175dd24df0cf3e50ffe887f4953c ""
+  "../subtraction/64.asm" 1753542176.44698 2107 87ef175dd24df0cf3e50ffe887f4953c ""
   "/home/william/.texlive/texmf-var/fonts/pk/ljfour/jknappen/ec/tcrm1000.600pk" 1751467648.08485 11524 ea3c81adaa03ba46853deb49926900fc ""
   "/home/william/.texlive/texmf-var/fonts/pk/ljfour/jknappen/ec/tctt0800.600pk" 1751467647.75385 7392 9ed22e61202951feebdbce8aaec96ee0 ""
   "/usr/share/texmf-dist/fonts/tfm/jknappen/ec/tcrm1000.tfm" 1742685315 1536 e07581a4bb3136ece9eeb4c3ffab8233 ""
@@ -57,14 +57,15 @@
   "/usr/share/texmf-dist/tex/latex/makecell/makecell.sty" 1742685315 15773 2dd7dde1ec1c2a3d0c85bc3b273e04d8 ""
   "/usr/share/texmf-dist/tex/latex/multirow/multirow.sty" 1742685315 6696 886c9f3087d0b973ed2c19aa79cb3023 ""
   "/usr/share/texmf-dist/tex/latex/tools/array.sty" 1742685315 14552 27664839421e418b87f56fa4c6f66b1a ""
+  "/usr/share/texmf-dist/tex/latex/tools/longtable.sty" 1742685315 15900 3cb191e576c7a313634d2813c55d4bf1 ""
   "/usr/share/texmf-dist/tex/latex/url/url.sty" 1742685315 12796 8edb7d69a20b857904dd0ea757c14ec9 ""
   "/usr/share/texmf-dist/tex/latex/xcolor/xcolor.sty" 1742685315 55384 b454dec21c2d9f45ec0b793f0995b992 ""
   "/usr/share/texmf-dist/web2c/texmf.cnf" 1742685315 42087 b0f9697c952c8f5a8eede4134282cb0d ""
   "/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map" 1750090558 30070 2c390b00126b1036e8876b6c3ea4d747 ""
   "/var/lib/texmf/web2c/pdftex/pdflatex.fmt" 1750090558 2008250 9f76eb4fcfef3268dd6f629e17ecbefd ""
   "listings-rust.sty" 1750090585.01624 12271 441435634f54a6459e4e2a6911352eff ""
-  "main.aux" 1753474569.57097 4849 83d7b857dafdadb246b73b93ec3bd502 "pdflatex"
-  "main.tex" 1753474567.91596 21300 490cfa51235c59a8a1e7acf89bf86d2c ""
+  "main.aux" 1753695933.86918 4781 3af8149d0b4a22ddb15f5a0dc6b198c7 "pdflatex"
+  "main.tex" 1753695931.78417 24067 c34ad195b1aad91f28a2d5ff53d7d0b2 ""
   (generated)
   "main.aux"
   "main.log"

@@ -49,6 +49,8 @@ INPUT /usr/share/texmf-dist/tex/latex/makecell/makecell.sty
 INPUT /usr/share/texmf-dist/tex/latex/makecell/makecell.sty
 INPUT /usr/share/texmf-dist/tex/latex/tools/array.sty
 INPUT /usr/share/texmf-dist/tex/latex/tools/array.sty
+INPUT /usr/share/texmf-dist/tex/latex/tools/longtable.sty
+INPUT /usr/share/texmf-dist/tex/latex/tools/longtable.sty
 INPUT /usr/share/texmf-dist/tex/latex/multirow/multirow.sty
 INPUT /usr/share/texmf-dist/tex/latex/multirow/multirow.sty
 INPUT /usr/share/texmf-dist/tex/latex/xcolor/xcolor.sty
