@@ -52,6 +52,7 @@ Machine code
 <!---->
 <!--   </summary> -->
  
-<embed src="/latex/main.pdf" type="application/pdf">
+<object data="latex/main.pdf" type="application/pdf" width="100%">
+</object>
  
  <!-- </details> -->
