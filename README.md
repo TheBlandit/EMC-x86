@@ -52,6 +52,6 @@ Machine code
 
   </summary>
  
-  <embed src="latex/main.pdf" type="application/pdf" width="100%" height="600px">
+  <embed src="./latex/main.pdf" type="application/pdf" width="100%" height="600px">
  
  </details>
