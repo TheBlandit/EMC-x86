@@ -46,12 +46,12 @@ Segment registers
 Machine code
 
 <details>
-  <summary> 
+  <summary>
 
-  ## 👉 Click here to view the document 👈
+  ## Click here to view the document
 
   </summary>
  
-  <iframe src="./latex/main.pdf" width="600" height="500"></iframe>
+  <iframe src="latex/main.pdf" width="600" height="500"></iframe>
  
  </details>
