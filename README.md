@@ -52,6 +52,6 @@ Machine code
 
   </summary>
  
-  <iframe src="latex/main.pdf" width="600" height="500"></iframe>
+  <embed src="latex/main.pdf" type="application/pdf" width="100%" height="600px">
  
  </details>
