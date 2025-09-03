@@ -353,30 +353,54 @@ A cache miss occurs when valid data does not exist in the processor's cache. The
 Segmentation = Logical to linear
 Paging = Linear to physical
 
+CR3 contains the physical address of the first paging structure unless HLAT (Hypervisor-managed Linear-Address-Translation) paging is used where it is stored in HLATP.
+
 %##
-To enable paging, use MOV to set CR0.PG in CR0, before doing so CR3 should contain the physical address of the first paging structure
 
-5.1 - paging modes + control bits
-If CR0.PG = 0 then paging is not used and all linear addresses are treated by the processor as physical addresses
-if CR0.PG = 1 then paging can only be enabled if protection also is (CR0.PE = 1), one of four paging modes are used which depend on the values of CR4.PAE, CR4.LA57 and IA32\_EFER.LME
+\subsubsection{Enabling Paging}
+Before paging is enabled, CR3 should contain the physical address of the first paging structure, and protection (CR0.PE) is enabled.
+Furthermore, once paging is enabled a different paging method can be used but paging should be disabled first before changing flags since exceptions may occur by changing the flags whilst paging is enabled.
+The table below shows which combination of flags is used to enable which type of paging, once the flags are set, set CR0.PG to enable paging.
 
-CR4.PAE = 0
-32-bit paging is used.
-processor ensures IA32\_EFER.LME = 0
+\begin{table}[H]
+  \centering
+  \begin{tabular}{|c|c|c|c|}
+    \hline \textbf{Method} & \textbf{CR4.PAE} & \textbf{IA32\_EFER.LME} & \textbf{CR4.LA57} \\ \hline
+    32-bit & 0 & 0 & -  \\
+    PAE & 1 & 0 & -  \\
+    4-level & 1 & 1 & 0 \\
+    5-level & 1 & 1 & 1 \\ \hline
+  \end{tabular}
+\end{table}
 
-CR4.PAE = 1 and IA32\_EFER.LME = 0
-PAE paging is used
+\noindent
+Since IA32\_EFER.LME enables long mode (IA-32e), 32-bit and PAE can only be used in legacy protected mode and 4-level and 5-level can only be used in long mode.
+Furthermore, in compatibility mode (sub mode of IA-32e), bits 63-32 of the linear address are treated as 0.
 
-CR4.PAE = 1 and IA32\_EFER.LME = 1 and CR4.LA57 = 0
-4-level paging is used
+\subsubsection{Next section lol}
 
-CR4.PAE = 1 and IA32\_EFER.LME = 1 and CR4.LA57 = 1
-5-level paging is used
+% To enable paging, use MOV to set CR0.PG in CR0, before doing so CR3 should contain the physical address of the first paging structure
 
-32-bit and PAE can only be used in legacy protected mode (not long mode)
-In contrast, 4-level and 5-level can only be used in IA-32e mode (long mode)
+% 5.1 - paging modes + control bits
+% If CR0.PG = 0 then paging is not used and all linear addresses are treated by the processor as physical addresses
+% if CR0.PG = 1 then paging can only be enabled if protection also is (CR0.PE = 1), one of four paging modes are used which depend on the values of CR4.PAE, CR4.LA57 and IA32\_EFER.LME
 
-In compatibility mode (sub mode of IA-32e), bits 63-32 of the linear address are treated as 0
+% CR4.PAE = 0
+% 32-bit paging is used.
+% processor ensures IA32\_EFER.LME = 0
+%
+% CR4.PAE = 1 and IA32\_EFER.LME = 0
+% PAE paging is used
+%
+% CR4.PAE = 1 and IA32\_EFER.LME = 1 and CR4.LA57 = 0
+% 4-level paging is used
+%
+% CR4.PAE = 1 and IA32\_EFER.LME = 1 and CR4.LA57 = 1
+% 5-level paging is used
+
+% 32-bit and PAE can only be used in legacy protected mode (not long mode)
+% In contrast, 4-level and 5-level can only be used in IA-32e mode (long mode)
+
 
 % TODO: include diagram from page 112 of VOL 3 or similar
 

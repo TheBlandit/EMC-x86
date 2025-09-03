@@ -18,6 +18,8 @@
 \contentsline {subsubsection}{\numberline {3.8.2}Cache mappings}{6}{subsubsection.3.8.2}%
 \contentsline {subsubsection}{\numberline {3.8.3}Cache misses}{7}{subsubsection.3.8.3}%
 \contentsline {subsection}{\numberline {3.9}Paging}{7}{subsection.3.9}%
+\contentsline {subsubsection}{\numberline {3.9.1}Enabling Paging}{7}{subsubsection.3.9.1}%
+\contentsline {subsubsection}{\numberline {3.9.2}Next section lol}{7}{subsubsection.3.9.2}%
 \contentsline {subsection}{\numberline {3.10}Segmentation}{8}{subsection.3.10}%
 \contentsline {subsection}{\numberline {3.11}Memory addressing}{8}{subsection.3.11}%
 \contentsline {section}{\numberline {4}Instructions}{8}{section.4}%
