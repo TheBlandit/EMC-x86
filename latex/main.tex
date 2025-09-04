@@ -347,6 +347,13 @@ A cache miss occurs when valid data does not exist in the processor's cache. The
 % lines are caches on write miss but writes are only written to main memory on eviction (defer writes)
 % https://stackoverflow.com/questions/20155304/does-linux-use-x86-cpus-pcid-feature-for-tlb-if-not-why
 \subsection{Paging}
+
+Paging is a method of memory management that seperates a programs address space (linear address) from the physical address space.
+The OS splits up the physical address space into 4KiB pages, each process has a paging structure which the OS manages, it consists of many layers;
+each layer consists of the entries for either the physical address of the next layer or page and flags.
+When a process accesses memory, the processor hardware converts the linear address into its corresponding physical address using the paging structure (by traversing the layers) and then uses it to access memory, this is called a hardware-assisted page walk.
+
+\subsubsection{Stuff}
 % TODO: swap, page faults, CR3 + layout of page directory, TLB + cache misses, Flag to enable prot, page walk
 % TLB misses: Compulsory, capacity and conflict
 % page caching (UC, WB, WT)
@@ -377,31 +384,9 @@ The table below shows which combination of flags is used to enable which type of
 Since IA32\_EFER.LME enables long mode (IA-32e), 32-bit and PAE can only be used in legacy protected mode and 4-level and 5-level can only be used in long mode.
 Furthermore, in compatibility mode (sub mode of IA-32e), bits 63-32 of the linear address are treated as 0.
 
+\subsubsection{Paging Structure}
+
 \subsubsection{Next section lol}
-
-% To enable paging, use MOV to set CR0.PG in CR0, before doing so CR3 should contain the physical address of the first paging structure
-
-% 5.1 - paging modes + control bits
-% If CR0.PG = 0 then paging is not used and all linear addresses are treated by the processor as physical addresses
-% if CR0.PG = 1 then paging can only be enabled if protection also is (CR0.PE = 1), one of four paging modes are used which depend on the values of CR4.PAE, CR4.LA57 and IA32\_EFER.LME
-
-% CR4.PAE = 0
-% 32-bit paging is used.
-% processor ensures IA32\_EFER.LME = 0
-%
-% CR4.PAE = 1 and IA32\_EFER.LME = 0
-% PAE paging is used
-%
-% CR4.PAE = 1 and IA32\_EFER.LME = 1 and CR4.LA57 = 0
-% 4-level paging is used
-%
-% CR4.PAE = 1 and IA32\_EFER.LME = 1 and CR4.LA57 = 1
-% 5-level paging is used
-
-% 32-bit and PAE can only be used in legacy protected mode (not long mode)
-% In contrast, 4-level and 5-level can only be used in IA-32e mode (long mode)
-
-
 % TODO: include diagram from page 112 of VOL 3 or similar
 
 5.2 - Paging structure
