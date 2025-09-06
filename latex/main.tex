@@ -40,7 +40,9 @@
 \lstset{style=mystyle}
 
 \renewcommand{\arraystretch}{1.2}
+\setlength{\parindent}{0em}
 
+% TODO: change document to 'x86 Architecture'
 \title{x86 Assembly}
 \author{William Bland}
 % \date{April 2025}
@@ -349,14 +351,16 @@ A cache miss occurs when valid data does not exist in the processor's cache. The
 \subsection{Segmentation}
 % TODO: types of segment, TTS, and segment registers
 
-Segmentation is a method of memory management that seperates parts of a processes address space into different segments (such as code and data), it uses the 6 segment registers to keep track of the segments.
+Segmentation is a method of memory management that separates parts of a processes address space into different segments (such as code and data), it uses the 6 segment registers to keep track of the segments.
 It is used to convert a logical address (which consists of a segment register and an offset) into a linear address.
 % Every time a process accesses a memory location, it uses a segment.; make this better
 Segmentation has different behaviours depending on what operating mode the processor is in, however unlike paging it is always enabled.
 
 \subsubsection{Real Mode}
 
-The value in the segment register is left shifted by 4 (multiplied by 16) then added to the offset to produce a 20-bit physical address allowing up to 1MiB of memory instead of the 64KiB if segmentation was not used.
+The value in the segment register is left shifted by 4 (multiplied by 16) then added to the offset to produce a 20-bit physical address allowing up to 1MiB of memory instead of the 16-bit limit of 64KiB.
+The kernel allocates memory for each running process and gives them each different segments, this allows the programs to be able to be loaded into any part of the address space and to not affect other program's memory.
+However there is no hardware enforcement of memory protection as any process can read and modify any memory location. % TODO:
 
 \subsubsection{Protected Mode}
 
@@ -364,12 +368,54 @@ The value in the segment register is left shifted by 4 (multiplied by 16) then a
 The value in the segment register is a segment selector, it is used as an index into the LDT/GDT to select a segment descriptor.
 Each segment descriptor contains a base address, limit and flags.
 The base address is a linear address and points to the base of the segment, the limit is the size of the segment and the flags set the segments properties such as permissions, 32 or 16 bit code and granularity of the limit.
+% add gdt/ldt and their registers and add flags in the segment registers
+There are many models which can be used to implement segmentation; some common models are listed below, other models exist and additional functionality can be added to the models such using the code segment to point to ROM.
 
-Add flat model, and other models, add gdt/ldt and their registers and add flags in the segment registers
+\begin{enumerate}
+  \item Basic Flat Model: \\
+    Contains at least two segment descriptors, one for code and one for data (this is because the code descriptor has to be executable so is usually read-only).
+    Both descriptors are mapped to the entire linear address space (even if the physical memory does not exist) so it has a base address of 0 and a limit of 4GiB.
+    This essentially disables segmentation for both the application and system developer, and since the entire linear address space is mapped no \#GP exceptions will occur.
+    Usually implemented alongside paging.
+  \item Protected Flat Model: \\
+    Similar to the Basic Flat Model but only included the range of addresses for which physical memory actually exists, so the limit is set to the capacity of physical memory.
+    If a process accesses a non-existent memory location a \#GP exception will occur.
+  \item Multi-Segment Model: \\
+    Uses the full capabilities of segmentation to provide hardware enforced protection of memory.
+    Each program is given its own segment descriptor table and multiple segments (which may be private or shared with other programs).
+    Hardware checks can be used to enforce the program to access memory it owns and in a way the OS allows (such as not writing to code/read-only memory)
+\end{enumerate}
+
+\subsubsection{Long Mode}
+
+% TODO: Somewhere (probs early in memory) add in the different types of address: Logical, effective (logical's offset), linear (and virtual), physical
+
+The behaviour of segmentation in long mode depends if it is running in 64-bit or compatibility mode.
+In compatibility mode it functions the same as it does in protected mode.
+In 64-bit mode, segmentation is generally disabled (but not completely), which creates a flat 64-bit linear address space.
+The base address of the CS, DS, ES and SS are treated as 0 (the effective address is equal to the linear address), and the processor does not perform limit checks (on all segment registers).
+The FS and GS registers are often used to reference thread-local or kernel data structures since their base address still applies.
+
+\subsubsection{Segment Selectors}
+
+Segment selectors are used as a 16-bit identifier for a segment descriptor.
+Segment selectors contain 3 parts:
+
+\begin{enumerate}
+  \item Bits 3:15 - Index: \\
+    The index into the descriptor table, selects one of the 8192 segment descriptors in the table.
+    Its value is multiplied by 8 then added to the base address of the of the descriptor table.
+  \item Bit 2 - Table Indicator (TI) flag: \\
+    Selects between the two descriptor tables: 0 selects the GDT to be used, 1 selects the LDT to be used.
+  \item Bits 0:1 - Requested Privilege Level (RPL): \\
+    Specifies the privilege level of the selector. %, 0 being the most privileged (supervisor) and 3 being the least (user).
+\end{enumerate}
+
+\subsubsection{descriptors, tables, registers, segments, sections, tss, syscalls, far jumps}
 
 \subsection{Paging}
 
-Paging is a method of memory management that seperates a programs address space (linear address) from the physical address space.
+Paging is a method of memory management that separates a programs address space (linear address) from the physical address space.
 It occurs after segmentation but unlike segmentation it does not need to be enabled, if it is disabled linear addresses are the same as physical addresses.
 The OS splits up the physical address space into 4KiB pages, each process has a paging structure which the OS manages, it consists of many layers;
 each layer consists of the entries for either the physical address of the next layer or page and flags.

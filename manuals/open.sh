@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "1: Arch and programming env supporting 32 and 64bit
+echo "1: Arch and programming env supporting 32 and 64-bit
 2: Full Instruction set reference
 3: Systems programming
 4: Model specific registers"
