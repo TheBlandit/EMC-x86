@@ -30,10 +30,10 @@ while read -r line; do
         #     gcc -m16 -ffreestanding -c "$file" -o "$object" || exit 1 ;;
         p)
             objects+=($object)
-            gcc -m32 -ffreestanding -c "$file" -o "$object" || exit 1 ;;
+            gcc -m32 -nostartfiles -ffreestanding -c "$file" -o "$object" || exit 1 ;;
         l)
             objects+=($object)
-            gcc -m64 -ffreestanding -c "$file" -o "$object" || exit 1 ;;
+            gcc -m64 -nostartfiles -ffreestanding -c "$file" -o "$object" || exit 1 ;;
         *)
             echo "'$file' cannot be compiled"
             exit 1 ;;
