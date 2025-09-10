@@ -116,6 +116,7 @@ enable_protection:
     mov es, ax
     mov fs, ax
     mov gs, ax
+    mov esp, 0x10000
     jmp 08h:1000h ; _start in C (far jump since cs changes)
 
 message db 'Hello world', 0 ; The 'Hello World' message followed by a null terminator (0)
