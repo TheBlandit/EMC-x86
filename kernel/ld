@@ -1,13 +1,12 @@
-SECTIONS
-{
-    . = 0x1000;  /* Start address */
-    .text : {
-        *(.text)  /* All .text sections from input files */
-    }
-    .data : {
-        *(.data)  /* All .data sections from input files */
-    }
-    .bss : {
-        *(.bss)   /* All .bss sections from input files */
-    }
+SECTIONS {
+    . = 0x1000;
+    .text : { *(.text) }
+    .data : { *(.data) }
+    .bss : { *(.bss) }
+    .eh_frame : { *(.eh_frame) }
+    .got.plt : { *(.got.plt) }
+    /* Place .note sections immediately after, no high addresses */
+    .note : { *(.note*) }
+    /* Discard unneeded sections */
+    /DISCARD/ : { *(.comment .symtab .strtab .shstrtab) }
 }

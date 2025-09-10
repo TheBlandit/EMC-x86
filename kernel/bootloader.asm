@@ -25,7 +25,7 @@ init_line:
     mov byte al, [si]
 
     cmp al, 0
-    je init_read
+    je read_kernel
 
     mov byte [es:di], al
     inc si
@@ -33,180 +33,101 @@ init_line:
 
     jmp init_line
 
-init_read:
-    mov word di, 0x0F00
+error:
+    mov ax, 0xb800          ; Set AX to the video memory segment (0xb800)
+    mov es, ax              ; Load ES with the video memory segment
+    xor di, di
+    lea si, [error_message]
 
-read_loop:
-    call read_char
+error_loop:
+    mov byte al, [si]
 
-    cmp ah, 0x1C
-    je parse_init
-
-    cmp ah, 0x0E
-    je backspace
-
-    cmp ah, 0x01
+    cmp al, 0
     je halt
 
-    cmp di, 0x0F9E
-    je read_loop
-
     mov byte [es:di], al
+    inc si
     add di, 2
-    jmp read_loop
 
-backspace:
-    cmp di, 0x0F00
-    je read_loop
-
-    sub di, 2
-    mov byte [es:di], 0x20
-    jmp read_loop
-
-parse_error:
-    jmp halt ; TODO:
-
-; Loops through chars until it finds a non-numerical where it breaks and starts the collatz loop
-parse_init: ; TODO: check for overflow
-    mov word si, 0x0F00
-    xor ax, ax ; Set number t 0
-    xor bh, bh ; Clears so when we add the number read to ax, there is no unexpected bits
-    mov cx, 0x0A ; Puts 10 into cx for multiplication
-
-parse_loop:
-    mov byte bl, [es:si]
-
-    cmp bl, 0x30
-    jb collatz_init
-
-    cmp bl, 0x39
-    ja collatz_init
-
-    sub bl, 0x30
-
-    mul cx
-    add ax, bx
-
-    add si, 2
-
-    jmp parse_loop
-
-; ax contains number
-collatz_init:
-    call push_lines_init
-    mov bx, 3
-
-collatz_loop:
-    push ax
-    call print_num_init
-    call sleep_sec
-    call push_lines_init
-    pop ax
-
-    cmp ax, 1
-    jbe collatz_finished
-
-    test ax, 1
-    jz collatz_even
-
-    mul bx
-    inc ax
-
-    jmp collatz_loop
-
-collatz_even:
-    shr ax, 1
-    jmp collatz_loop
-
-collatz_finished:
-
-    jmp init_read
-
-; SUBROUTINES ---------------
+    jmp error_loop
 
 halt:
     cli
     hlt
 
-; input in ax
-; overwrites di, dx, cx, ax
-print_num_init:
-    mov word di, 0x0FA0
-    mov word cx, 0x0A
+read_kernel:
+    xor ax, ax      ; Clear AX
+    mov ds, ax      ; Set DS to 0 (flat real-mode addressing)
+    mov es, ax      ; Set ES to 0 (destination segment for read)
 
-print_num_loop:
-    xor dx, dx
-    div cx
+    mov ah, 0x02    ; BIOS function: read sectors
+    mov al, 1       ; Number of sectors to read (1)
+    mov ch, 0       ; Cylinder 0
+    mov cl, 2       ; Sector 2 (1-based indexing)
+    mov dh, 0       ; Head 0
+    mov dl, 0x80    ; Boot disk (0x80 = first hard disk, 0x00 = floppy)
+    mov bx, 0x1000  ; Destination address ES:BX = 0x0:0x1000
+    int 0x13        ; Call BIOS disk service
 
-    sub di, 2
+    jc error        ; If carry flag set, handle error
+    cmp al, 1       ; Check if 1 sector was read
+    jne error       ; If not, handle error
 
-    add dx, 0x30
-    mov byte [es:di], dl
+    ; setup gdt
+    lea di, [gdt_location]
+    lea si, [gdt_contents]
+    ; first entry is the lgdt operand / null segment descriptor
+    mov cx, gdt_size
 
-    cmp ax, 0
-    jne print_num_loop
+setup_gdt_loop:
+    jcxz enable_protection
+    mov byte al, [si]
+    mov byte [di], al
+    inc si
+    inc di
+    dec cx
+    jmp setup_gdt_loop
 
-    ret
-
-; Overwrites cx, dx, ah
-sleep_sec:
-    mov dx, 0x4240
-    mov cx, 0x000F
-    mov ah, 0x86
-    int 0x15
-
-    ret
-; Overwrites: di, si, dx
-; di, si are in the first column in the row below the screen
-; Pushes all lines up 1 and sets the bottom line to empty, does not affect status bar
-push_lines_init:
-    mov di, 0x00A0
-    mov si, 0x0140
-
-push_lines_loop1: ; push lines up
-    mov word dx, [es:si]
-    mov word [es:di], dx
-    add di, 2
-    add si, 2
-
-    cmp si, 0x0FA0
-    jb push_lines_loop1
-
-push_lines_loop2: ; sets current line to spaces
-    mov byte [es:di], 0x20
-    add di, 2
-
-    cmp di, 0x0FA0
-    jb push_lines_loop2
-
-    ret
-
-; overwrites ax, al contains the ascii code, ah contains the scan code 
-read_char:
-    mov ah, 0x00 ; BIOS fn to read char
-    int 0x16 ; Calls BIOS for key interrupt
-    ret
-
-setup_gdt:
-    mov di, gdt_location
-    
-
-
-enable_protected:
+enable_protection:
     cli ; disable interrupts
-    lgdt gdt_location ; load the gdtr with the location of the gdt
+
+    ; enable A20 (doesnt appear to be required)
+    ; in al, 0x92
+    ; or al, 2
+    ; out 0x92, al
+
+    ; in al, 0x92
+    ; test al, 2
+    ; jnz after
+    ; or al, 2
+    ; and al, 0xFE
+    ; out 0x92, al
+    ; after:
+
+    lgdt [gdt_location] ; load the gdtr with the location of the gdt
+
     mov eax, cr0 ; load cr0 into eax
-    or eax, 1 ; set PE
+    or al, 1 ; set PE
     mov cr0, eax ; load eax back into cr0 (with PE enabled)
-
-    jmp 01h:1000h ; _start in C (far jump since cs changes)
-
+    ;jmp 08h:1000h ; _start in C (far jump since cs changes)
+    mov ax, 10h
+    mov ds, ax
+    mov ss, ax
+    mov es, ax
+    mov fs, ax
+    mov gs, ax
+    jmp 08h:1000h ; _start in C (far jump since cs changes)
 
 message db 'Hello world', 0 ; The 'Hello World' message followed by a null terminator (0)
+error_message db 'ERROR!', 0
 ; message_len equ $ - message
 gdt_location equ 0x2000 ; gdt location
-gdt_size equ 0x2000 ; gdt location
+
+;               limit-1  base     base  junk
+gdt_contents db 0x1F, 0, 0, 0x20, 0, 0, 0, 0,     0xFF, 0xFF, 0, 0, 0, 0x9A, 0xCF, 00,     0xFF, 0xFF, 0, 0, 0, 0x92, 0xCF, 0,    0, 0, 0, 0, 0, 0, 0, 0
+gdt_size equ $ - gdt_contents ; gdt location
+
 
 ; Boot sector padding and signature
-    times 510-($-$$) db 0   ; Pad the boot sector to 510 bytes (ensuring the total size is 512 bytes)
-    dw 0xAA55               ; Boot sector signature (0xAA55), required for a valid bootable sector
+times 510-($-$$) db 0   ; Pad the boot sector to 510 bytes (ensuring the total size is 512 bytes)
+dw 0xAA55               ; Boot sector signature (0xAA55), required for a valid bootable sector
