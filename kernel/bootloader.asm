@@ -187,8 +187,25 @@ read_char:
     int 0x16 ; Calls BIOS for key interrupt
     ret
 
+setup_gdt:
+    mov di, gdt_location
+    
+
+
+enable_protected:
+    cli ; disable interrupts
+    lgdt gdt_location ; load the gdtr with the location of the gdt
+    mov eax, cr0 ; load cr0 into eax
+    or eax, 1 ; set PE
+    mov cr0, eax ; load eax back into cr0 (with PE enabled)
+
+    jmp 01h:1000h ; _start in C (far jump since cs changes)
+
+
 message db 'Hello world', 0 ; The 'Hello World' message followed by a null terminator (0)
 ; message_len equ $ - message
+gdt_location equ 0x2000 ; gdt location
+gdt_size equ 0x2000 ; gdt location
 
 ; Boot sector padding and signature
     times 510-($-$$) db 0   ; Pad the boot sector to 510 bytes (ensuring the total size is 512 bytes)

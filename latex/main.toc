@@ -1,46 +1,46 @@
-\contentsline {section}{\numberline {1}Introduction}{2}{section.1}%
-\contentsline {subsection}{\numberline {1.1}What is x86 assembly?}{2}{subsection.1.1}%
-\contentsline {subsection}{\numberline {1.2}Basics of x86 assembly}{2}{subsection.1.2}%
-\contentsline {subsection}{\numberline {1.3}Intel vs AT\&T syntax}{2}{subsection.1.3}%
-\contentsline {section}{\numberline {2}x86 architecture}{2}{section.2}%
-\contentsline {subsection}{\numberline {2.1}Branch prediction}{2}{subsection.2.1}%
-\contentsline {subsection}{\numberline {2.2}Operating modes}{2}{subsection.2.2}%
-\contentsline {section}{\numberline {3}Memory}{3}{section.3}%
-\contentsline {subsection}{\numberline {3.1}Memory sizes and representaion}{3}{subsection.3.1}%
-\contentsline {subsection}{\numberline {3.2}Registers}{3}{subsection.3.2}%
-\contentsline {subsection}{\numberline {3.3}Flags}{4}{subsection.3.3}%
-\contentsline {subsection}{\numberline {3.4}Stack}{4}{subsection.3.4}%
-\contentsline {subsection}{\numberline {3.5}Heap}{4}{subsection.3.5}%
-\contentsline {subsection}{\numberline {3.6}Code}{4}{subsection.3.6}%
-\contentsline {subsection}{\numberline {3.7}Data}{4}{subsection.3.7}%
-\contentsline {subsection}{\numberline {3.8}Cache}{4}{subsection.3.8}%
-\contentsline {subsubsection}{\numberline {3.8.1}Cache coherency protocol}{5}{subsubsection.3.8.1}%
-\contentsline {subsubsection}{\numberline {3.8.2}Cache mappings}{6}{subsubsection.3.8.2}%
-\contentsline {subsubsection}{\numberline {3.8.3}Cache misses}{7}{subsubsection.3.8.3}%
-\contentsline {subsection}{\numberline {3.9}Segmentation}{7}{subsection.3.9}%
-\contentsline {subsubsection}{\numberline {3.9.1}Real Mode}{7}{subsubsection.3.9.1}%
-\contentsline {subsubsection}{\numberline {3.9.2}Protected Mode}{7}{subsubsection.3.9.2}%
-\contentsline {subsubsection}{\numberline {3.9.3}Long Mode}{8}{subsubsection.3.9.3}%
-\contentsline {subsubsection}{\numberline {3.9.4}Segment Selectors}{8}{subsubsection.3.9.4}%
-\contentsline {subsubsection}{\numberline {3.9.5}descriptors, tables, registers, segments, sections, tss, syscalls, far jumps}{8}{subsubsection.3.9.5}%
-\contentsline {subsection}{\numberline {3.10}Paging}{8}{subsection.3.10}%
-\contentsline {subsubsection}{\numberline {3.10.1}Stuff}{8}{subsubsection.3.10.1}%
-\contentsline {subsubsection}{\numberline {3.10.2}Enabling Paging}{8}{subsubsection.3.10.2}%
-\contentsline {subsubsection}{\numberline {3.10.3}Paging Structure}{9}{subsubsection.3.10.3}%
-\contentsline {subsubsection}{\numberline {3.10.4}Next section lol}{9}{subsubsection.3.10.4}%
-\contentsline {subsection}{\numberline {3.11}Memory addressing}{9}{subsection.3.11}%
-\contentsline {section}{\numberline {4}Instructions}{9}{section.4}%
-\contentsline {section}{\numberline {5}Sections}{12}{section.5}%
-\contentsline {subsection}{\numberline {5.1}Data section}{12}{subsection.5.1}%
-\contentsline {section}{\numberline {6}Interrupts}{12}{section.6}%
-\contentsline {subsection}{\numberline {6.1}IDT}{13}{subsection.6.1}%
-\contentsline {subsection}{\numberline {6.2}ISR}{13}{subsection.6.2}%
-\contentsline {subsection}{\numberline {6.3}BIOS interrupts}{13}{subsection.6.3}%
-\contentsline {subsection}{\numberline {6.4}UEFI interrupts}{13}{subsection.6.4}%
-\contentsline {subsection}{\numberline {6.5}Syscalls (on Linux)}{13}{subsection.6.5}%
-\contentsline {section}{\numberline {7}Appendix}{14}{section.7}%
-\contentsline {subsection}{\numberline {7.1}Bash scripts}{14}{subsection.7.1}%
-\contentsline {subsection}{\numberline {7.2}Hello world (Linux)}{15}{subsection.7.2}%
-\contentsline {subsection}{\numberline {7.3}Difference (Linux)}{16}{subsection.7.3}%
-\contentsline {subsection}{\numberline {7.4}Cat (Linux)}{17}{subsection.7.4}%
-\contentsline {subsection}{\numberline {7.5}Hello world (Baremetal)}{19}{subsection.7.5}%
+\contentsline {section}{\numberline {1}Introduction}{3}{section.1}%
+\contentsline {subsection}{\numberline {1.1}What is x86 assembly?}{3}{subsection.1.1}%
+\contentsline {subsection}{\numberline {1.2}Basics of x86 assembly}{3}{subsection.1.2}%
+\contentsline {subsection}{\numberline {1.3}Intel vs AT\&T syntax}{3}{subsection.1.3}%
+\contentsline {section}{\numberline {2}x86 architecture}{3}{section.2}%
+\contentsline {subsection}{\numberline {2.1}Branch prediction}{3}{subsection.2.1}%
+\contentsline {subsection}{\numberline {2.2}Operating modes}{3}{subsection.2.2}%
+\contentsline {section}{\numberline {3}Memory}{4}{section.3}%
+\contentsline {subsection}{\numberline {3.1}Memory sizes and representaion}{4}{subsection.3.1}%
+\contentsline {subsection}{\numberline {3.2}Registers}{4}{subsection.3.2}%
+\contentsline {subsection}{\numberline {3.3}Flags}{5}{subsection.3.3}%
+\contentsline {subsection}{\numberline {3.4}Stack}{5}{subsection.3.4}%
+\contentsline {subsection}{\numberline {3.5}Heap}{5}{subsection.3.5}%
+\contentsline {subsection}{\numberline {3.6}Code}{5}{subsection.3.6}%
+\contentsline {subsection}{\numberline {3.7}Data}{5}{subsection.3.7}%
+\contentsline {subsection}{\numberline {3.8}Cache}{5}{subsection.3.8}%
+\contentsline {subsubsection}{\numberline {3.8.1}Cache coherency protocol}{6}{subsubsection.3.8.1}%
+\contentsline {subsubsection}{\numberline {3.8.2}Cache mappings}{7}{subsubsection.3.8.2}%
+\contentsline {subsubsection}{\numberline {3.8.3}Cache misses}{8}{subsubsection.3.8.3}%
+\contentsline {subsection}{\numberline {3.9}Segmentation}{8}{subsection.3.9}%
+\contentsline {subsubsection}{\numberline {3.9.1}Real Mode}{8}{subsubsection.3.9.1}%
+\contentsline {subsubsection}{\numberline {3.9.2}Protected Mode}{8}{subsubsection.3.9.2}%
+\contentsline {subsubsection}{\numberline {3.9.3}Long Mode}{9}{subsubsection.3.9.3}%
+\contentsline {subsubsection}{\numberline {3.9.4}Segment Selectors}{9}{subsubsection.3.9.4}%
+\contentsline {subsubsection}{\numberline {3.9.5}descriptors, tables, registers, segments, sections, tss, syscalls, far jumps}{9}{subsubsection.3.9.5}%
+\contentsline {subsection}{\numberline {3.10}Paging}{9}{subsection.3.10}%
+\contentsline {subsubsection}{\numberline {3.10.1}Stuff}{9}{subsubsection.3.10.1}%
+\contentsline {subsubsection}{\numberline {3.10.2}Enabling Paging}{9}{subsubsection.3.10.2}%
+\contentsline {subsubsection}{\numberline {3.10.3}Paging Structure}{10}{subsubsection.3.10.3}%
+\contentsline {subsubsection}{\numberline {3.10.4}Next section lol}{10}{subsubsection.3.10.4}%
+\contentsline {subsection}{\numberline {3.11}Memory addressing}{10}{subsection.3.11}%
+\contentsline {section}{\numberline {4}Instructions}{10}{section.4}%
+\contentsline {section}{\numberline {5}Sections}{13}{section.5}%
+\contentsline {subsection}{\numberline {5.1}Data section}{13}{subsection.5.1}%
+\contentsline {section}{\numberline {6}Interrupts}{13}{section.6}%
+\contentsline {subsection}{\numberline {6.1}IDT}{14}{subsection.6.1}%
+\contentsline {subsection}{\numberline {6.2}ISR}{14}{subsection.6.2}%
+\contentsline {subsection}{\numberline {6.3}BIOS interrupts}{14}{subsection.6.3}%
+\contentsline {subsection}{\numberline {6.4}UEFI interrupts}{14}{subsection.6.4}%
+\contentsline {subsection}{\numberline {6.5}Syscalls (on Linux)}{14}{subsection.6.5}%
+\contentsline {section}{\numberline {7}Appendix}{15}{section.7}%
+\contentsline {subsection}{\numberline {7.1}Bash scripts}{15}{subsection.7.1}%
+\contentsline {subsection}{\numberline {7.2}Hello world (Linux)}{16}{subsection.7.2}%
+\contentsline {subsection}{\numberline {7.3}Difference (Linux)}{17}{subsection.7.3}%
+\contentsline {subsection}{\numberline {7.4}Cat (Linux)}{18}{subsection.7.4}%
+\contentsline {subsection}{\numberline {7.5}Hello world (Baremetal)}{20}{subsection.7.5}%
