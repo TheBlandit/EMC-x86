@@ -406,7 +406,7 @@ Segment selectors contain 3 parts:
 
 \begin{enumerate}
   \item Bits 3:15 - Index: \\
-    The index into the descriptor table, selects one of the 8192 segment descriptors in the table.
+    The index into the descriptor table, selects one of the 8192 segment descriptors in the table (index 0 is a null selector).
     Its value is multiplied by 8 then added to the base address of the of the descriptor table.
   \item Bit 2 - Table Indicator (TI) flag: \\
     Selects between the two descriptor tables: 0 selects the GDT to be used, 1 selects the LDT to be used.
@@ -414,7 +414,39 @@ Segment selectors contain 3 parts:
     Specifies the privilege level of the selector. %, 0 being the most privileged (supervisor) and 3 being the least (user).
 \end{enumerate}
 
-\subsubsection{descriptors, tables, registers, segments, sections, tss, syscalls, far jumps}
+\subsubsection{Segment descriptors}
+
+Segment descriptors are identifiers for segments of memory.
+They contain multiple parts which can be categorised into: (linear) base address of the segment, limit (size of segment - 1), flags (controls the abilities of the segment).
+
+\begin{table}[H]
+  \centering
+  \begin{tabular}{|c|c|l|l|}
+    \hline \textbf{Bits} & \textbf{Size} & \textbf{Name} & \textbf{Use} \\ \hline
+    63:56 & 8 & Base 31:24 & 1 byte of the base address \\
+    55:55 & 1 & Granularity (G) & 0 = limit in bytes, 1 = limit in 4-KiB \\
+    54:54 & 1 & D/B & Default operation size, 0 = 16-bit, 1 = 32-bit \\
+    53:53 & 1 & L & 1 = 64-bit code segment (IA-32e mode only) \\
+    52:52 & 1 & AVL & Available for use by system software \\
+    51:48 & 4 & Limit 19:16 & 4 bits of the limit \\
+    47:47 & 1 & Present (P) & 0 = segment not present, 1 = segment present \\
+    46:45 & 2 & DPL & Descriptor privilege level \\
+    44:44 & 1 & S & Descriptor type, 0 = system, 1 = code/data \\
+    43:40 & 4 & Type & Segment type \\ % TODO: more on the type field
+    39:16 & 24 & Base 23:00 & 3 byte of the base address \\
+    00:16 & 16 & Limit 15:00 & 2 bytes of the base address \\ \hline
+  \end{tabular}
+\end{table}
+
+\subsubsection{GDT - Global Descriptor Table}
+
+Contains the segment descriptors, its base address (linear) and limit (number of bytes in the GDT - 1) are stored in the GDTR (GDT Register).
+The \texttt{LGDT} instruction stores the base address and limit from a memory location into the GDTR.
+The $0^{th}$ descriptor of the GDT is often used to store the address and limit since it will never be loaded as a descriptor since the selector would be null.
+
+% Add LDT
+
+\subsubsection{segments, sections, tss, syscalls, far jumps}
 
 \subsection{Paging}
 
@@ -428,9 +460,6 @@ When a process accesses memory, the processor hardware converts the linear addre
 % TODO: swap, page faults, CR3 + layout of page directory, TLB + cache misses, Flag to enable prot, page walk
 % TLB misses: Compulsory, capacity and conflict
 % page caching (UC, WB, WT)
-Segmentation = Logical to linear
-Paging = Linear to physical
-
 CR3 contains the physical address of the first paging structure unless HLAT (Hypervisor-managed Linear-Address-Translation) paging is used where it is stored in HLATP.
 
 %##

@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2026/dev/Arch Linux) (preloaded format=pdflatex 2025.9.2)  10 SEP 2025 07:14
+This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2026/dev/Arch Linux) (preloaded format=pdflatex 2025.8.25)  11 SEP 2025 14:34
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -565,40 +565,42 @@ LaTeX Font Info:    External font `cmex10' loaded for size
 [10] [11] [12]
 
 [13] [14]
-Package hyperref Info: bookmark level for unknown lstlisting defaults to 0 on input line 788.
+Package hyperref Info: bookmark level for unknown lstlisting defaults to 0 on input line 817.
  (../run64.sh
 
-[15]) (../run32.sh) (../print/64.asm) (../print/32.asm)
+[15]) (../run32.sh) (../print/64.asm
 
-[16] (../subtraction/64.asm
+[16]) (../print/32.asm) (../subtraction/64.asm
 
-[17]) (../cat/cat.asm
+[17]
 
-[18]
+[18]) (../cat/cat.asm
 
-[19]) (../baremetal/main.asm)
+[19]) (../baremetal/main.asm
 
-[20] (./main.aux)
+[20])
+
+[21] (./main.aux)
  ***********
 LaTeX2e <2024-11-01> patch level 2
 L3 programming layer <2025-01-18>
  ***********
 Package rerunfilecheck Info: File `main.out' has not changed.
-(rerunfilecheck)             Checksum: 8916593D06587934C4DAB8220BE13D97;6093.
+(rerunfilecheck)             Checksum: 1924F357EAE9EBC800A58F5C00599E16;6315.
  ) 
 Here is how much of TeX's memory you used:
- 22099 strings out of 475171
- 399161 string characters out of 5767096
- 1259914 words of memory out of 5000000
- 44257 multiletter control sequences out of 15000+600000
+ 22104 strings out of 475171
+ 399248 string characters out of 5767095
+ 1243915 words of memory out of 5000000
+ 44259 multiletter control sequences out of 15000+600000
  564060 words of font info for 54 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
  84i,30n,87p,7885b,1924s stack positions out of 10000i,1000n,20000p,200000b,200000s
- </home/william/.texlive/texmf-var/fonts/pk/ljfour/jknappen/ec/tctt0800.600pk> </home/william/.texlive/texmf-var/fonts/pk/ljfour/jknappen/ec/tcrm1000.600pk></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmr17.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmr5.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt10.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt8.pfb>
-Output written on main.pdf (20 pages, 211013 bytes).
+ </home/william/.texlive/texmf-var/fonts/pk/ljfour/jknappen/ec/tctt0800.600pk> </home/william/.texlive/texmf-var/fonts/pk/ljfour/jknappen/ec/tcrm1000.600pk></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmr17.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmr5.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt10.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt8.pfb>
+Output written on main.pdf (21 pages, 221813 bytes).
 PDF statistics:
- 900 PDF objects out of 1000 (max. 8388607)
- 851 compressed objects within 9 object streams
- 484 named destinations out of 1000 (max. 500000)
- 381 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 920 PDF objects out of 1000 (max. 8388607)
+ 868 compressed objects within 9 object streams
+ 487 named destinations out of 1000 (max. 500000)
+ 397 words of extra memory for PDF output out of 10000 (max. 10000000)
 
