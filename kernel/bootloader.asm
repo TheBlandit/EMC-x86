@@ -117,18 +117,15 @@ enable_protection:
     mov fs, ax
     mov gs, ax
     mov esp, 0x10000
+
     jmp 08h:1000h ; _start in C (far jump since cs changes)
 
 message db 'Hello world', 0 ; The 'Hello World' message followed by a null terminator (0)
-error_message db 'ERROR!', 0
-; message_len equ $ - message
+error_message db 'Failed to read kernel from disk', 0
 gdt_location equ 0x2000 ; gdt location
-
 ;               limit-1  base     base  junk
 gdt_contents db 0x1F, 0, 0, 0x20, 0, 0, 0, 0,     0xFF, 0xFF, 0, 0, 0, 0x9A, 0xCF, 00,     0xFF, 0xFF, 0, 0, 0, 0x92, 0xCF, 0,    0, 0, 0, 0, 0, 0, 0, 0
 gdt_size equ $ - gdt_contents ; gdt location
-
-
 ; Boot sector padding and signature
 times 510-($-$$) db 0   ; Pad the boot sector to 510 bytes (ensuring the total size is 512 bytes)
 dw 0xAA55               ; Boot sector signature (0xAA55), required for a valid bootable sector
