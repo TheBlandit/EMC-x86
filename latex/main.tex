@@ -44,11 +44,10 @@
 
 \newcommand{\myref}[1]{(See \nameref{#1} \ref{#1})}
 
-% TODO: change document to 'x86 Architecture'
 % TODO: Add PIE (position independent executable)
 % TODO: BIOS, UEFI, Multiboot spec
 % TODO: hidden instructions, appendix H, intels FDIV off by a small amount, 66 jmp (amd makes it 16 bit, intel ignores the 66)
-\title{x86 Assembly}
+\title{x86 Architecture}
 \author{William Bland}
 % \date{April 2025}
 
@@ -60,14 +59,14 @@
 
 \section{Introduction}
 
-\subsection{What is x86 assembly?}
+\subsection{What is the x86 architecture?}
 Processors run by executing binary instructions called machine code, this machine code can be made into
 a human readable format called assembly which can be turned back into machine code using a program called an assembler.
 Each processor has an architecture, this architecture describes how the processor executes the machine code (so different architectures execute code differently,
 so have different machine code and assembly languages).
 For multiple processors to be able to execute the same machine code they must have the same architecture, some popular architectures include ARM, PowerPC, RISC-V and x86.
 x86 is an example of a Complex Instruction Set Computer (CISC), this means that there are lots of instructions
-so a lot cam be done in a single instruction so is very fast, this however uses a lot of power so is the main architecture in desktop computers.
+so a lot can be done in a single instruction so is very fast, this however uses a lot of power so is the main architecture in desktop computers.
 This is in opposition to ARM which is a Reduced Instruction Set Computer (RISC) which has less instructions so has to execute many to
 perform the same task so is slower than x86, this however uses less power so is the main architecture in mobile devices and embedded systems.
 
