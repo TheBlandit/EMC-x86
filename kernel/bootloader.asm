@@ -1,4 +1,4 @@
-BITS 16                     ; Instruct NASM that this is 16 bit (real mode) code
+bits 16                     ; Instruct NASM that this is 16 bit (real mode) code
 org 0x7c00                  ; Set the origin to 0x7c00 which is where BIOS loads the bootloader
 
 _start:
@@ -109,7 +109,10 @@ enable_protection:
     mov eax, cr0 ; load cr0 into eax
     or al, 1 ; set PE
     mov cr0, eax ; load eax back into cr0 (with PE enabled)
-    ;jmp 08h:1000h ; _start in C (far jump since cs changes)
+    jmp 08h:callc ; far jump to callc
+
+bits 32
+callc:
     mov ax, 10h
     mov ds, ax
     mov ss, ax
@@ -118,7 +121,7 @@ enable_protection:
     mov gs, ax
     mov esp, 0x10000
 
-    jmp 08h:1000h ; _start in C (far jump since cs changes)
+    jmp 1000h ; _start in C
 
 message db 'Hello world', 0 ; The 'Hello World' message followed by a null terminator (0)
 error_message db 'Failed to read kernel from disk', 0

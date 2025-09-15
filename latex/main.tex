@@ -170,7 +170,7 @@ The registers on the same line overlap in memory (eg the 32-bit register is loca
   \end{tabular}
 \end{table}
 
-Registers 8-15, and the SIL, DIL, SPL and BPL are only available in 64-bit programs since they were added in the 64-bit extentions
+Registers 8-15, and the SIL, DIL, SPL and BPL are only available in 64-bit programs since they were added in the 64-bit extensions
 
 % \begin{table}[H] % TODO: hidden register
 %   \centering
@@ -186,8 +186,7 @@ Registers 8-15, and the SIL, DIL, SPL and BPL are only available in 64-bit progr
   \centering
   \caption{Segment registers (All are 16-bit)}
   \begin{tabular}{|r|l|}
-    \hline \textbf{Register} & \textbf{Description} \\
-    \hline
+    \hline \textbf{Register} & \textbf{Description} \\ \hline
     CS & Code segment \\
     DS & Data segment \\
     SS & Stack segment \\
@@ -196,6 +195,71 @@ Registers 8-15, and the SIL, DIL, SPL and BPL are only available in 64-bit progr
     GS & General purpose segment register (Intel 80386) \\ \hline
   \end{tabular}
 \end{table}
+
+% Reserved bits in CR0 and CR4 must be 0, setting a bit in CR0[0:31] is ignored, CR0{32:63] causes a \#GP. setting one in CR4 causes a \#GP.
+% In protected, CR can only be written to in CPL 0, all 64 bits of CR2 are writable by software 
+% CR3 63:MAXPHYADDR that are reserved must be 0 (\#GP if set)
+% On a 64-bit processor writing to a CR outside of 64-bit mode zeros the upper 32 bits. when transitioning out of IA-32e mode the registers retain their upper 32 bits
+% Cr8 is only available in 64-bit mode
+% CR4[32:63] only affects long mode and can only be changed in long mode
+
+% https://wiki.osdev.org/CPU_Registers_x86
+\begin{longtable}{|c|c|p{0.65\linewidth}|}
+  \hline \textbf{Bits} & \textbf{Label} & \textbf{Description} \\
+  \hline \multicolumn{3}{|c|}{\textbf{CR0}} \\ \hline
+  \multicolumn{3}{|l|}{Contains system control flags that control operating mode and states of the processor} \\ \hline
+  0 & PE & Protected Mode Enable \\
+  1 & MP & Monitor co-processor \\
+  2 & EM & x87 FPU Emulation \\
+  3 & TS & Task switched \\
+  4 & ET & Extension type \\
+  5 & NE & Numeric error \\
+  16 & WP & Write protect \\
+  18 & AM & Alignment mask \\
+  29 & NW & Non-write through \\
+  30 & CD & Cache disable \\
+  31 & PG & Paging \\
+  \hline \multicolumn{3}{|c|}{\textbf{CR1}} \\ \hline
+  \multicolumn{3}{|l|}{Reserved} \\
+  % & & Reserved, cpu will throw \#UD when trying to access it \\
+  \hline \multicolumn{3}{|c|}{\textbf{CR2}} \\ \hline
+  \multicolumn{3}{|l|}{Contains linear address that caused a page fault} \\ \hline
+  0:31(63) & PFLA & Page Fault Linear Address \\
+  \hline \multicolumn{3}{|c|}{\textbf{CR3}} \\ \hline
+  \multicolumn{3}{|l|}{Contains the physical address of the base of the paging-structure hierarchy and two flags} \\ \hline
+  % Bits 0:11 are assumed to be 0. 3,4 are only used when accessing a PDE in 32-bit paging
+  3 & PWT & Page-level Write-Through (not used in PAE or if bit CR4.PCIDE = 1 in long mode) \\
+  4 & PCD & Page-level Cache Disable (not used in PAE or if bit CR4.PCIDE = 1 in long mode) \\
+  12:31(63) & PDBR & Page Directory Base Register (PAE = Base of PDPT, long = base of PML4T/PML5T) \\
+  \hline \multicolumn{3}{|c|}{\textbf{CR4}} \\ \hline
+  \multicolumn{3}{|l|}{Contains flags that enable several architectural extentions} \\ \hline
+  0 & VME & Virtual 8086 Mode Extensions \\
+  1 & PVI & Protected-mode Virtual Interrupts \\
+  2 & TSD & Time Stamp Disable \\
+  3 & DE & Debugging Extensions \\
+  4 & PSE & Page Size Estension \\
+  5 & PAE & Physical Address Extension \\
+  6 & MCE & Machine Check Extension \\
+  7 & PGE & Page Global Enabled \\
+  8 & PCE & Performance-Monitoring Counter enable \\
+  9 & OSFXSR & Operating System Support for FXSAVE and FXRSTOR Instructions \\
+  10 & OSXMMEXCPT & Operating System Support for Unmasked SIMD Floating-Point Exceptions \\
+  11 & UMIP & User-Mode Instruction Prevention (if set, \#GP on SGDT, SIDT, SLDT, SMSW, and STR instructions when CPL $>$ 0) \\
+  12 & LA57 & 57-bit linear addresses (if set, the processor uses 5-level paging otherwise it uses 4-level paging) \\
+  13 & VMXE & Virtual Machine Extensions Enable \\
+  14 & SMXE & Safer Mode Extensions enable \\
+  16 & FSGSBASE & Enables the instructions: RDFSBASE, RDGSBASE, WRFSBASE and WRGSBASE \\
+  17 & PCIDE & PCID Enable \\
+  18 & OSXSAVE & XSAVE and Processor Extended States Enable \\
+  20 & SMEP & Supervisor Mode Execution Protection Enable \\
+  21 & SMAP & Supervisor Mode Access Prevention Enable \\
+  22 & PKE & Protection Key Enable \\
+  23 & CET & Control-flow Enforcement Technology \\
+  24 & PKS & Enable Protection Keys for Supervisor-Mode Pages \\
+  \hline \multicolumn{3}{|c|}{\textbf{CR8}} \\ \hline
+  \multicolumn{3}{|l|}{Provides access to the Task Priority Register (TPR)} \\ \hline
+  0:3 & TPL & Task Priority Level \\ \hline
+\end{longtable}
 
 \subsection{Flags}
 
@@ -443,11 +507,13 @@ They contain multiple parts which can be categorised into: (linear) base address
 
 % TODO: system segment = TSS and LDT
 
+The segment types are described below:
+
 \begin{table}[H]
+  \centering
   \begin{tabular}{|c|c|c|c|c|p{0.303\linewidth}|p{0.303\linewidth}|}
     \cline{2-5} \multicolumn{1}{c|}{} & \multicolumn{4}{c|}{\textbf{Type}} & \multicolumn{2}{c}{} \\ \hline
-    \textbf{S} & \textbf{3} & \textbf{2} & \textbf{1} & \textbf{0} & \textbf{Type} & \textbf{Description} \\ \hline
-    % \multicolumn{5}{c|}{System Segments} & 32-bit mode & 64-bit mode \\
+    \textbf{S} & \textbf{3} & \textbf{2} & \textbf{1} & \textbf{0} & \multicolumn{1}{c|}{\textbf{32-bit mode}} & \multicolumn{1}{c|}{\textbf{IA-32e mode}} \\ \hline
     0 & 0 & 0 & 0 & 0 & Reserved & Reserved \\
     0 & 0 & 0 & 0 & 1 & 16-bit TSS (Available) & Reserved \\
     0 & 0 & 0 & 1 & 0 & LDT & LDT \\
@@ -456,7 +522,6 @@ They contain multiple parts which can be categorised into: (linear) base address
     0 & 0 & 1 & 0 & 1 & Task Gate & Reserved \\
     0 & 0 & 1 & 1 & 0 & 16-bit Interrupt Gate & Reserved \\
     0 & 0 & 1 & 1 & 1 & 16-bit Trap Gate & Reserved \\
-
     0 & 1 & 0 & 0 & 0 & Reserved & Reserved \\
     0 & 1 & 0 & 0 & 1 & 32-bit TSS (Available) & 64-bit TSS (Available) \\
     0 & 1 & 0 & 1 & 0 & Reserved & Reserved \\
@@ -465,7 +530,7 @@ They contain multiple parts which can be categorised into: (linear) base address
     0 & 1 & 1 & 0 & 1 & Reserved & Reserved \\
     0 & 1 & 1 & 1 & 0 & 32-bit Interrupt Gate & 64-bit Interrupt Gate \\
     0 & 1 & 1 & 1 & 1 & 32-bit Trap Gate & 64-bit Trap Gate \\ \hline
-
+    \textbf{-} & \textbf{-} & \textbf{E} & \textbf{W} & \textbf{A} & \multicolumn{1}{c|}{\textbf{Type}} & \multicolumn{1}{c|}{\textbf{Description}} \\ \hline
     1 & 0 & 0 & 0 & 0 & Data & Read-Only \\
     1 & 0 & 0 & 0 & 1 & Data & Read-Only, accessed \\
     1 & 0 & 0 & 1 & 0 & Data & Read-Write \\
@@ -474,7 +539,7 @@ They contain multiple parts which can be categorised into: (linear) base address
     1 & 0 & 1 & 0 & 1 & Data & Read-Only, expand-down, accessed \\
     1 & 0 & 1 & 1 & 0 & Data & Read-Write, expand-down \\
     1 & 0 & 1 & 1 & 1 & Data & Read-Write, expand-down, accessed \\ \hline
-
+    \textbf{-} & \textbf{-} & \textbf{C} & \textbf{R} & \textbf{A} & \multicolumn{1}{c|}{\textbf{Type}} & \multicolumn{1}{c|}{\textbf{Description}} \\ \hline
     1 & 1 & 0 & 0 & 0 & Code & Execute-Only \\
     1 & 1 & 0 & 0 & 1 & Code & Execute-Only, accessed \\
     1 & 1 & 0 & 1 & 0 & Code & Execute-Read \\
@@ -485,6 +550,26 @@ They contain multiple parts which can be categorised into: (linear) base address
     1 & 1 & 1 & 1 & 1 & Code & Execute-Read, conforming, accessed \\ \hline
   \end{tabular}
 \end{table}
+
+Many of the bits are described below:
+
+\begin{enumerate}
+  \item E = Expansion-direction
+  \item W = Write-enabled: \\
+    Allows the segment to be written; the stack segment must be writeable, loading the SS register with a read only segment causes a \#GP exception.
+  \item A = Accessed: \\
+    The processor sets it to 1 if it accessed the segment.
+    The kernel can clear its value and it is often useful for debugging.
+    If the segment descriptor is placed in ROM, the processor may enter an infinite loop attempting to set the Accessed bit.
+    To prevent this, the segment descriptors in ROM should have their Accessed bit set.
+  \item C = Conforming: \\
+    A transfer of execution into a more privileged conforming segment will continue at the current privilege level.
+    Transferring execution into a more privileged non-conforming segment or less privileged segment will result in a \#GP exception if a call or task gate is not used. % TODO: Check that a high to low privilege will prevent a GP if a gate is used
+    All data segments are non-conforming so cannot be accessed by less privileged processes, however unlike code segments higher privileged processes can access lower privileged data segments without the use of a gate.
+  \item R = Read-enabled: \\
+    Allows the code segment to be read and is useful if constants or static data are placed within the code segment.
+    The code segments can be read either by using a CS override or by loading the segment into a data-segment register (DS, ES, GS, FS).
+\end{enumerate}
 
 \subsubsection{GDT - Global Descriptor Table}
 
