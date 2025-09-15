@@ -42,6 +42,8 @@
 \renewcommand{\arraystretch}{1.2}
 \setlength{\parindent}{0em}
 
+\newcommand{\myref}[1]{(See \nameref{#1} \ref{#1})}
+
 % TODO: change document to 'x86 Architecture'
 % TODO: Add PIE (position independent executable)
 % TODO: BIOS, UEFI, Multiboot spec
@@ -171,6 +173,8 @@ The registers on the same line overlap in memory (eg the 32-bit register is loca
 \end{table}
 
 Registers 8-15, and the SIL, DIL, SPL and BPL are only available in 64-bit programs since they were added in the 64-bit extensions
+There are also segment registers, these are used in memory segmentation \myref{segmentation}.
+The segment registers (always 16-bit) are:
 
 % \begin{table}[H] % TODO: hidden register
 %   \centering
@@ -184,26 +188,27 @@ Registers 8-15, and the SIL, DIL, SPL and BPL are only available in 64-bit progr
 
 \begin{table}[H]
   \centering
-  \caption{Segment registers (All are 16-bit)}
   \begin{tabular}{|r|l|}
     \hline \textbf{Register} & \textbf{Description} \\ \hline
     CS & Code segment \\
     DS & Data segment \\
     SS & Stack segment \\
     ES & Extra segment (for string operations) \\
-    FS & General purpose segment register (Intel 80386) \\
-    GS & General purpose segment register (Intel 80386) \\ \hline
+    FS & General purpose segment register (Since Intel 80386) \\
+    GS & General purpose segment register (Since Intel 80386) \\ \hline
   \end{tabular}
 \end{table}
 
-% Reserved bits in CR0 and CR4 must be 0, setting a bit in CR0[0:31] is ignored, CR0{32:63] causes a \#GP. setting one in CR4 causes a \#GP.
-% In protected, CR can only be written to in CPL 0, all 64 bits of CR2 are writable by software 
-% CR3 63:MAXPHYADDR that are reserved must be 0 (\#GP if set)
-% On a 64-bit processor writing to a CR outside of 64-bit mode zeros the upper 32 bits. when transitioning out of IA-32e mode the registers retain their upper 32 bits
-% Cr8 is only available in 64-bit mode
-% CR4[32:63] only affects long mode and can only be changed in long mode
-
+% TODO: EFLAGS
 % https://wiki.osdev.org/CPU_Registers_x86
+
+There are also several control registers, they contain flags that control the operation of the CPU.
+Control registers not listed in the table below such as CR1 and bits not listed are reserved and should be 0 (writing to a reserved register results in a \#UD exception, setting a reserved bit in CR0[0:31] is ignored, setting a reserved bit in CR0[32:63], CR4 or CR3[MAXPHYADDR:63] causes a \#GP).
+When protection is enabled, control registers can only be written to at CPL 0, however CR2 is writable by software.
+On a 64-bit processor, writing to a control register outside of 64-bit mode sets the upper 32 bits to 0, however when transitioning out of IA-32e mode, the registers retain their upper 32 bits.
+CR8 is only available in 64-bit mode, and CR4[32:63] only affects long mode and can only be changed in long mode.
+Below is a list of the control registers and their flags:
+
 \begin{longtable}{|c|c|p{0.65\linewidth}|}
   \hline \textbf{Bits} & \textbf{Label} & \textbf{Description} \\
   \hline \multicolumn{3}{|c|}{\textbf{CR0}} \\ \hline
@@ -219,8 +224,8 @@ Registers 8-15, and the SIL, DIL, SPL and BPL are only available in 64-bit progr
   29 & NW & Non-write through \\
   30 & CD & Cache disable \\
   31 & PG & Paging \\
-  \hline \multicolumn{3}{|c|}{\textbf{CR1}} \\ \hline
-  \multicolumn{3}{|l|}{Reserved} \\
+  % \hline \multicolumn{3}{|c|}{\textbf{CR1}} \\ \hline
+  % \multicolumn{3}{|l|}{Reserved} \\
   % & & Reserved, cpu will throw \#UD when trying to access it \\
   \hline \multicolumn{3}{|c|}{\textbf{CR2}} \\ \hline
   \multicolumn{3}{|l|}{Contains linear address that caused a page fault} \\ \hline
@@ -415,7 +420,7 @@ A cache miss occurs when valid data does not exist in the processor's cache. The
 % if evicted is dirty, it is written back to main memory
 % lines are caches on write miss but writes are only written to main memory on eviction (defer writes)
 % https://stackoverflow.com/questions/20155304/does-linux-use-x86-cpus-pcid-feature-for-tlb-if-not-why
-\subsection{Segmentation}
+\subsection{Segmentation}\label{segmentation}
 % TODO: types of segment, TTS, and segment registers
 
 Segmentation is a method of memory management that separates parts of a processes address space into different segments (such as code and data), it uses the 6 segment registers to keep track of the segments.
