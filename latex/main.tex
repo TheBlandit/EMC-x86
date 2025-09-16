@@ -265,6 +265,9 @@ Below is a list of the control registers and their flags:
   0:3 & TPL & Task Priority Level \\ \hline
 \end{longtable}
 
+% TODO:
+% There are also Model Specific Registers (MSR)
+
 \subsection{Flags}
 
 \subsection{Stack}
@@ -599,8 +602,6 @@ When a process accesses memory, the processor hardware converts the linear addre
 % page caching (UC, WB, WT)
 CR3 contains the physical address of the first paging structure unless HLAT (Hypervisor-managed Linear-Address-Translation) paging is used where it is stored in HLATP.
 
-%##
-
 \subsubsection{Enabling Paging}
 Before paging is enabled, CR3 should contain the physical address of the first paging structure, and protection (CR0.PE) is enabled.
 Furthermore, once paging is enabled a different paging method can be used but paging should be disabled first before changing flags since exceptions may occur by changing the flags whilst paging is enabled.
@@ -628,6 +629,7 @@ Furthermore, in compatibility mode (sub mode of IA-32e), bits 63-32 of the linea
 
 5.2 - Paging structure
 
+% TODO: write this up better
 Each structure is 4096 bytes in size and comprises a number of individual entries.
 In 32-bit paging each entry is 32 bits (4 bytes) so there are 1024 entries in each structure.
 In 64-bit paging each entry is 64 bits (8 bytes) there are thus 512 entries in each structure.
@@ -664,7 +666,34 @@ paging structure:
     \multirow[l]{2}{\linewidth}{Page directory} & \multirow[l]{2}{\linewidth}{PDE} & 32-bit & CR3 & 31:22 & 4-MiB page if PS=1 \\ \cline{3-6}
      & & PAE, 4-level, 5-level & PDPTE & 29:21 & 2-MiB page if PS=1 \\ \hline
     \multirow[l]{2}{\linewidth}{Page table} & \multirow[l]{2}{\linewidth}{PTE} & 32-bit & \multirow[l]{2}{\linewidth}{PDE} & 21:12 & \multirow[l]{2}{\linewidth}{4-KiB page} \\ \cline{3-3} \cline{5-5}
-     & & PAE, 4-level, 5-level & & 29:21 & \\ \hline
+     & & PAE, 4-level, 5-level & & 20:12 & \\ \hline
+  \end{tabular}
+\end{table}
+
+% Bits 11:0 of the paging structure control flags which modify the use of the corresponding page/paging structure.
+% These flags are:
+Layout of a paging structure (M = MAXPHYADDR):
+
+\begin{table}[H]
+  \centering
+  \begin{tabular}{|c|c|l|}
+    \hline \textbf{Bits} & \textbf{Label} & \textbf{Description} \\ \hline
+    0 & P & Present; if 1 it maps to the next paging structure or page else it raises a paging exception \\
+    1 & R/W & Read/Write; if 0, writes are not allowed \\
+    2 & U/S & User/Supervisor; if 0, user-mode accesses are not allowed \\
+    3 & PWT & Page-level Write-Through; Indirectly determines the memory type used to access the page \\
+    4 & PCD & Page-level Cache Disable; Indirectly determines the memory type used to access the page \\
+    5 & A & Accessed; indicates whether the software has accessed the page \\
+    6 & D & Dirty; Indicates whether the software has written to the page \\
+    7 & PAT & Indirectly determines the memory type used to access the page \\
+    8 & G & Global; if CR4.PGE = 1, determines whether the translation is global otherwise ignored \\
+    10:9 & - & Ignored \\
+    11 & R & If HLAT paging, restart using ordinary paging \\
+    (M-1):12 & - & Physical address of page \\
+    51:M & - & Reserved (must be 0) \\
+    58:51 & - & Ignored \\
+    62:59 & - & Protection key; If CR4.PKE = 1 or CR4.PKS = 1, the page's access rights, else ignored \\
+    63 & XD & If IA32\_EFER.NXE = 1, Execute Disable \\ \hline
   \end{tabular}
 \end{table}
 
