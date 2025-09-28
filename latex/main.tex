@@ -9,7 +9,6 @@
 \usepackage{multirow}
 \usepackage{xcolor}
 \usepackage{float}
-\usepackage{tikz} % For FSM https://www.madebyevan.com/fsm/
 \usepackage[a4paper, left=1.45cm, right=1.45cm, top=2cm, bottom=2cm]{geometry}
 \usepackage{array}
 \usepackage[hidelinks]{hyperref} % For clickable contents page
@@ -696,6 +695,34 @@ Layout of a paging structure (M = MAXPHYADDR):
     63 & XD & If IA32\_EFER.NXE = 1, Execute Disable \\ \hline
   \end{tabular}
 \end{table}
+
+\setlength{\tabcolsep}{0pt}
+
+\begin{table}[H]
+  \centering
+  \begin{tabular}{|c|c|c|c|c|c|c|c|c|c|*{12}{c|}}
+    \hline \textbf{Type} & \textbf{63} & \textbf{62:59} & \textbf{58:52} & \textbf{51:M}
+      & \textbf{M-1:32} & \textbf{31:30} & \textbf{29:21} & \textbf{20:13} & \textbf{12}
+      & \textbf{11} & \textbf{10} & \textbf{9} & \textbf{8} & \textbf{7} & \textbf{6}
+      & \textbf{5} & \textbf{4} & \textbf{3} & \textbf{2} & \textbf{1} & \textbf{0} \\ \hline
+    CR3: PML5 & \multicolumn{4}{c|}{Rsvd.} & \multicolumn{5}{c|}{PML5} & \multicolumn{7}{c|}{Ign.} & PCD & PWT & \multicolumn{3}{c|}{Ign.} \\ \hline
+    PML5E: PML4E & XD & \multicolumn{2}{c|}{Ign.} & Rsvd. & \multicolumn{5}{c|}{PML4} & R & \multicolumn{3}{c|}{Ign.} & Rsvd. & Ign & A & PCD & PWT & U/S & R/W & 1 \\ \hline
+    CR3: PML4 & \multicolumn{4}{c|}{Rsvd.} & \multicolumn{5}{c|}{PML4} & \multicolumn{7}{c|}{Ign.} & PCD & PWT & \multicolumn{3}{c|}{Ign.} \\ \hline
+  \end{tabular}
+\end{table}
+
+% \begin{table}[H]
+%   \centering
+%   \begin{tabular}{|*{9}{>{\centering\arraybackslash}p{0.1\linewidth}|}}
+%     \hline \textbf{Bits} & \textbf{CR3} & \textbf{PML5E: PLM4E} & \textbf{PLM4E: PDPTE} & \textbf{PDPTE: 1GB} & \textbf{PDPTE: PDE} & \textbf{PDE: 2MB} & \textbf{PDE: PTE} & \textbf{PTE: 4KB} \\ \hline
+%     63 & \multirow{4}*{Rsvd.} & XD & XD & XD & XD & XD & XD & XD \\ \cline{1-1} \cline{3-9}
+%     62:59 & & \multirow{2}*{Ign.} & \multirow{2}*{Ign.} & Prot & \multirow{2}*{Ign.} & Prot & \multirow{2}*{Ign.} & Prot \\ \cline{1-1} \cline{5-5} \cline{7-7} \cline{9-9}
+%     58:52 & & & & Ign. & & Ign. & & Ign. \\ \cline{1-1} \cline{3-9}
+%     51:M & & Rsvd. & Rsvd. & Rsvd. & Rsvd. & Rsvd. & Rsvd. & Rsvd. \\ \hline
+%   \end{tabular}
+% \end{table}
+
+\setlength{\tabcolsep}{6pt}
 
 5.3 - 32-bit paging
 
