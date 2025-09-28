@@ -673,56 +673,59 @@ paging structure:
 % These flags are:
 Layout of a paging structure (M = MAXPHYADDR):
 
-\begin{table}[H]
-  \centering
-  \begin{tabular}{|c|c|l|}
-    \hline \textbf{Bits} & \textbf{Label} & \textbf{Description} \\ \hline
-    0 & P & Present; if 1 it maps to the next paging structure or page else it raises a paging exception \\
-    1 & R/W & Read/Write; if 0, writes are not allowed \\
-    2 & U/S & User/Supervisor; if 0, user-mode accesses are not allowed \\
-    3 & PWT & Page-level Write-Through; Indirectly determines the memory type used to access the page \\
-    4 & PCD & Page-level Cache Disable; Indirectly determines the memory type used to access the page \\
-    5 & A & Accessed; indicates whether the software has accessed the page \\
-    6 & D & Dirty; Indicates whether the software has written to the page \\
-    7 & PAT & Indirectly determines the memory type used to access the page \\
-    8 & G & Global; if CR4.PGE = 1, determines whether the translation is global otherwise ignored \\
-    10:9 & - & Ignored \\
-    11 & R & If HLAT paging, restart using ordinary paging \\
-    (M-1):12 & - & Physical address of page \\
-    51:M & - & Reserved (must be 0) \\
-    58:51 & - & Ignored \\
-    62:59 & - & Protection key; If CR4.PKE = 1 or CR4.PKS = 1, the page's access rights, else ignored \\
-    63 & XD & If IA32\_EFER.NXE = 1, Execute Disable \\ \hline
-  \end{tabular}
-\end{table}
-
 \setlength{\tabcolsep}{0pt}
 
 \begin{table}[H]
   \centering
-  \begin{tabular}{|c|c|c|c|c|c|c|c|c|c|*{12}{c|}}
-    \hline \textbf{Type} & \textbf{63} & \textbf{62:59} & \textbf{58:52} & \textbf{51:M}
-      & \textbf{M-1:32} & \textbf{31:30} & \textbf{29:21} & \textbf{20:13} & \textbf{12}
-      & \textbf{11} & \textbf{10} & \textbf{9} & \textbf{8} & \textbf{7} & \textbf{6}
-      & \textbf{5} & \textbf{4} & \textbf{3} & \textbf{2} & \textbf{1} & \textbf{0} \\ \hline
-    CR3: PML5 & \multicolumn{4}{c|}{Rsvd.} & \multicolumn{5}{c|}{PML5} & \multicolumn{7}{c|}{Ign.} & PCD & PWT & \multicolumn{3}{c|}{Ign.} \\ \hline
-    PML5E: PML4E & XD & \multicolumn{2}{c|}{Ign.} & Rsvd. & \multicolumn{5}{c|}{PML4} & R & \multicolumn{3}{c|}{Ign.} & Rsvd. & Ign & A & PCD & PWT & U/S & R/W & 1 \\ \hline
-    CR3: PML4 & \multicolumn{4}{c|}{Rsvd.} & \multicolumn{5}{c|}{PML4} & \multicolumn{7}{c|}{Ign.} & PCD & PWT & \multicolumn{3}{c|}{Ign.} \\ \hline
+  \begin{tabular}{|*{10}{>{\centering\arraybackslash}p{0.099\linewidth}|}}
+    \hline \textbf{Bits} & \textbf{CR3} & \textbf{PML5E: PLM4E} & \textbf{PLM4E: PDPTE} & \textbf{PDPTE: 1GB} & \textbf{PDPTE: PDE} & \textbf{PDE: 2MB} & \textbf{PDE: PTE} & \textbf{PTE: 4KB} & \textbf{Not Present} \\ \hline
+    63 & \multirow{4}*{Rsvd.} & XD & XD & XD & XD & XD & XD & XD & \multirow{15}{*}{Ign.} \\ \cline{1-1} \cline{3-9}
+    62:59 & & \multirow{2}*{Ign.} & \multirow{2}*{Ign.} & Prot & \multirow{2}*{Ign.} & Prot & \multirow{2}*{Ign.} & Prot & \\ \cline{1-1} \cline{5-5} \cline{7-7} \cline{9-9}
+    58:52 & & & & Ign. & & Ign. & & Ign. & \\ \cline{1-1} \cline{3-9}
+    51:M & & Rsvd. & Rsvd. & Rsvd. & Rsvd. & Rsvd. & Rsvd. & Rsvd. & \\ \cline{1-9}
+
+    M-1:30 & \multirow{4}{=}{\centering PML4* \\ / \\ PML5*} & \multirow{4}{=}{\centering PML4*} & \multirow{4}{=}{\centering PDPT*} & Page* & \multirow{4}{=}{\centering PD*} & \multirow{2}{=}{\centering Page*} & \multirow{4}{=}{\centering PT*} & \multirow{4}{=}{\centering Page*} & \\ \cline{1-1} \cline{5-5}
+    29:21 & & & & \multirow{2}{=}{\centering Rsvd.} & & & & & \\ \cline{1-1} \cline{7-7}
+    20:13 & & & & & & Rsvd. & & & \\ \cline {1-1} \cline{5-5} \cline{7-7}
+    12 & & & & PAT & & PAT & & & \\ \cline{1-9}
+
+    11 & \multirow{7}*{Ign.} & R & R & R & R & R & R & R & \\ \cline{1-1} \cline{3-9}
+    10 & & \multirow{3}*{Ign.} & \multirow{3}*{Ign.} & \multirow{2}*{Ign.} & \multirow{3}*{Ign.} & \multirow{2}*{Ign.} & \multirow{3}*{Ign.} & \multirow{2}*{Ign.} & \\ \cline{1-1}
+    9 & & & & & & & & & \\ \cline{1-1} \cline{5-5} \cline{7-7} \cline{9-9}
+    8 & & & & G & & G & & G & \\ \cline{1-1} \cline{3-9}
+    7 & & Rsvd. & Rsvd. & 1 & 0 & 1 & 0 & PAT & \\ \cline{1-1} \cline{3-9}
+    6 & & Ign. & Ign. & D & Ign. & D & Ign. & D & \\ \cline{1-1} \cline{3-9}
+    5 & & A & A & A & A & A & A & A & \\ \cline{1-9}
+    4 & PCD & PCD & PCD & PCD & PCD & PCD & PCD & PCD & \\ \cline{1-9}
+    3 & PWT & PWT & PWT & PWT & PWT & PWT & PWT & PWT & \\ \cline{1-9}
+    2 & \multirow{3}*{Ign.} & U/S & U/S & U/S & U/S & U/S & U/S & U/S & \\ \cline{1-1} \cline{3-9}
+    1 & & R/S & R/S & R/S & R/S & R/S & R/S & R/S & \\ \cline{1-1} \cline{3-10}
+    0 & & 1 & 1 & 1 & 1 & 1 & 1 & 1 & 0 \\ \hline
   \end{tabular}
 \end{table}
 
-% \begin{table}[H]
-%   \centering
-%   \begin{tabular}{|*{9}{>{\centering\arraybackslash}p{0.1\linewidth}|}}
-%     \hline \textbf{Bits} & \textbf{CR3} & \textbf{PML5E: PLM4E} & \textbf{PLM4E: PDPTE} & \textbf{PDPTE: 1GB} & \textbf{PDPTE: PDE} & \textbf{PDE: 2MB} & \textbf{PDE: PTE} & \textbf{PTE: 4KB} \\ \hline
-%     63 & \multirow{4}*{Rsvd.} & XD & XD & XD & XD & XD & XD & XD \\ \cline{1-1} \cline{3-9}
-%     62:59 & & \multirow{2}*{Ign.} & \multirow{2}*{Ign.} & Prot & \multirow{2}*{Ign.} & Prot & \multirow{2}*{Ign.} & Prot \\ \cline{1-1} \cline{5-5} \cline{7-7} \cline{9-9}
-%     58:52 & & & & Ign. & & Ign. & & Ign. \\ \cline{1-1} \cline{3-9}
-%     51:M & & Rsvd. & Rsvd. & Rsvd. & Rsvd. & Rsvd. & Rsvd. & Rsvd. \\ \hline
-%   \end{tabular}
-% \end{table}
-
 \setlength{\tabcolsep}{6pt}
+
+\begin{table}[H]
+  \centering
+  \begin{tabular}{|c|l|l|}
+    \hline \textbf{Label} & \textbf{Name} & \textbf{Description} \\ \hline
+    P (Bit 0) & Present & If 1 it maps to the next structure else it raises a \#PF \\
+    R/W & Read/Write & If 0, writes are not allowed \\
+    U/S & User/Supervisor & If 0, user-mode accesses are not allowed \\
+    PWT & Page-level Write-Through & Indirectly determines the memory type used to access the page \\
+    PCD & Page-level Cache Disable & Indirectly determines the memory type used to access the page \\
+    A & Accessed & Indicates whether the software has accessed the page \\
+    D & Dirty & Indicates whether the software has written to the page \\
+    PAT & ??? & Indirectly determines the memory type used to access the page \\
+    G & Global & If 1 and CR4.PGE = 1, the translation is global \\
+    R & ??? & If HLAT paging, restart using ordinary paging \\
+    Prot & Protection key & If CR4.PKE = 1 or CR4.PKS = 1, the page's access rights, else ignored \\
+    XD & ??? & If IA32\_EFER.NXE = 1, Execute Disable \\
+    Ign. & Ignored & Bits are not read \\
+    Rsvd. & Reserved & Bits must be 0 \\ \hline
+  \end{tabular}
+\end{table}
 
 5.3 - 32-bit paging
 

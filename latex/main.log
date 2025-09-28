@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2026/dev/Arch Linux) (preloaded format=pdflatex 2025.8.25)  26 SEP 2025 13:04
+This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2026/dev/Arch Linux) (preloaded format=pdflatex 2025.9.2)  28 SEP 2025 19:58
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -390,16 +390,16 @@ LaTeX Font Info:    External font `cmex10' loaded for size
 [13] [14] [15]
 
 [16] [17]
-Package hyperref Info: bookmark level for unknown lstlisting defaults to 0 on input line 1010.
+Package hyperref Info: bookmark level for unknown lstlisting defaults to 0 on input line 1013.
  (../run64.sh
 
-[18]) (../run32.sh) (../print/64.asm) (../print/32.asm
+[18]) (../run32.sh) (../print/64.asm
 
-[19]) (../subtraction/64.asm
+[19]) (../print/32.asm) (../subtraction/64.asm
 
-[20])
+[20]
 
-[21] (../cat/cat.asm
+[21]) (../cat/cat.asm
 
 [22]) (../baremetal/main.asm
 
@@ -415,14 +415,14 @@ Package rerunfilecheck Info: File `main.out' has not changed.
  ) 
 Here is how much of TeX's memory you used:
  12171 strings out of 475171
- 182528 string characters out of 5767095
- 1064715 words of memory out of 5000000
+ 182528 string characters out of 5767096
+ 1057947 words of memory out of 5000000
  34520 multiletter control sequences out of 15000+600000
  564060 words of font info for 54 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
- 75i,30n,79p,7885b,1925s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 75i,30n,79p,7885b,1924s stack positions out of 10000i,1000n,20000p,200000b,200000s
  </home/william/.texlive/texmf-var/fonts/pk/ljfour/jknappen/ec/tctt0800.600pk> </home/william/.texlive/texmf-var/fonts/pk/ljfour/jknappen/ec/tcrm1000.600pk></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmr17.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmr5.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt10.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt8.pfb>
-Output written on main.pdf (24 pages, 241176 bytes).
+Output written on main.pdf (24 pages, 242778 bytes).
 PDF statistics:
  942 PDF objects out of 1000 (max. 8388607)
  885 compressed objects within 9 object streams
