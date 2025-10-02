@@ -92,9 +92,9 @@ enable_protection:
     cli ; disable interrupts
 
     ; enable A20 (doesnt appear to be required)
-    ; in al, 0x92
-    ; or al, 2
-    ; out 0x92, al
+    in al, 0x92
+    or al, 2
+    out 0x92, al
 
     ; in al, 0x92
     ; test al, 2

@@ -12,6 +12,7 @@ void _start() {
     if (check_cpuid()) {
         cpuid_str = "Suppports CPUID";
     }
+
     println(cpuid_str);
 
     struct struct_page page;
@@ -35,14 +36,14 @@ void _start() {
     println("Loaded CR3");
 
     __asm__ volatile (
-        // Enable EFER_LM
+        // Enable IA32_EFER.LME
         "mov $0xC0000080, %%ecx\n\t"
         "rdmsr\n\t"
         "or $0x100, %%eax\n\t"
         "wrmsr\n\t"
         :
         :
-        : "eax", "ecx"
+        : "eax", "ecx", "edx"
     );
 
     println("Enabled LM");
@@ -61,7 +62,7 @@ void _start() {
 
     // Clear D/B for segment descriptors and set L
     uint64_t* segments = (uint64_t*)0x0808;
-    const uint64_t SEG_FLAGS = ((uint64_t)0 << 54) | ((uint64_t)1 << 53);
+    const uint64_t SEG_FLAGS = ((uint64_t)1 << 54) | ((uint64_t)1 << 53);
     *segments ^= SEG_FLAGS;
 
     __asm__ volatile (
@@ -72,7 +73,7 @@ void _start() {
         // "mov %%ax, %%gs\n\t"
         // "mov %%ax, %%ss\n\t"
         "mov $0x10000, %%esp\n\t"
-        "ljmp $8, $0x2000\n\t"
+        "ljmp $24, $0x2000\n\t"
         :
         :
         : "ax"
@@ -86,7 +87,7 @@ void _start() {
 }
 
 void println(char* print) {
-    static uint32_t line = 0;
+    static uint32_t line = 1;
     char volatile* vga = (char volatile*)(line * 160 + 0xb8000);
     while (*print != '\0') {
         *vga = *print;
