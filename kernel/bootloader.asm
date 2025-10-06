@@ -1,7 +1,10 @@
-bits 16                     ; Instruct NASM that this is 16 bit (real mode) code
-org 0x7c00                  ; Set the origin to 0x7c00 which is where BIOS loads the bootloader
+BITS 16                     ; Instruct NASM that this is 16 bit (real mode) code
+ORG 0x7c00                  ; Set the origin to 0x7c00 which is where BIOS loads the bootloader
 
 _start:
+    jmp 0:.ClearCS ; Set CS to 0 (some bios load at 7C00:0000 instead of 0000:7C000)
+
+.ClearCS:
     mov ax, 0xb800          ; Set AX to the video memory segment (0xb800)
     mov es, ax              ; Load ES with the video memory segment
 
@@ -20,8 +23,7 @@ clearscreen:
 
     lea si, [message]       ; Load the effective address of 'message' into SI
     xor di, di              ; Start at the beginning of the video memory (offset 0)
-
-init_line:
+.loop:
     mov byte al, [si]
 
     cmp al, 0
@@ -31,15 +33,14 @@ init_line:
     inc si
     add di, 2
 
-    jmp init_line
+    jmp .loop
 
 error:
     mov ax, 0xb800          ; Set AX to the video memory segment (0xb800)
     mov es, ax              ; Load ES with the video memory segment
     xor di, di
     lea si, [error_message]
-
-error_loop:
+.loop:
     mov byte al, [si]
 
     cmp al, 0
@@ -49,11 +50,13 @@ error_loop:
     inc si
     add di, 2
 
-    jmp error_loop
+    jmp .loop
 
 halt:
     cli
+.loop:
     hlt
+    jmp .loop
 
 read_kernel:
     xor ax, ax      ; Clear AX
@@ -109,10 +112,10 @@ enable_protection:
     mov eax, cr0 ; load cr0 into eax
     or al, 1 ; set PE
     mov cr0, eax ; load eax back into cr0 (with PE enabled)
-    jmp 08h:callc ; far jump to callc
+    jmp 08h:jump_32 ; far jump to callc
 
-bits 32
-callc:
+BITS 32
+jump_32:
     mov ax, 10h
     mov ds, ax
     mov ss, ax
@@ -121,13 +124,35 @@ callc:
     mov gs, ax
     mov esp, 0x10000
 
-    jmp 1000h ; _start in C
+    call 1000h ; _start in C
+
+    mov eax, 0xb8100
+    mov byte [eax], 65
+
+    jmp 8h:jump_64
+    jmp halt
+
+BITS 64
+jump_64:
+    mov ax, 10h
+    mov ds, ax
+    mov ss, ax
+    mov es, ax
+    mov fs, ax
+    mov gs, ax
+    mov rsp, 0x10000
+
+    ; call 2000h ; _start in C
+    jmp halt
 
 message db 'Hello world', 0 ; The 'Hello World' message followed by a null terminator (0)
 error_message db 'Failed to read kernel from disk', 0
 gdt_location equ 0x0800 ; gdt location
-;               limit-1  base     base  junk
-gdt_contents db 0x1F, 0, 0, 0x08, 0, 0, 0, 0,     0xFF, 0xFF, 0, 0, 0, 0x9A, 0xCF, 00,     0xFF, 0xFF, 0, 0, 0, 0x92, 0xCF, 0,    0, 0, 0, 0, 0, 0, 0, 0
+gdt_contents:
+    dq 0x000000000800001F
+    dq 0x00CF9A000000FFFF
+    dq 0x00CF92000000FFFF
+    dq 0x0000000000000000
 gdt_size equ $ - gdt_contents ; gdt location
 sectors_read equ 0x10
 ; Boot sector padding and signature

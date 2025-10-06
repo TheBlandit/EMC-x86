@@ -15,7 +15,8 @@ while read -r line; do
     ofile="${build}/$line"
     ofile="${ofile%.*}.o"
     o32+=("$ofile")
-    gcc -m32 -ffreestanding -nostdlib -nostartfiles -fno-ident -fno-asynchronous-unwind-tables -c "$cfile" -o "$ofile" || exit 1
+    gcc -fno-stack-protector -m32 -ffreestanding -nostdlib -nostartfiles -fno-ident -fno-asynchronous-unwind-tables -c "$cfile" -o "$ofile" || exit 1
+	# ^ Disable stack protector so we can return from _start
 done < "${location}/link32" || exit 1
 
 output="${build}/kernel32.bin"

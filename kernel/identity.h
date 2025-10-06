@@ -2,9 +2,6 @@
 
 #include <stdint.h>
 
-struct struct_page {
-    /// Linear = Physical
-    uint64_t physical_base;
-};
 
-void paging_create(struct struct_page* page);
+extern const uintptr_t CR3;
+void paging_create();

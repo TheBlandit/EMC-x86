@@ -15,10 +15,9 @@ void _start() {
 
     println(cpuid_str);
 
-    struct struct_page page;
-    paging_create(&page);
+    paging_create();
 
-    uint32_t cr3 = page.physical_base;
+    uint32_t cr3 = CR3;
 
     __asm__ volatile (
         // Enable PAE
@@ -65,25 +64,7 @@ void _start() {
     const uint64_t SEG_FLAGS = ((uint64_t)1 << 54) | ((uint64_t)1 << 53);
     *segments ^= SEG_FLAGS;
 
-    __asm__ volatile (
-        // "mov $0x10, %%ax\n\t"
-        // "mov %%ax, %%ds\n\t"
-        // "mov %%ax, %%es\n\t"
-        // "mov %%ax, %%fs\n\t"
-        // "mov %%ax, %%gs\n\t"
-        // "mov %%ax, %%ss\n\t"
-        "mov $0x10000, %%esp\n\t"
-        "ljmp $24, $0x2000\n\t"
-        :
-        :
-        : "ax"
-    );
-
     println("Idk");
-
-    while (1) {
-        __asm__ volatile("hlt");
-    }
 }
 
 void println(char* print) {
