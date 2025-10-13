@@ -58,6 +58,7 @@
 \section{Introduction}
 
 \subsection{What is the x86 architecture?}
+
 Processors run by executing binary instructions called machine code, this machine code can be made into
 a human readable format called assembly which can be turned back into machine code using a program called an assembler.
 Each processor has an architecture, this architecture describes how the processor executes the machine code (so different architectures execute code differently,
@@ -69,6 +70,7 @@ This is in opposition to ARM which is a Reduced Instruction Set Computer (RISC) 
 perform the same task so is slower than x86, this however uses less power so is the main architecture in mobile devices and embedded systems.
 
 \subsection{Basics of x86 assembly}
+
 x86 assembly code contains one instruction per line, the line starts with the name of the instruction followed by its parameters which can either be registers, a memory address or an immediate value (a constant).
 Lines and constants can be given labels and can be referred to in instructions.
 The assembler only assembles one file at a time so if a label (symbol) is located in another file, the assembler will fail to assemble the program; this is fixed in NASM by marking the symbol in the file its defined in as global (so its accessible to the linker) and as extern in the file its used in.
@@ -89,14 +91,14 @@ x86 assembly has two different syntaxes: Intel and AT\&T.
 
 \section{x86 architecture}
 % TODO: BIOS + UEFI
-% TODO: GDT
 
 \subsection{Branch prediction}
-Spectre/meltdown
+% TODO: Spectre/meltdown, pipelining
 
 \subsection{Operating modes}
 
-x86 processors have several different operating modes that they can run in, these operating modes can change the addressing mode, available instruction set and registers. x86 processors start up in real mode from address 0xFFFF0. % TODO: , however the BIOS will start running the OS (WHERE???), and UEFI????
+x86 processors have several different operating modes that they can run in, these operating modes can change the addressing mode, available instruction set and registers.
+x86 processors start up in real mode from address FFFF:0000, however the BIOS reads the boot sector and jumps to 0000:7C00 (sometimes 7C00:0000). % TODO: Loading from UEFI
 
 \begin{table}[H]
   \centering
@@ -847,7 +849,7 @@ Each instruction has different limitations to what type an operand can be, these
     \hline \textbf{Symbol} & \textbf{Name} & \textbf{Description} \\ \hline
     r & General purpose register & A register such as eax \\
     m & Memory address & A memory address such as \texttt{[eax + 4*ebx + 4]} \\
-    i & Immediate & A constant value such as 80h or a pointer to a label or data section \\
+    i & Immediate & A constant value such as 80h or a pointer to a label \\
     s & Segment Register & A segment register such as es \\ \hline
   \end{tabular}
 \end{table}
@@ -1141,10 +1143,8 @@ The parameters for the syscall are placed in specific registers.
   \end{tabular} \\ \hline
 }
 
-  % TODO: Read, open, close
-
-% WARNING: https://www.man7.org/linux/man-pages/man2/syscalls.2.html
-% WARNING: https://github.com/torvalds/linux/tree/master/arch/x86/entry/syscalls
+% https://www.man7.org/linux/man-pages/man2/syscalls.2.html
+% https://github.com/torvalds/linux/tree/master/arch/x86/entry/syscalls
 \setlength{\tabcolsep}{0pt}
 \begin{longtable}{|p{0.975\linewidth}|}
   \hline
