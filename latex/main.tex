@@ -498,8 +498,8 @@ Segment selectors contain 3 parts:
     Specifies the privilege level of the selector. %, 0 being the most privileged (supervisor) and 3 being the least (user).
 \end{enumerate}
 
-% If the Index is 0, its selects a null segment, if the segment is used a GP is raised, furthermore if null is loaded into CS or SS a GP is raised TODO: check this
-% If SS is loaded with non-writable data, a #GP exception is generated
+If the index is 0, it implicitly selects a null segment.
+Additionally both the CS and SS registers have to be loaded with a present descriptor else a \#GP exception is generated; furthermore if the SS is loaded with a non-writeable segment, a \#GP is generated.
 
 \subsubsection{Segment descriptors}
 
@@ -519,13 +519,11 @@ They contain multiple parts which can be categorised into: (linear) base address
     47:47 & 1 & Present (P) & 0 = segment not present, 1 = segment present \\
     46:45 & 2 & DPL & Descriptor privilege level \\
     44:44 & 1 & S & Descriptor type, 0 = system, 1 = code/data \\
-    43:40 & 4 & Type & Segment type \\ % TODO: more on the type field
+    43:40 & 4 & Type & Segment type \\
     39:16 & 24 & Base 23:00 & 3 byte of the base address \\
     00:16 & 16 & Limit 15:00 & 2 bytes of the base address \\ \hline
   \end{tabular}
 \end{table}
-
-% TODO: system segment = TSS and LDT
 
 The segment types are described below:
 
@@ -574,7 +572,13 @@ The segment types are described below:
 Many of the bits are described below:
 
 \begin{enumerate}
-  \item E = Expansion-direction % TODO:
+  \item E = Expansion-direction: \\
+    If 0, the segment is expand-up;
+    this means that the range of valid offsets is [0, limit].
+    Therefore the range of linear addresses of the segment is [base, base + limit], increasing the limit increases the maximum address (useful for data segments).
+    If 1, the segment is expand-down;
+    this means that the range of valid offsets is (limit, 0xFFFFF] if B = 0 or (limit, 0xFFFFFFFF] if B = 1.
+    Therefore the range of linear addresses of the segment is (base + limit, base + (0xFFFFF or 0xFFFFFFFF)], decreases the limit decreases the minimum address (useful for stack segments).
   \item W = Write-enabled: \\
     Allows the segment to be written; the stack segment must be writeable, loading the SS register with a read only segment causes a \#GP exception.
   \item A = Accessed: \\
@@ -610,8 +614,7 @@ each layer consists of the entries for either the physical address of the next l
 When a process accesses memory, the processor hardware converts the linear address into its corresponding physical address using the paging structure (by traversing the layers) and then uses it to access memory, this is called a hardware-assisted page walk.
 
 \subsubsection{Stuff}
-% TODO: swap, page faults, CR3 + layout of page directory, TLB + cache misses, page walk
-% TLB misses: Compulsory, capacity and conflict
+% TODO: swap, page faults, TLB + its cache misses, page walk, tlb shootdown
 % page caching (UC, WB, WT)
 CR3 contains the physical address of the first paging structure unless HLAT (Hypervisor-managed Linear-Address-Translation) paging is used where it is stored in HLATP.
 
