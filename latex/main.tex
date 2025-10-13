@@ -574,7 +574,7 @@ The segment types are described below:
 Many of the bits are described below:
 
 \begin{enumerate}
-  \item E = Expansion-direction
+  \item E = Expansion-direction % TODO:
   \item W = Write-enabled: \\
     Allows the segment to be written; the stack segment must be writeable, loading the SS register with a read only segment causes a \#GP exception.
   \item A = Accessed: \\
@@ -1027,7 +1027,9 @@ db, equ, \$ etc
 \section{Interrupts}
 
 % https://wiki.osdev.org/Interrupts
-Interrupts are signals from devices to the CPU which makes it immediately pause execution and run code to handle the interrupt. When an interrupt occurs, the CPU finds its entry in an OS provided lookup table called the Interrupt Descriptor Table (IDT) and can have up to 256 entries; once the CPU locates the entry, it jumps to the code to handle the interrupt which is called the Interrupt Service Routine (ISR) or interrupt handler.
+Interrupts are signals from devices to the CPU which makes it immediately pause execution and run code to handle the interrupt.
+When an interrupt occurs, the CPU finds its entry in an OS provided lookup table called the Interrupt Descriptor Table (IDT) and can have up to 256 entries;
+once the CPU locates the entry, it jumps to the code to handle the interrupt which is called the Interrupt Service Routine (ISR) or interrupt handler.
 
 There are three types of interrupts:
 \begin{enumerate}
@@ -1037,6 +1039,28 @@ There are three types of interrupts:
 \end{enumerate}
 
 \subsection{IDT}
+
+\subsubsection{Interrupt Descriptor}
+
+64-bit Interrupt/trap gate:
+\begin{table}[H]
+  \centering
+  \begin{tabular}{l|l|l|l}
+    \textbf{Bits} & \textbf{Size} & \textbf{Label} & \textbf{Description} \\
+    96:127 & 32 & Rsvd. & Reserved (must be 0) \\
+    64:95 & 32 & Offset 32:63 & Bits 32:63 of the address of the ISR \\
+    48:63 & 16 & Offset 16:31 & Bits 16:31 of the address of the ISR \\
+    47 & 1 & P & Segment Present Flag \\
+    45:46 & 2 & DPL & Descriptor Privilege Level \\
+    44 & 1 & 0 & Must be 0 \\
+    40:43 & 4 & Type & Type of the Descriptor \\
+    35:39 & 5 & 0 & Must be 0 \\
+    32:34 & 3 & IST & Interrupt Segment Table \\
+    16:31 & 16 & Segment Selector & - \\
+    0:15 & 16 & Offset 0:15 & Bits 0:15 of the address of the ISR \\
+
+  \end{tabular}
+\end{table}
 
 \subsection{ISR}
 
