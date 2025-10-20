@@ -40,7 +40,7 @@ while read -r line; do
     ofile="${build}/$line"
     ofile="${ofile%.*}.o"
     o64+=("$ofile")
-    gcc -m64 -ffreestanding -nostdlib -nostartfiles -fno-ident -fno-asynchronous-unwind-tables -c "$cfile" -o "$ofile" || exit 1
+    gcc -m64 -mgeneral-regs-only -ffreestanding -nostdlib -nostartfiles -fno-ident -fno-asynchronous-unwind-tables -c "$cfile" -o "$ofile" || exit 1
 done < "${link}/link64" || exit 1
 
 output="${build}/kernel64.bin"
