@@ -47,6 +47,51 @@ static void default_handler(struct int_frame* frame) {
 }
 
 __attribute__((interrupt))
+static void keyboard_handler(struct int_frame* frame) {
+    char* string = "Keyboard Interrupt";
+    uint64_t* start = (uint64_t*)VGA_TEXT_BUFFER;
+    const uintptr_t REP = ((VGA_HEIGHT - 1) * VGA_WIDTH * 2) / sizeof(uintptr_t);
+    for (uint64_t i = 0; i < REP; i++) {
+        start[i] = start[i + 20]; // 20 = 160/8
+    }
+
+    start += REP;
+    char* bytes = (char*)start;
+    for (uint64_t i = 0; i < VGA_WIDTH; i++) {
+        bytes[i << 1] = 0;
+    }
+
+    for (uint64_t i = 0; i < VGA_WIDTH; i++) {
+        if (*string == '\0') {
+            return;
+        }
+
+        bytes[i << 1] = *string;
+        string++;
+    }
+
+    uint8_t scancode = inb(0x60);
+    outb(0x20, 0x20);
+
+    // __asm__ volatile (
+    //     "mov $0x20, %%al\n\t"
+    //     "outb %%al, $0x20\n\t"
+    //     :
+    //     :
+    //     : "al"
+    // );
+
+    // __asm__ volatile (
+    //     "mov $0x20, %%al\n\t"
+    //     "out %%al, $0xA0\n\t"
+    //     "out %%al, $0x20\n\t"
+    //     :
+    //     :
+    //     : "al"
+    // );
+}
+
+__attribute__((interrupt))
 static void int_handler(struct int_frame* frame) {
     char* string = "Interrupt 80h";
     uint64_t* start = (uint64_t*)VGA_TEXT_BUFFER;
@@ -90,6 +135,7 @@ void create_idt() {
     }
 
     create_entry(0x80, &int_handler, 0xEE);
+    create_entry(0x21, &keyboard_handler, 0xEE);
 
     uint16_t* lidt = (uint16_t*)(IDT_BASE_ADDRESS - 10);
     *lidt = 256 * sizeof(struct int_desc) - 1;
@@ -102,4 +148,13 @@ void create_idt() {
         : "m" (*lidt)
         : "memory"
     );
+
+    // Enable PIC
+    outb(0x20, 0x11);  // Initialize the command port
+    outb(0x21, 0x20);  // Set vector offset (IRQ0-IRQ7)
+    outb(0x21, 0x04);  // Set cascading (IRQ2)
+    outb(0x21, 0x01);  // Set 8086 mode
+    outb(0x21, 0xFF);  // Mask all interrupts initially
+
+    outb(0x21, inb(0x21) & 0xFD);  // Unmask IRQ1 (keyboard)
 }
