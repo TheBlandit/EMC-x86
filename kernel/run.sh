@@ -57,5 +57,6 @@ dd "if=$output" "of=$image" bs=512 seek=9 conv=notrunc || exit 1
 
 # Run it with 256MiB memory (-cpu qemu64,+smep)
 if [[ "$1" != "--norun" ]]; then
-    qemu-system-x86_64 -device isa-serial -M pc -drive format=raw,file="$image" -m 256
+    qemu-system-x86_64 -drive format=raw,file="$image" -m 256
+    # qemu-system-x86_64 -device isa-serial -M pc -drive format=raw,file="$image" -m 256
 fi

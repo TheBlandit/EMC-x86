@@ -21,22 +21,39 @@ struct int_frame {
     uintptr_t ss;
 };
 
-__attribute__((interrupt))
-static void default_handler(struct int_frame* frame) {
-    char* string = "Unknown Interrupt";
+__attribute__((no_caller_saved_registers))
+static void int_println(char* string) {
     uint64_t* start = (uint64_t*)VGA_TEXT_BUFFER;
-    const uintptr_t REP = ((VGA_HEIGHT - 1) * VGA_WIDTH * 2) / sizeof(uintptr_t);
-    for (uint64_t i = 0; i < REP; i++) {
-        start[i] = start[i + 20]; // 20 = 160/8
+    const uintptr_t REP = ((VGA_HEIGHT - 2) * VGA_WIDTH * 2) / sizeof(uint64_t);
+    for (uintptr_t i = 20; i < REP; i++) {
+        start[i] = start[i + 20];
     }
 
-    start += REP;
-    char* bytes = (char*)start;
-    for (uint64_t i = 0; i < VGA_WIDTH; i++) {
+    char* bytes = (char*)(start + REP);
+    for (uintptr_t i = 0; i < VGA_WIDTH; i++) {
         bytes[i << 1] = 0;
     }
 
-    for (uint64_t i = 0; i < VGA_WIDTH; i++) {
+    for (uintptr_t i = 0; i < VGA_WIDTH; i++) {
+        if (*string == '\0') {
+            return;
+        }
+
+        bytes[i << 1] = *string;
+        string++;
+    }
+}
+
+__attribute__((no_caller_saved_registers))
+static void int_print_status(char* string) {
+    uint16_t* start = (uint16_t*)VGA_TEXT_BUFFER;
+
+    for (uintptr_t i = 0; i < VGA_WIDTH; i++) {
+        start[i] = 0x4F20;
+    }
+
+    char* bytes = (char*)VGA_TEXT_BUFFER;
+    for (uintptr_t i = 0; i < VGA_WIDTH; i++) {
         if (*string == '\0') {
             return;
         }
@@ -47,73 +64,89 @@ static void default_handler(struct int_frame* frame) {
 }
 
 __attribute__((interrupt))
+static void default_handler(struct int_frame* frame) {
+    int_print_status("Unknown Interrupt");
+}
+
+__attribute__((no_caller_saved_registers))
+static char hex(uint8_t nibble) {
+    if (nibble > 9) {
+        return nibble + 'A' - 10;
+    } else {
+        return nibble + '0';
+    }
+}
+
+static char scancode_map[256] = {
+    // 00
+    '\0', '\0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', '\0', '\0',
+    'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '[', ']', '\0', '\0', 'a', 's',
+    'd', 'f', 'g', 'h', 'j', 'k', 'l', ';', '\'', '`', '\0', '#', 'z', 'x', 'c', 'v',
+    'b', 'n', 'm', ',', '.', '/', '\0', '\0', '\0', ' ', '\0', '\0', '\0', '\0', '\0', '\0',
+    // 40
+    '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0',
+    '\0', '\0', '\0', '\0', '\0', '\0', '\\', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0',
+    '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0',
+    '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0',
+    // 80
+    '\0', '\0', '!', '"', '\0', '$', '%', '^', '&', '*', '(', ')', '_', '+', '\0', '\0',
+    'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '{', '}', '\0', '\0', 'A', 'S',
+    'D', 'F', 'G', 'H', 'J', 'K', 'L', ':', '@', '\0', '\0', '~', 'Z', 'X', 'C', 'V',
+    'B', 'N', 'M', '<', '>', '?', '\0', '\0', '\0', ' ', '\0', '\0', '\0', '\0', '\0', '\0',
+    // C0
+    '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0',
+    '\0', '\0', '\0', '\0', '\0', '\0', '|', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0',
+    '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0',
+    '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0',
+};
+
+__attribute__((interrupt))
 static void keyboard_handler(struct int_frame* frame) {
-    char* string = "Keyboard Interrupt";
-    uint64_t* start = (uint64_t*)VGA_TEXT_BUFFER;
-    const uintptr_t REP = ((VGA_HEIGHT - 1) * VGA_WIDTH * 2) / sizeof(uintptr_t);
-    for (uint64_t i = 0; i < REP; i++) {
-        start[i] = start[i + 20]; // 20 = 160/8
-    }
-
-    start += REP;
-    char* bytes = (char*)start;
-    for (uint64_t i = 0; i < VGA_WIDTH; i++) {
-        bytes[i << 1] = 0;
-    }
-
-    for (uint64_t i = 0; i < VGA_WIDTH; i++) {
-        if (*string == '\0') {
-            return;
-        }
-
-        bytes[i << 1] = *string;
-        string++;
-    }
-
     uint8_t scancode = inb(0x60);
+
+    static uintptr_t char_index = 0;
+    static char shift = 0;
+
+    uint16_t* vga = (uint16_t*)(VGA_TEXT_BUFFER + VGA_WIDTH * 2 * (VGA_HEIGHT - 1));
+    // for (uintptr_t i = 0; i < VGA_WIDTH; i++) {
+    //     vga[i] = 0x1F20;
+    // }
+
+    if (scancode < 0x80) {
+        scancode |= shift;
+        char map = scancode_map[scancode];
+        if (map == '\0') {
+            if (scancode == 0x2A) {
+                shift = 0x80;
+            } else if (scancode == 0x0E) {
+                if (char_index > 0) {
+                    char_index--;
+                    *(char*)(vga + char_index) = 0x20;
+                }
+            } else {
+                char* string = "AA";
+                string[0] = hex(scancode >> 4);
+                string[1] = hex(scancode & 0xF);
+                int_print_status(string);
+            }
+        } else {
+            if (char_index < VGA_WIDTH) {
+                *(char*)(vga + char_index) = map;
+                char_index++;
+            }
+        }
+    } else {
+        if (scancode == 0xAA) {
+            shift = 0;
+        }
+    }
+
     outb(0x20, 0x20);
-
-    // __asm__ volatile (
-    //     "mov $0x20, %%al\n\t"
-    //     "outb %%al, $0x20\n\t"
-    //     :
-    //     :
-    //     : "al"
-    // );
-
-    // __asm__ volatile (
-    //     "mov $0x20, %%al\n\t"
-    //     "out %%al, $0xA0\n\t"
-    //     "out %%al, $0x20\n\t"
-    //     :
-    //     :
-    //     : "al"
-    // );
 }
 
 __attribute__((interrupt))
 static void int_handler(struct int_frame* frame) {
-    char* string = "Interrupt 80h";
-    uint64_t* start = (uint64_t*)VGA_TEXT_BUFFER;
-    const uintptr_t REP = ((VGA_HEIGHT - 1) * VGA_WIDTH * 2) / sizeof(uintptr_t);
-    for (uint64_t i = 0; i < REP; i++) {
-        start[i] = start[i + 20]; // 20 = 160/8
-    }
-
-    start += REP;
-    char* bytes = (char*)start;
-    for (uint64_t i = 0; i < VGA_WIDTH; i++) {
-        bytes[i << 1] = 0;
-    }
-
-    for (uint64_t i = 0; i < VGA_WIDTH; i++) {
-        if (*string == '\0') {
-            return;
-        }
-
-        bytes[i << 1] = *string;
-        string++;
-    }
+    int_print_status("Interrupt 80h");
 }
 
 static void create_entry(uint8_t entry, void (*ptr)(struct int_frame*), uint8_t type_attributes) {

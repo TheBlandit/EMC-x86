@@ -48,13 +48,12 @@ char* i64_to_string(int64_t integer) {
 /// If it cannot print the entire string, it returns 1 else it returns 0
 char println(char* string) {
     uint64_t* start = (uint64_t*)VGA_TEXT_BUFFER;
-    const uintptr_t REP = ((VGA_HEIGHT - 1) * VGA_WIDTH * 2) / sizeof(uintptr_t);
-    for (uint64_t i = 0; i < REP; i++) {
+    const uintptr_t REP = ((VGA_HEIGHT - 2) * VGA_WIDTH * 2) / sizeof(uintptr_t);
+    for (uint64_t i = 20; i < REP; i++) {
         start[i] = start[i + 20]; // 20 = 160/8
     }
 
-    start += REP;
-    char* bytes = (char*)start;
+    char* bytes = (char*)(start + REP);
     for (uint64_t i = 0; i < VGA_WIDTH; i++) {
         bytes[i << 1] = 0;
     }
@@ -74,19 +73,21 @@ char println(char* string) {
 __attribute__((no_caller_saved_registers))
 uint8_t inb(uint16_t port) {
     uint8_t value;
-    asm volatile (
-        "inb %1, %0"
+    __asm__ volatile (
+        "inb %1, %0\n\t"
         : "=a"(value)
         : "Nd"(port)
+        : "memory"
     );
     return value;
 }
 
 __attribute__((no_caller_saved_registers))
 void outb(uint16_t port, uint8_t value) {
-    asm volatile (
-        "outb %0, %1"
+    __asm__ volatile (
+        "outb %0, %1\n\t"
         :
         : "a"(value), "Nd"(port)
+        : "memory"
     );
 }
