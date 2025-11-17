@@ -20,10 +20,10 @@
 
 \lstdefinestyle{mystyle}{
   backgroundcolor=\color{backcolour},
-  commentstyle=\color{codegreen},
-  keywordstyle=\color{magenta},
+  commentstyle=\color{gray},
+  keywordstyle=\color{blue},
   numberstyle=\tiny\color{codegray},
-  stringstyle=\color{codepurple},
+  stringstyle=\color{orange},
   basicstyle=\ttfamily\footnotesize,
   breakatwhitespace=false,
   breaklines=true,
@@ -36,7 +36,11 @@
   showtabs=false,
   tabsize=2
 }
-\lstset{style=mystyle}
+
+\lstset{
+  style=mystyle,
+  frame=single
+}
 
 \renewcommand{\arraystretch}{1.2}
 \setlength{\parindent}{0em}
@@ -1083,7 +1087,7 @@ There are three types of interrupts:
     44 & 1 & 0 & Must be 0 \\
     40:43 & 4 & Type & Type of the Descriptor \\
     35:39 & 5 & 0 & Must be 0 \\
-    32:34 & 3 & IST & Interrupt Segment Table \\
+    32:34 & 3 & IST & Interrupt Stack Table \\
     16:31 & 16 & Segment Selector & - \\
     0:15 & 16 & Offset 0:15 & Bits 0:15 of the address of the ISR \\
 
@@ -1208,5 +1212,34 @@ This program performs the cat command (it takes in one argument which is a filen
 This program prints "Hello world" to the vga-mode buffer.
 
 \lstinputlisting{../baremetal/main.asm}
+
+\subsection{Kernel (Baremetal)}
+This program loads a (very) basic 64-bit kernel
+
+% \newcommand{cfile}{
+%   #1
+%   \lstinputlisting[language=c]{../kernel/src/#1}
+% }
+
+bootloader.asm
+\lstinputlisting{../kernel/bootloader.asm}
+
+bootloader.c
+\lstinputlisting{../kernel/src/bootloader.c}
+
+utils.c
+\lstinputlisting{../kernel/src/utils.c}
+
+kernel.c
+\lstinputlisting{../kernel/src/kernel.c}
+
+identity.c
+\lstinputlisting{../kernel/src/identity.c}
+
+interrupts.c
+\lstinputlisting{../kernel/src/interrupts.c}
+
+shared\_constants.c
+\lstinputlisting{../kernel/src/shared\_constants.c}
 
 \end{document}

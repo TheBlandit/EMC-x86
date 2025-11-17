@@ -1,5 +1,5 @@
-BITS 16                     ; Instruct NASM that this is 16 bit (real mode) code
-ORG 0x7c00                  ; Set the origin to 0x7c00 which is where BIOS loads the bootloader
+BITS 16 ; Produce 16 bit code
+ORG 0x7c00 ; Set the origin to 0x7c00 which is where BIOS loads the bootloader
 
 _start:
     jmp 0:.ClearCS ; Set CS to 0 (some bios load at 7C00:0000 instead of 0000:7C000)
