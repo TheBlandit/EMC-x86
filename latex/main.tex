@@ -1251,32 +1251,44 @@ This program prints "Hello world" to the vga-mode buffer.
 \lstinputlisting{../baremetal/main.asm}
 
 \subsection{Kernel (Baremetal)}
-This program loads a (very) basic 64-bit kernel
+This program loads a (very) basic 64-bit kernel, it is capable of booting into a 64-bit environment using identity-mapped memory and can handle PS/2 keyboard interrupts. It starts execution in the 16-bit assembly, which sets up a 32-bit environment and calls \_\_start\_\_ in bootloader.c which sets up the 64-bit environment, returns to the assembly code to enable 64-bit mode then jumps to \_\_start\_\_ in kernel.c.
 
-% \newcommand{cfile}{
-%   #1
-%   \lstinputlisting[language=c]{../kernel/src/#1}
-% }
+This bash script is used to compile and run the kernel (using qemu)
+\lstinputlisting{../kernel/run.sh}
+
+These files are used in the compilation of the kernel
+
+link/ld32
+\lstinputlisting{../kernel/link/ld32}
+link/ld64
+\lstinputlisting{../kernel/link/ld64}
+link/link32
+\lstinputlisting{../kernel/link/link32}
+link/link32
+\lstinputlisting{../kernel/link/link64}
+
+\newcommand{\cfile}[1]{
+  #1.c
+  \lstinputlisting[language=c]{../kernel/src/#1.c}
+}
+
+\newcommand{\chfile}[1]{
+  #1.h
+  \lstinputlisting[language=c]{../kernel/include/#1.h}
+  #1.c
+  \lstinputlisting[language=c]{../kernel/src/#1.c}
+}
+
+The following files are the c, header and assembly files for the kernel
 
 bootloader.asm
 \lstinputlisting{../kernel/bootloader.asm}
 
-bootloader.c
-\lstinputlisting{../kernel/src/bootloader.c}
-
-utils.c
-\lstinputlisting{../kernel/src/utils.c}
-
-kernel.c
-\lstinputlisting{../kernel/src/kernel.c}
-
-identity.c
-\lstinputlisting{../kernel/src/identity.c}
-
-interrupts.c
-\lstinputlisting{../kernel/src/interrupts.c}
-
-shared\_constants.c
-\lstinputlisting{../kernel/src/shared\_constants.c}
+\cfile{bootloader}
+\chfile{utils}
+\cfile{kernel}
+\chfile{identity}
+\chfile{interrupts}
+\chfile{shared\_constants}
 
 \end{document}
