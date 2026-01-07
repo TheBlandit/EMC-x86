@@ -50,6 +50,8 @@
 % TODO: Add PIE (position independent executable)
 % TODO: BIOS, UEFI, Multiboot spec
 % TODO: hidden instructions, appendix H, intels FDIV off by a small amount, 66 jmp (amd makes it 16 bit, intel ignores the 66)
+% TODO: syntaxes? (intel vs at&t)
+
 \title{\textbf{x86 Architecture}}
 \author{William Bland}
 
@@ -61,39 +63,57 @@
 
 \section{Introduction}
 
-\subsection{What is the x86 architecture?}
-
-Processors run by executing binary instructions called machine code, this machine code can be made into
-a human readable format called assembly which can be turned back into machine code using a program called an assembler.
-Each processor has an architecture, this architecture describes how the processor executes the machine code (so different architectures execute code differently,
-so have different machine code and assembly languages).
-For multiple processors to be able to execute the same machine code they must have the same architecture, some popular architectures include ARM, PowerPC, RISC-V and x86.
-x86 is an example of a Complex Instruction Set Computer (CISC), this means that there are lots of instructions
-so a lot can be done in a single instruction so is very fast, this however uses a lot of power so is the main architecture in desktop computers.
-This is in opposition to ARM which is a Reduced Instruction Set Computer (RISC) which has less instructions so has to execute many to
-perform the same task so is slower than x86, this however uses less power so is the main architecture in mobile devices and embedded systems.
-
-\subsection{Basics of x86 assembly}
-
-x86 assembly code contains one instruction per line, the line starts with the name of the instruction followed by its parameters which can either be registers, a memory address or an immediate value (a constant).
-Lines and constants can be given labels and can be referred to in instructions.
-The assembler only assembles one file at a time so if a label (symbol) is located in another file, the assembler will fail to assemble the program; this is fixed in NASM by marking the symbol in the file its defined in as global (so its accessible to the linker) and as extern in the file its used in.
-A program called the linker will combine these object files into a single executable and resolve all extern symbols to their global definitions. Furthermore the linker makes the executable in the correct format for the target platform (eg elf64 on Linux).
-Lastly, all code written will be using the Intel syntax using the NASM assembler and will be linked using the ld linker unless stated otherwise.
-
-\subsection{Intel vs AT\&T syntax}
-x86 assembly has two different syntaxes: Intel and AT\&T.
-
-\begin{table}[H]
-  \centering
-  \begin{tabular}{|c|c|c|}
-    \hline \textbf{???} & \textbf{Intel} & \textbf{AT\&T} \\ \hline
-    a & b & c \\
-    \hline
-  \end{tabular}
-\end{table}
+This document contains the basics of the x86 architecture, and could be used as an introduction into the x86 architecture.
+It assumes you have some knowledge of programming and computer science.
+Additionally it does summarise some sections (such as instructions) to keep them concise, however it should sufficient to write basic x86 assembly programs (some examples can be seen in the appendix) or even a simple bare-metal program/kernel (can also be seen in the appendix);
+all code written is assembled with NASM and linked with ld.
+Furthermore, this document is mainly based off "\texttt{Intel® 64 and IA-32 Architectures Software Developer’s Manuals}", hence may have some content specific to the newest Intel CPUs.
 
 \section{x86 architecture}
+
+Processors run by sequentially executing binary instructions (machine code),
+assembly code is a human readable version of machine code which can be converted (assembled) into machine code using an assembler.
+Every processor has an architecture, this architecture describes how the processor executes machine code (therefore different architectures execute machine code differently, so have different machine code and assembly languages).
+For multiple processors to be able to execute the same machine code they must have the same architecture, some popular architectures include ARM, PowerPC, RISC-V and x86.
+x86 is an example of a Complex Instruction Set Computer (CISC), so it uses a large set of instructions that can perform multiple operations in a single command.
+This is in opposition to Reduced Instruction Set Computer (RISC) which uses a smaller set of simple instructions.
+CISC (x86) is often more powerful than RISC due to its larger instruction set (allowing what would have been multiple RISC instructions to be ran as a single instruction), however this uses a lot more power therefore CISC (x86) is mainly used for desktop computers while RISC is mainly used for embedded and mobile devices.
+
+% \bigskip
+%
+% x86 assembly code contains one instruction per line, the line starts with the name of the instruction followed by its operands which can either be registers, a memory address or an immediate value (a constant).
+% Lines and constants can be given labels and can be referred to in instructions.
+% The assembler only assembles one file at a time so if a label (symbol) is located in another file, the assembler will fail to assemble the program; this is fixed in NASM by marking the symbol in the file its defined in as global (so its accessible to the linker) and as extern in the file its used in.
+% A program called the linker will combine these object files into a single executable and resolve all extern symbols to their global definitions. Furthermore the linker makes the executable in the correct format for the target platform (eg elf64 on Linux).
+
+\subsection{History of x86}
+
+Below is a list of a few of the notable x86 processors released by Intel.
+Furthermore, during the development of these processors and more recent processors, there were also significant improvements such as instruction pipelining, performance and features added such as SIMD and virtualisation.
+
+\medskip
+
+The first x86 processors were the 8086 and 8088 which were 16-bit.
+Through the use of segmentation, it allowed a 20-bit address bus so was able to address $2^20$ Bytes of memory (1MB).
+
+\medskip
+
+The Intel 286 processor introduced protected mode by uses the segment registers as selectors into descriptor tables which describe how a segment can be used (so the OS can ensure each process only accesses memory it has the permission to).
+Furthermore the descriptors provide a 24-bit base address so can address up to 16MB of memory.
+
+\medskip
+
+The Intel 386 processor was the first 32-bit processor, introducing 32-bit registers and paging.
+
+\medskip
+
+The Intel 486 introduced an integrated x87 FPU (previously FPUs were separate components).
+
+\medskip
+
+The Intel Pentium 4 introduced 64-bit extensions.
+
+\subsection{IBM compatible}
 % TODO: BIOS + UEFI
 
 \subsection{Branch prediction}
@@ -111,7 +131,7 @@ x86 processors start up in real mode from address FFFF:0000, however the BIOS re
     Real mode & Also called real address mode, all addresses always correspond to physical (real) memory addresses. Memory addresses are 20 bit allowing for 1MiB of memory, they are referenced by the value in a segment register left shifted by 4 then added to an offset for example [es:di]. There is no memory protection in real mode, and all x86 CPU's start in real mode when reset for compatibility \\ \hline
     Unreal mode & Also called big real mode, it is a variant of real mode, it allows the access to 4GiB of memory \\ \hline
     Protected mode & Also called protected virtual address mode, it allows the use of segmentation, virtual memory, paging and safe multi-tasking. To enter protected mode the software must setup a descriptor table and enable the Protection Enable (PE) bit in CR0 (Intel 80286). \\ \hline
-    Virtual 8086 mode & Also called virtual read mode, it allows real mode processes to run in protected mode. It is a hardware virtualisation technique and uses the 20-bit segmentation that real mode uses but is subject to the protected mode's memory paging. \\ \hline
+    Virtual 8086 mode & Also called virtual real mode, it allows real mode processes to run in protected mode. It is a hardware virtualisation technique and uses the 20-bit segmentation that real mode uses but is subject to the protected mode's memory paging. \\ \hline
     Long mode & The 64-bit OS can access 64-bit registers and instructions. 64-bit programs run in a sub-mode called 64-bit mode, and 32-bit and 16-bit protected mode programs run in another sub-mode called compatibility mode, however real mode and virtual 8086 mode programs cannot run natively in long mode. \\ \hline
     x86 virtualisation mode & Mode that uses hardware assisted virtualisation. \\ \hline
     AIS and 8080 emulation mode & Rarely used operating modes found on only a few old CPUs. \\ \hline
@@ -122,7 +142,7 @@ x86 processors start up in real mode from address FFFF:0000, however the BIOS re
 
 \section{Memory}
 
-\subsection{Memory sizes and representaion}
+\subsection{Memory sizes and representation}
 Processors operate on digital signals which can either be high or low and can be interpreted in binary as a 1 or a 0, a single 1 or 0 is a bit.
 
 \begin{table}[H]
@@ -142,7 +162,7 @@ Processors operate on digital signals which can either be high or low and can be
 \end{table}
 
 \noindent
-Lastly, all memory addresses point to a unique byte in memory therefore a multibyte integer (eg 64-bit) could be stored in two different orderings (its endianness). In Little-Endian (LE) ordering the least significant byte occupies the smaller address space, while in Big-Endian (BE) ordering the most significant byte occupies the smaller address space. x86 and most other computers uses LE while data transmitted over networks uses BE.
+Lastly, all memory addresses point to a unique byte in memory therefore a multiple byte integer (eg 64-bit) could be stored in two different orderings (its endianness). In Little-Endian (LE) ordering the least significant byte occupies the smaller address space, while in Big-Endian (BE) ordering the most significant byte occupies the smaller address space. x86 and most other processors use LE while data transmitted over networks uses BE.
 
 \subsection{Registers}
 Resisters store a small amount of memory directly accessible to instructions.
@@ -150,8 +170,9 @@ Resisters store a small amount of memory directly accessible to instructions.
 
 \subsubsection{General Purpose Registers}
 General purpose registers are the most commonly accessed registers, they are used for a variety of uses such as arithmetic, logic and memory addressing.
-Most instructions require a register to be specified while some may implicity use a specific register (such as stack operations modifying the Stack pointer register).
-The registers on the same line in the table overlap in memory (eg the 32-bit register is located in the lower half of the 64-bit register)
+Most instructions require a register to be specified while some may implicitly use a specific register (such as stack operations modifying the Stack pointer register).
+The registers on the same line in the table overlap in memory (eg the 32-bit register is located in the lower half of the 64-bit register).
+Furthermore both the lower and higher 8-bit registers exist within the 16-bit registers.
 
 \begin{table}[H]
   \centering
@@ -178,7 +199,7 @@ The registers on the same line in the table overlap in memory (eg the 32-bit reg
   \end{tabular}
 \end{table}
 
-Registers 8-15, and the SIL, DIL, SPL and BPL are only available in 64-bit programs since they were added in the 64-bit extensions
+Registers 8-15, and the SIL, DIL, SPL and BPL registers are only available in 64-bit code since they were added in the 64-bit extensions
 
 % TODO: Add Instruction Pointer
 
@@ -198,6 +219,8 @@ The segment registers are:
     GS & General purpose segment register (Since Intel 80386) \\ \hline
   \end{tabular}
 \end{table}
+
+Furthermore, each segment register contains a hidden 64-bit register which is used as a segment descriptor cache.
 
 \subsubsection{Control Registers}
 
@@ -269,7 +292,7 @@ Below is a list of the control registers and their flags:
 % https://wiki.osdev.org/CPU_Registers_x86
 % https://wiki.osdev.org/CPU_Registers_x86-64
 
-% TODO: Extended control, debug, test, protected mode (gdtr, ldtr, idtr)
+% TODO: Extended control, debug, test, protected mode (gdtr, ldtr, idtr), RFLAGS
 
 \subsubsection{Model Specific Registers}
 
@@ -289,14 +312,6 @@ The most commonly used MSR is the Extended Feature Enable Register (EFER, someti
   \end{tabular}
 \end{table}
 
-\subsection{Stack}
-
-\subsection{Heap}
-
-\subsection{Code}
-
-\subsection{Data}
-
 \subsection{Cache}
 
 Cache is a relatively small amount of memory placed within the processor. It is extremely fast SRAM (as opposed to the slower main memory DRAM). There are typically several layers of cache, with each layer getting larger in capacity and slower to access:
@@ -314,12 +329,10 @@ Cache is a relatively small amount of memory placed within the processor. It is 
 
 \subsubsection{Cache coherency protocol}
 Cache coherency protocols ensure the caches on difference processors [cores] store the most recent, correct copy of data.
-x86 uses MSI-based protocols, such as MESI, MOESI and MESIF (with MESI being used in older processors, and the latter two being used in newer AMD and Intel processors respectively);
+x86 uses MSI-based protocols, such as MESI, MOESI and MESIF (with the latter two being used in newer AMD and Intel processors respectively);
 MSI-based protocols are a type of write-invalidate snooping protocol, this means that a write on one cache invalidates all other cache.
 Each cache line is stored with a state, when a cacheline is accessed (read miss or write), its state is updated and it sends a message to all other processors on a bus.
 The cache controllers snoops the bus, if a message involves a cacheline in its cache, its state is updated to reflect the message.
-% TODO: write-back memory
-
 % https://web.archive.org/web/20170619232736/http://developer.amd.com/wordpress/media/2012/10/24593_APM_v21.pdf#page=217
 
 The accesses to cache which affect state are:
@@ -436,6 +449,67 @@ A cache miss occurs when valid data does not exist in the processor's cache. The
     The (write-invalidate) cache coherency protocol (eg MESI) invalidated the cacheline because it was written in another processor
 \end{enumerate}
 
+\subsubsection{Store Buffer}
+
+\subsubsection{Memory Types}
+
+Page Attribute Table (PAT):
+
+Memory Types that can be encoded with PAT:
+\begin{table}[H]
+  \centering
+  \begin{tabular}{|c|c|c|c|c|}
+    \hline \textbf{Encoding} & \textbf{Memory Type} \\ \hline
+    00 & UC \\
+    01 & WC \\
+    02 & Rsvd. \\
+    03 & Rsvd. \\
+    04 & WT \\
+    05 & WP \\
+    06 & WB \\
+    07 & UC- \\
+    08-FF & Rsvd. \\ \hline
+  \end{tabular}
+\end{table}
+
+PAT Entries:
+\begin{table}[H]
+  \centering
+  \begin{tabular}{|c|c|c|c|c|}
+    \hline \textbf{PAT} & \textbf{PCD} & \textbf{PWT} & \textbf{PAT Entry} & \textbf{Default Memory Type} \\ \hline
+    0 & 0 & 0 & PAT0 & WB \\
+    0 & 0 & 1 & PAT1 & WT \\
+    0 & 1 & 0 & PAT2 & UC- \\
+    0 & 1 & 1 & PAT3 & UC \\
+    1 & 0 & 0 & PAT4 & WB \\
+    1 & 0 & 1 & PAT5 & WT \\
+    1 & 1 & 0 & PAT6 & UC- \\
+    1 & 1 & 1 & PAT7 & UC \\ \hline
+  \end{tabular}
+\end{table}
+
+Updating the PAT usually requires the OS to invalidate all affected TLB entries
+
+Effective Memory Type:
+
+\begin{table}[H]
+  \centering
+  \begin{tabular}{c|c|c|c|c|c|c|}
+    \multicolumn{2}{c}{} & \multicolumn{5}{c}{\textbf{MTRR}} \\ \cline{3-7} 
+    \multicolumn{2}{c|}{} & \textbf{UC} & \textbf{WC} & \textbf{WT} & \textbf{WB} & \textbf{WP} \\ \cline{2-7}
+    \multirow[c]{6}*{\textbf{PAT}} & \textbf{UC} & UC1 & UC2 & UC2 & UC2 & UC2 \\ \cline{2-7}
+    & \textbf{UC-} & UC1 & WC & UC2 & UC2 & WC \\ \cline{2-7}
+    & \textbf{WC} & WC & WC & WC & WC & WC \\ \cline{2-7}
+    & \textbf{WT} & UC1 & WC2 & WT & WT & WT \\ \cline{2-7}
+    & \textbf{WB} & UC1 & WC & WT & WB & WP \\ \cline{2-7}
+    & \textbf{WP} & UC1 & UC2 & WP & WP & WP \\ \cline{2-7}
+  \end{tabular}
+\end{table}
+
+UC1 - UC attribute comes from MTRRs so processors are not required to snoop their caches since the data could never have been cached. Preferred over UC2 for performance Reasons.
+
+UC2 - UC attribute came from page-table entry and processors are required to check their caches because the data may be cached due to page aliasing (which is not recommended).
+
 % TODO: not here, idk where: priviledge levels: checking for instructions, managing (kernel)
 % 3: 13.2
 % if evicted is dirty, it is written back to main memory
@@ -461,7 +535,7 @@ However there is no hardware enforcement of memory protection as any process can
 The value in the segment register is a segment selector, it is used as an index into the LDT/GDT to select a segment descriptor.
 Each segment descriptor contains a base address, limit and flags.
 The base address is a linear address and points to the base of the segment, the limit is the size of the segment and the flags set the segments properties such as permissions, 32 or 16 bit code and granularity of the limit.
-% add gdt/ldt and their registers and add flags in the segment registers
+% TODO: add gdt/ldt and their registers and add flags in the segment registers
 There are many models which can be used to implement segmentation; some common models are listed below, other models exist and additional functionality can be added to the models such using the code segment to point to ROM.
 
 \begin{enumerate}
@@ -505,10 +579,10 @@ Segment selectors contain 3 parts:
 If the index is 0, it implicitly selects a null segment.
 Additionally both the CS and SS registers have to be loaded with a present descriptor else a \#GP exception is generated; furthermore if the SS is loaded with a non-writeable segment, a \#GP is generated.
 
-\subsubsection{Segment descriptors}
+\subsubsection{Segment Descriptors}
 
 Segment descriptors are identifiers for segments of memory.
-They contain multiple parts which can be categorised into: (linear) base address of the segment, limit (size of segment - 1), flags (controls the abilities of the segment).
+They contain multiple parts which can be categorised into: (linear) base address of the segment, limit (size of segment - 1), and flags (controls the abilities of the segment).
 
 \begin{table}[H]
   \centering
@@ -599,28 +673,37 @@ Many of the bits are described below:
     The code segments can be read either by using a CS override or by loading the segment into a data-segment register (DS, ES, GS, FS).
 \end{enumerate}
 
-\subsubsection{GDT - Global Descriptor Table}
+Furthermore, when a segment register is loaded with a segment selector, the processor stores the corresponding descriptor in the hidden part of the segment register (the descriptor cache), if the descriptor is changed it is the responsibility of the software to reload the segment selector.
 
-Contains the segment descriptors, its base address (linear) and limit (number of bytes in the GDT - 1) are stored in the GDTR (GDT Register).
+\subsubsection{Segment Descriptor Tables}
+
+The Global Descriptor Table (GDT) contains segment descriptors, its base address (linear) and limit (number of bytes in the GDT - 1) are stored in the GDTR (GDT Register).
 The \texttt{LGDT} instruction stores the base address and limit from a memory location into the GDTR.
 The $0^{th}$ descriptor of the GDT is often used to store the address and limit since it will never be loaded as a descriptor since the selector would be null.
+There is usually only a single GDT used by all processes.
 
-% TODO: Add LDT
+\bigskip
 
-\subsubsection{segments, sections, tss, syscalls, far jumps}
+The Local Descriptor Table (LDT) also contains segment descriptors; however unlike the GDT there are usually many LDTs (in a non-flat segmentation model), this is so that each process can have its own set of segments.
+Unlike the GDTR, the LDTR (LDT Register) stores the segment selector for the LDT table segment stored in the GDT.
+The \texttt{LLDT} instruction stores the segment selector of the new LDT in the LDTR.
+Furthermore in 32-bit task switches the LDTR is automatically loaded with the segment selector and descriptor for the LDT of the new task.
+
+% TODO: check if these are needed:
+% segments, sections, tss, syscalls, far jumps
 
 \subsection{Paging}
 
 Paging is a method of memory management that separates a programs address space (linear address) from the physical address space.
 It occurs after segmentation but unlike segmentation it does not need to be enabled, if it is disabled linear addresses are the same as physical addresses.
-The OS splits up the physical address space into 4KiB pages, each process has a paging structure which the OS manages, it consists of many layers;
+The OS splits up the physical address space into 4KiB pages, each process has a paging hierarchy which the OS manages, it consists of many layers (page tables);
 each layer consists of the entries for either the physical address of the next layer or page and flags.
-When a process accesses memory, the processor hardware converts the linear address into its corresponding physical address using the paging structure (by traversing the layers) and then uses it to access memory, this is called a hardware-assisted page walk.
+When a process accesses memory, the processor hardware converts the linear address into its corresponding physical address using the paging hierarchy (by traversing the page tables) and then uses it to access memory, this is called a hardware-assisted page walk.
+If the page walk encountered a non-present entry then a \#PF exception is generated; if the exception handler returns, the instruction that generated the exception is restarted.
 
-\subsubsection{Stuff}
-% TODO: swap, page faults, TLB + its cache misses, page walk, tlb shootdown
-% page caching (UC, WB, WT)
-CR3 contains the physical address of the first paging structure unless HLAT (Hypervisor-managed Linear-Address-Translation) paging is used where it is stored in HLATP.
+% TODO: TLB + its cache misses, page walk?, tlb shootdown
+
+% CR3 contains the physical address of the first paging structure unless HLAT (Hypervisor-managed Linear-Address-Translation) paging is used where it is stored in HLATP.
 
 \subsubsection{Enabling Paging}
 Before paging is enabled, CR3 should contain the physical address of the first paging structure, and protection (CR0.PE) is enabled.
@@ -644,7 +727,6 @@ Furthermore, in compatibility mode (sub mode of IA-32e), bits 63-32 of the linea
 
 \subsubsection{Paging Structure}
 
-\subsubsection{Next section lol}
 % TODO: include diagram from page 112 of VOL 3 or similar
 
 5.2 - Paging structure
@@ -795,11 +877,11 @@ PAE:
     PCD & Page-level Cache Disable & Indirectly determines the memory type used to access the page \\
     A & Accessed & Indicates whether the software has accessed the page \\
     D & Dirty & Indicates whether the software has written to the page \\
-    PAT & ??? & Indirectly determines the memory type used to access the page \\
+    PAT & Page Attribute Table & Indirectly determines the memory type used to access the page \\
     G & Global & If 1 and CR4.PGE = 1, the translation is global \\
-    R & ??? & If HLAT paging, restart using ordinary paging \\
+    R & Restart & If HLAT paging, restart using ordinary paging \\
     Prot & Protection key & If CR4.PKE = 1 or CR4.PKS = 1, the page's access rights, else ignored \\
-    XD & ??? & If IA32\_EFER.NXE = 1, Execute Disable \\
+    XD & Execute Disable & If IA32\_EFER.NXE = 1, Disabled instruction fetches \\
     Ign. & Ignored & Bits are not used \\
     Rsvd. & Reserved & Bits must be 0 \\ \hline
   \end{tabular}
@@ -823,6 +905,18 @@ PAE:
 
 The Translation Lookaside Buffer (TLB) is a specialised cache which stores linear address translations.
 % TODO: Finish section
+
+\subsection{Virtual Memory}
+
+Virtual memory is a method of extending main memory by temporarily moving sections of it into secondary storage then moving them back when needed.
+While it is possible to implement virtual memory through segmentation (by moving entire segments in and out of secondary storage), it is most commonly implemented through paging.
+
+\bigskip
+
+If the OS runs out of memory, it may move several (rarely used) pages into secondary storage (often into a swap file or swap partition), and clearing the present flag for its corresponding page entry.
+If a process attempts to access one of these pages, the page walk will encounter a non-present entry and a \#PF exception will be generated.
+The exception handler will be called and will move the page back into main memory, updating the page entry to the new physical address and setting the present flag.
+When the exception handler returns, the instruction that generated the exception is restarted.
 
 \subsection{Memory addressing}
 
@@ -849,7 +943,7 @@ x86 has multiple different types of address:
 
 \section{Instructions}
 
-This section contains many of the x86 instructions and their use, it is not an exhaustive list and is a simplification of how many instructions work (by not including many of the potential exceptions which may be raised, not including how the instructions are encoded in machine code etc), however it should be sufficient enough to create simple programs.
+This section contains many of the x86 instructions and their use, it is not an exhaustive list and is a simplification of how many instructions work (by not including many of the potential exceptions which may be raised, not including how the instructions are encoded in machine code etc, or the flags set/cleared), however it should be sufficient enough to create simple programs.
 The format of the instruction is \texttt{instruction op1, op2, op3} eg \texttt{'MOV RAX, 10'}.
 Each instruction has different limitations to what type an operand can be, these types are
 
@@ -860,14 +954,16 @@ Each instruction has different limitations to what type an operand can be, these
     r & General purpose register & A register such as eax \\
     m & Memory address & A memory address such as \texttt{[eax + 4*ebx + 4]} \\
     i & Immediate & A constant value such as 80h or a pointer to a label \\
-    s & Segment Register & A segment register such as es \\ \hline
+    s & Segment Register & A register such as ES \\
+    d & Debug Register & A register such as DR0 \\
+    c & Control Register & A register such as CR3 \\ \hline
   \end{tabular}
 \end{table}
 
 The types of an operand or identical instructions with different names will be separated by \texttt{(|)}, the size in bits may also be appended to the type and (') may be used to exclude a single size (eg \texttt{i8|i16} means an 8 or 16 bit immediate value and \texttt{r'8} means a 16, 32 or 64 bit register).
 Some instructions have more than one row of operands, each row shows a different combination of operand types. Most instructions should only operate on a single word size (eg 64-bit), if an instruction is used with different sized operands then it may cause an assembler error, cause an invalid opcode exception, truncate the source or bit extend it (either arithmetically or logically).
 Furthermore many of these instructions set/clear flags, for example the OF (overflow flag) is set on signed overflow, CF (carry flag) is set on unsigned overflow and ZF (zero flag) is set when the result is zero.
-Some instructions can be prefixed with LOCK, this makes the instruction atomic and will give the thread exclusive access to the cache line it is accessing; LOCK can only be used when the destination is a memory location and the instruction supports it else it will raise a UD exception.
+Some instructions can be prefixed with LOCK, this makes the instruction atomic and will give the thread exclusive access to the cache line it is accessing; LOCK can only be used when the destination is a memory location and the instruction supports it else it will generate a \#UD exception.
 
 % TODO: REGISTERS SUCH AS DX:AX, words like qword ptr.
 % TODO: (arithmetic) xor, (logical) cmp test, CACHE LINE
@@ -892,10 +988,14 @@ Some instructions can be prefixed with LOCK, this makes the instruction atomic a
 
   \institle{Memory}
 
-  \insname{3}{MOV}{Move}{Copies the value from OP2 into OP1}
-    \insopxx{r}{r|m|i|s} \insmid
-    \insopxx{m}{r|i|s} \insmid
-    \insopxx{s}{r|m} \insend
+  \insname{7}{MOV}{Move}{Copies the value from OP2 into OP1}
+    \insopxx{r}{r|m|i} \insmid
+    \insopxx{m}{r|i'64} \insmid
+    \insopxx{d}{r(32|64)} \insmid
+    \insopxx{c'CR8}{r32} \insmid
+    \insopxx{c}{r64} \insmid
+    \insopxx{s}{(r|m)16} \insmid
+    \insopxx{(r|m)16}{s} \insend
   \insname{3}{LEA}{Load Effective Address}{Stores the address from OP2 into OP1 but unlike MOV it does not dereference the address}
     \insopxx{r'8}{m} \inslinea \inslineb \insend
   \insname{4}{[LOCK] CMPXCHG}{Compare and Exchange}{Compares \texttt{AL|AX|EAX|RAX} with OP1 (dst), if equal OP2 (src) is written into OP1 and ZF is set else OP1 is written into the accumulator and ZF is cleared}
@@ -1076,22 +1176,19 @@ Different codes check different flags or registers, the codes are described belo
 \end{table}
 
 % TODO: Finish this section a bit better
-In long mode, to access many of its features the REX prefix has to be placed before an instruction.
-REX must be encoded to access
-64-bit operands (if the instruction does not default to it)
-an extended register (R8-15, XMM8-15, YMM8-15, CR8-15, DR8-15)
-Uniform byte register (SPL, BPL, SIL, DIL)
-it cannot be encoded when using a high byte register (AH, BH, CH, DH)
-default 64-bit instructions in long mode are:
-CALL (near), ENTER, LEAVE, LGDT, LIDT, LLDT, LOOP, LOOPcc, LTR, MOV CR(n), MOV DR(n), POP r|m, POP r, POP FS, POP GS, POPFQ, PUSH i8, PUSH i32, PUSH r|m, PUSH r, PUSH FS, PUSH GS, PUSHFQ, RET (near)
-Almost every assembler automatically uses the nessissary REX prefixes when required so it is not needed to add
-It can be done by using db followed by the required byte in the line above the instruction
-Sometimes REX can cause AH,BH,CH,DH to be interpreted as SPL, BPL, SIL, DIL
+% In long mode, to access many of its features the REX prefix has to be placed before an instruction.
+% REX must be encoded to access
+% 64-bit operands (if the instruction does not default to it)
+% an extended register (R8-15, XMM8-15, YMM8-15, CR8-15, DR8-15)
+% Uniform byte register (SPL, BPL, SIL, DIL)
+% it cannot be encoded when using a high byte register (AH, BH, CH, DH)
+% default 64-bit instructions in long mode are:
+% CALL (near), ENTER, LEAVE, LGDT, LIDT, LLDT, LOOP, LOOPcc, LTR, MOV CR(n), MOV DR(n), POP r|m, POP r, POP FS, POP GS, POPFQ, PUSH i8, PUSH i32, PUSH r|m, PUSH r, PUSH FS, PUSH GS, PUSHFQ, RET (near)
+% Almost every assembler automatically uses the nessissary REX prefixes when required so it is not needed to add
+% It can be done by using db followed by the required byte in the line above the instruction
+% Sometimes REX can cause AH,BH,CH,DH to be interpreted as SPL, BPL, SIL, DIL
 
-\section{Sections}
-
-\subsection{Data section}
-db, equ, \$ etc
+% TODO: db, equ, \$ etc
 
 \section{Interrupts}
 
@@ -1114,20 +1211,19 @@ There are three types of interrupts:
 64-bit Interrupt/trap gate:
 \begin{table}[H]
   \centering
-  \begin{tabular}{l|l|l|l}
-    \textbf{Bits} & \textbf{Size} & \textbf{Label} & \textbf{Description} \\
-    96:127 & 32 & Rsvd. & Reserved (must be 0) \\
-    64:95 & 32 & Offset 32:63 & Bits 32:63 of the address of the ISR \\
-    48:63 & 16 & Offset 16:31 & Bits 16:31 of the address of the ISR \\
+  \begin{tabular}{|l|l|l|l|}
+    \hline \textbf{Bits} & \textbf{Size} & \textbf{Label} & \textbf{Description} \\ \hline
+    127:96 & 32 & Rsvd. & Reserved (must be 0) \\
+    95:64 & 32 & Offset 32:63 & Bits 32:63 of the address of the ISR \\
+    63:48 & 16 & Offset 16:31 & Bits 16:31 of the address of the ISR \\
     47 & 1 & P & Segment Present Flag \\
-    45:46 & 2 & DPL & Descriptor Privilege Level \\
+    46:45 & 2 & DPL & Descriptor Privilege Level \\
     44 & 1 & 0 & Must be 0 \\
-    40:43 & 4 & Type & Type of the Descriptor \\
-    35:39 & 5 & 0 & Must be 0 \\
-    32:34 & 3 & IST & Interrupt Stack Table \\
-    16:31 & 16 & Segment Selector & - \\
-    0:15 & 16 & Offset 0:15 & Bits 0:15 of the address of the ISR \\
-
+    43:40 & 4 & Type & Type of the Descriptor \\
+    39:35 & 5 & 0 & Must be 0 \\
+    34:32 & 3 & IST & Interrupt Stack Table \\
+    31:16 & 16 & Segment Selector & - \\
+    15:0 & 16 & Offset 0:15 & Bits 0:15 of the address of the ISR \\ \hline
   \end{tabular}
 \end{table}
 
@@ -1137,7 +1233,9 @@ There are three types of interrupts:
 
 \subsection{UEFI interrupts}
 
-\subsection{Syscalls (on Linux)}
+\subsection{Syscalls}
+
+\subsection{Linux Syscalls}
 
 In order for a program to communicate with the OS it has to hand over control of the processor back to the OS.
 In 32-bit programs it uses the interrupt \texttt{int 80h}, in 64-bit programs it uses the instruction \texttt{syscall}.
