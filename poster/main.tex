@@ -11,7 +11,7 @@
 
 \usepackage[T1]{fontenc}
 \usepackage{lmodern}
-\usepackage[orientation=portrait,size=a2,scale=1.15]{beamerposter}
+\usepackage[orientation=portrait,size=a1,scale=1.15]{beamerposter}
 \usetheme{gemini}
 \usecolortheme{nott}
 \usepackage{graphicx}
@@ -20,7 +20,6 @@
 \usepackage{pgfplots}
 \pgfplotsset{compat=1.14}
 \usepackage{anyfontsize}
-
 
 % ====================
 % Lengths
@@ -47,18 +46,17 @@
 % Footer
 % ====================
 
-\footercontent{
-  \href{https://github.com/TheBlandit/EMC-x86}{https://github.com/TheBlandit/EMC-x86} \hfill
-  % Mostra de Trabalhos do PPGCA --- TechTalks 2024 \hfill
-  \href{https://exetermathematicsschool.ac.uk/}{Exeter Mathematics School}
-}
+% \footercontent{
+%   % \href{https://github.com/TheBlandit/EMC-x86}{https://github.com/TheBlandit/EMC-x86} \hfill
+%   % \href{https://exetermathematicsschool.ac.uk/}{Exeter Mathematics School}
+% }
 
 % ====================
 % Logo
 % ====================
 
 \logoright{\includegraphics[height=3.5cm]{logos/ems_logo.png}\hspace{20ex}}
-\logoleft{\hspace{20ex}\includegraphics[height=3.0cm]{logos/x86.png}}
+% \logoleft{\hspace{20ex}\includegraphics[height=3.0cm]{logos/x86.png}}
 
 % ====================
 % Body
@@ -82,94 +80,48 @@
 
 \begin{column}{\colwidth}
   \begin{block}{Overview of the x86 architecture}
-    Some block contents, followed by a diagram, followed by a dummy paragraph.
+    Every processor contains an architecture which describes how it executes machine code.
+    A common architecture for desktop processors to use is x86, this means that the same programs can be run across different x86 processors without the need to be rewritten.
 
-    \begin{figure}
-      \centering
-      \begin{tikzpicture}[scale=3]
-        \draw[step=0.25cm,color=gray] (-1,-1) grid (1,1);
-        \draw (1,0) -- (0.2,0.2) -- (0,1) -- (-0.2,0.2) -- (-1,0)
-          -- (-0.2,-0.2) -- (0,-1) -- (0.2,-0.2) -- cycle;
-      \end{tikzpicture}
-      \caption{A figure caption.}
-    \end{figure}
-
-    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi ultricies
-    eget libero ac ullamcorper. Integer et euismod ante. Aenean vestibulum
-    lobortis augue, ut lobortis turpis rhoncus sed. Proin feugiat nibh a
-    lacinia dignissim. Proin scelerisque, risus eget tempor fermentum, ex
-    turpis condimentum urna, quis malesuada sapien arcu eu purus.
+    Below is a brief history of x86 processors, summarising the major changes.
+    \begin{itemize}
+      \item The first x86 processor was the x8086 and was 16-bit, it used memory segmentation to allow it to separate the address space for processes, and to give it access to 1MiB of memory
+      \item The i286 introduced memory protection which changed the segmentation model to prevent processes from accessing memory they did not own
+      \item The i386 was the first 32-bit processor, introducing 32-bit registers and paging (which is another form of memory management in addition to segmentation)
+      \item The i486 introduced an integrated x87 FPU (previously they were a separate processor)
+      \item The intel Pentium 4 introduced 64-bit extensions
+    \end{itemize}
   \end{block}
 
   \begin{block}{Memory Management}
-    Nam vulputate nunc felis, non condimentum lacus porta ultrices. Nullam sed
-    sagittis metus. Etiam consectetur gravida urna quis suscipit.
+    The kernel has to manage the usage of memory that processes use (give memory to programs that request it, and to prevent a program accessing the memory of another).
 
-    \begin{itemize}
-      \item \textbf{Mauris tempor} risus nulla, sed ornare
-      \item \textbf{Libero tincidunt} a duis congue vitae
-      \item \textbf{Dui ac pretium} morbi justo neque, ullamcorper
-    \end{itemize}
+    In real mode, memory segmentation is used.
+    When accessing memory, the value in the segment register is multiplied by 16 and added to the effective address, which produces the physical address of the memory.
+    This allows a program to be split into logical sections (one for each segment register), allows access to 1MiB of memory (due to a 20-bit address bus), and the memory used by different processes are kept separate by keeping them in different segments.
+    However it does not prevent a program of accessing memory it has not been allocated, and is difficult to manage memory spanning multiple segments.
 
-    Eget augue porta, bibendum venenatis tortor.
+    In protected mode, memory protection is enabled; this modifies the segmentation method so the segment registers are now segment selectors into a kernel-defined segment descriptor table.
+    A segment descriptor contains the base address, limit (length of the segment), and flags (permissions) of the segment which provides greater flexibility of the use of memory segments.
+    Unlike real mode, this prevents processes accessing memory they have not been allocated, however it still requires programs to manage their use of segments.
+
+    Paging splits up the address space into 4KiB pages, and introduces the paging hierarchy which is a memory structure that the kernel manages and the hardware automatically traverses to convert a linear address into a physical address.
+    This method provides greater control than segmentation by controlling the abilities of specific pages, and is completely transparent to the program (so is easier to use than segmentation).
+    Furthermore paging allows consecutive linear addresses to use any physical address, it prevents memory segmentation and makes it easier for programs to allocate/free memory.
   \end{block}
 
   \begin{block}{Caching}
-    This block catches your eye, so \textbf{important stuff} should probably go
-    here.
+    Processors contain cache (which stores recently read/written data) to prevent having to access main memory (which is much slower than accessing cache).
+    Cache is split up into cache lines, and x86 uses the MESI cache coherency protocol to keep the cache lines in different processors valid.
+    Before writing to cache, the processor pushes writes to a store buffer, this means that a write may not be immediately globally visible, a memory fence can be used to flush the store buffer (which updates all the cache states); some instructions can be made atomic using the lock prefix, which locks the cache line for that instruction (this is used to implement mutexes).
 
-    Curabitur eu libero vehicula, cursus est fringilla, luctus est. Morbi
-    consectetur mauris quam, at finibus elit auctor ac. Aliquam erat volutpat.
-    Aenean at nisl ut ex ullamcorper eleifend et eu augue. Aenean quis velit
-    tristique odio convallis ultrices a ac odio.
-
-    \begin{itemize}
-      \item \textbf{Fusce dapibus tellus} vel tellus semper finibus. In
-        consequat, nibh sed mattis luctus, augue diam fermentum lectus.
-      \item \textbf{In euismod erat metus} non ex. Vestibulum luctus augue in
-        mi condimentum, at sollicitudin lorem viverra.
-      \item \textbf{Suspendisse vulputate} mauris vel placerat consectetur.
-        Mauris semper, purus ac hendrerit molestie, elit mi dignissim odio, in
-        suscipit felis sapien vel ex.
-    \end{itemize}
-
-    Aenean tincidunt risus eros, at gravida lorem sagittis vel. Vestibulum ante
-    ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae.
+    Furthermore there is another cache called the TLB (Translation Lookaside Buffer) which stores recent translations of the linear to physical address translation due to paging (which prevents unnecessary hardware assisted page walks).
+    When updating a page table, the kernel must invalidate the TLB entrys which contain the invalid entrys. 
   \end{block}
 
   \begin{block}{Interrupts}
-    Class aptent taciti sociosqu ad litora torquent per conubia nostra, per
-    inceptos himenaeos. Phasellus libero enim, gravida sed erat sit amet,
-    scelerisque congue diam. Fusce dapibus dui ut augue pulvinar iaculis.
-
-    \begin{table}
-      \centering
-      \begin{tabular}{l r r c}
-        \toprule
-        \textbf{First column} & \textbf{Second column} & \textbf{Third column} & \textbf{Fourth} \\
-        \midrule
-        Foo & 13.37 & 384,394 & $\alpha$ \\
-        Bar & 2.17 & 1,392 & $\beta$ \\
-        Baz & 3.14 & 83,742 & $\delta$ \\
-        Qux & 7.59 & 974 & $\gamma$ \\
-        \bottomrule
-      \end{tabular}
-      \caption{A table caption.}
-    \end{table}
-
-    Donec quis posuere ligula. Nunc feugiat elit a mi malesuada consequat. Sed
-    imperdiet augue ac nibh aliquet tristique. Aenean eu tortor vulputate,
-    eleifend lorem in, dictum urna. Proin auctor ante in augue tincidunt
-    tempor. Proin pellentesque vulputate odio, ac gravida nulla posuere
-    efficitur. Aenean at velit vel dolor blandit molestie. Mauris laoreet
-    commodo quam, non luctus nibh ullamcorper in. Class aptent taciti sociosqu
-    ad litora torquent per conubia nostra, per inceptos himenaeos.
-
-    Nulla varius finibus volutpat. Mauris molestie lorem tincidunt, iaculis
-    libero at, gravida ante. Phasellus at felis eu neque suscipit suscipit.
-    Integer ullamcorper, dui nec pretium ornare, urna dolor consequat libero,
-    in feugiat elit lorem euismod lacus. Pellentesque sit amet dolor mollis,
-    auctor urna non, tempus sem.
+    Occasionally a hardware device will require immediate attention or an instruction could have raised an exception, this will require the current process to be interrupted and run code to handle the interrupt (which is called an Interrupt Service Routine (ISR)).
+    Interrupt descriptors contain information on how the interrupt should be handled and are stored inside an interrupt descriptor table which its address is stored within the Interrupt Descriptor Table Register.
   \end{block}
 \end{column}
 
@@ -195,29 +147,11 @@
   \end{block}
 
   \begin{block}{Registers}
-    Et rutrum ex euismod vel. Pellentesque ultricies, velit in fermentum
-    vestibulum, lectus nisi pretium nibh, sit amet aliquam lectus augue vel
-    velit. Suspendisse rhoncus massa porttitor augue feugiat molestie. Sed
-    molestie ut orci nec malesuada. Sed ultricies feugiat est fringilla
-    posuere.
-
-    \begin{figure}
-      \centering
-      \begin{tikzpicture}[scale=0.75]
-        \begin{axis}[
-            scale only axis,
-            no markers,
-            domain=0:2*pi,
-            samples=100,
-            axis lines=center,
-            axis line style={-},
-            ticks=none]
-          \addplot[red] {sin(deg(x))};
-          \addplot[blue] {cos(deg(x))};
-        \end{axis}
-      \end{tikzpicture}
-      \caption{Another figure caption.}
-    \end{figure}
+    The processor contains many registers which can be directly accessed using instructions.
+    One type of register are general purpose registers which can be used by most instructions and so can be used for most operations, these registers are also split up into multiple registers, for example the 32-bit EAX register is located in the lower 32 bits of the 64-bit RAX register.
+    Control registers control the operation of the processor, for example CR3 contains the base address of the paging hierarchy.
+    Segment registers are used in segmentation and are always 16-bit.
+    Model Specific Registers (MSRs) are only present on some processors and are accessed with specific instructions, one use of them is to enable long mode extensions.
   \end{block}
 
   \begin{block}{Operating modes}
