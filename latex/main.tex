@@ -45,6 +45,14 @@
   frame=single
 }
 
+\newcommand{\subsubsubsection}[1]{
+  \refstepcounter{paragraph}
+  \paragraph*{\theparagraph\enspace #1}\mbox{}\par
+  \medskip
+}
+
+\newcommand{\layout}[1]{\parbox{\linewidth}{#1}}
+
 \renewcommand{\arraystretch}{1.2}
 \setlength{\parindent}{0em}
 
@@ -52,6 +60,7 @@
 
 % TODO: Add PIE (position independent executable)
 % TODO: BIOS, UEFI, Multiboot spec
+% TODO: ACCESS RIGHTS
 % TODO: hidden instructions, appendix H, intels FDIV off by a small amount, 66 jmp (amd makes it 16 bit, intel ignores the 66)
 % TODO: syntaxes? (intel vs at&t)
 
@@ -147,6 +156,8 @@ This can lead to race conditions if not handled correctly.
 x86 processors store writes to memory in a store buffer.
 It allows the processor to continue execution without having to wait for a write to cache/main memory to complete.
 The store buffer is flushed when: a LOCK or a MFENCE/SFENCE is used, an I/O instruction executes or an exception/interrupt is generated\cite[Chapter~13.10]{sdm3}.
+
+% TODO: APIC (ID)
 
 % TODO: reorder buffer + out of order execution + multithreading + locks + mutex + synchronisation + visibility
 
@@ -315,30 +326,64 @@ Below is a list of the control registers and their flags:
 
 \subsubsection{Model Specific Registers}
 
-Model Specific Registers (MSRs) are registers which may not be present on all processors, some are added for testing features and may not be present in future processors, others may provide unique functionality for the processor (eg if the processor were made to be used in a non-standard environment).
-MSRs are 64-bits in size and identified with a unique 32-bit integer stored in ecx.
-MSRs are witten to using the \texttt{WRMSR} instruction, it writes EAX:EDX to the register;
-MSRs are read from using the \texttt{RDMSR} instruction, it reads from the register into EAX:EDX.
+\layout{
+  Model Specific Registers (MSRs) are registers which may not be present on all processors, some are added for testing features and may not be present in future processors, others may provide unique functionality for the processor (eg if the processor were made to be used in a non-standard environment).
+  MSRs are 64-bits in size and identified with a unique 32-bit integer stored in ecx.
+  MSRs are witten to using the \texttt{WRMSR} instruction, it writes EAX:EDX to the register;
+  MSRs are read from using the \texttt{RDMSR} instruction, it reads from the register into EAX:EDX.
 
-\medskip
+  \cite[Chapter~11.4]{sdm3}
+}
 
-\cite[Chapter~11.4]{sdm3}
+\bigskip
 
-\medskip
+\layout{
+  The most commonly used MSR is the Extended Feature Enable Register (EFER, sometimes IA32\_EFER), its address is 0xC000\_0080 and its contents are listed in the table below:
+  \begin{table}[H]
+    \centering
+    \begin{tabular}{|c|c|l|}
+      \hline \textbf{Bit} & \textbf{Label} & \textbf{Description} \\ \hline
+      0 & SCE & Enables SYSCALL/SYSRET instructions in 64-bit mode \\
+      8 & LME & Enabled IA-32e mode \\
+      10 & LMA & Indicates IA-32e mode is active when set \\
+      11 & NXE & Execute disable bit enable \\ \hline
+    \end{tabular}
+  \end{table}
 
-The most commonly used MSR is the Extended Feature Enable Register (EFER, sometimes IA32\_EFER), its contents are listed in the table below:
-\begin{table}[H]
-  \centering
-  \begin{tabular}{|c|c|l|}
-    \hline \textbf{Bit} & \textbf{Label} & \textbf{Description} \\ \hline
-    0 & SCE & Enables SYSCALL/SYSRET instructions in 64-bit mode \\
-    8 & LME & Enabled IA-32e mode \\
-    10 & LMA & Indicates IA-32e mode is active when set \\
-    11 & NXE & Execute disable bit enable \\ \hline
-  \end{tabular}
-\end{table}
+  \cite[Page~2-87]{sdm4}
+}
 
-\cite[Page~2-87]{sdm4}
+\bigskip
+
+\layout{
+  Various other MSR addresses used in this document (their use is described where they are used):
+  \begin{table}[H]
+    \centering
+    \begin{tabular}{|c|c|l|}
+      \hline \textbf{MSR} & \textbf{Address} \\ \hline
+      IA32\_MTRR\_DEF\_TYPE & 0x02FF \\
+      IA32\_MTRR\_FIX64K\_00000 & 0x0250 \\
+      IA32\_MTRR\_FIX16K\_80000 & 0x0258 \\
+      IA32\_MTRR\_FIX16K\_A0000 & 0x0259 \\
+      IA32\_MTRR\_FIX4K\_C0000 & 0x0268 \\
+      IA32\_MTRR\_FIX4K\_C8000 & 0x0269 \\
+      IA32\_MTRR\_FIX4K\_D0000 & 0x026A \\
+      IA32\_MTRR\_FIX4K\_D8000 & 0x026B \\
+      IA32\_MTRR\_FIX4K\_E0000 & 0x026C \\
+      IA32\_MTRR\_FIX4K\_E8000 & 0x026D \\
+      IA32\_MTRR\_FIX4K\_F0000 & 0x026E \\
+      IA32\_MTRR\_FIX4K\_F8000 & 0x026F \\
+      IA32\_MTRR\_PHYSBASEn & 0x0202 + 2n \\
+      IA32\_MTRR\_PHYSMASKn & 0x0201 + 2n \\
+      IA32\_PAT & 0x0227 \\
+      \hline
+    \end{tabular}
+  \end{table}
+
+  \cite{sdm4}
+}
+
+
 
 \subsection{Cache}
 
@@ -485,66 +530,271 @@ The first three types of cache miss are commonly known as the three C's.
 
 \cite{cache-miss}
 
-\subsubsection{Memory Types}
+\layout{
+  \subsubsection{Memory Types}
 
-% TODO: finish + cite
-
-Page Attribute Table (PAT):
-
-Memory Types that can be encoded with PAT:
-\begin{table}[H]
-  \centering
-  \begin{tabular}{|c|c|c|c|c|}
-    \hline \textbf{Encoding} & \textbf{Memory Type} \\ \hline
-    00 & UC \\
-    01 & WC \\
-    02 & Rsvd. \\
-    03 & Rsvd. \\
-    04 & WT \\
-    05 & WP \\
-    06 & WB \\
-    07 & UC- \\
-    08-FF & Rsvd. \\ \hline
-  \end{tabular}
-\end{table}
-
-PAT Entries:
-\begin{table}[H]
-  \centering
-  \begin{tabular}{|c|c|c|c|c|}
-    \hline \textbf{PAT} & \textbf{PCD} & \textbf{PWT} & \textbf{PAT Entry} & \textbf{Default Memory Type} \\ \hline
-    0 & 0 & 0 & PAT0 & WB \\
-    0 & 0 & 1 & PAT1 & WT \\
-    0 & 1 & 0 & PAT2 & UC- \\
-    0 & 1 & 1 & PAT3 & UC \\
-    1 & 0 & 0 & PAT4 & WB \\
-    1 & 0 & 1 & PAT5 & WT \\
-    1 & 1 & 0 & PAT6 & UC- \\
-    1 & 1 & 1 & PAT7 & UC \\ \hline
-  \end{tabular}
-\end{table}
-
-Updating the PAT usually requires the OS to invalidate all affected TLB entries
-
-Effective Memory Type:
+  Memory types define the caching and write back rules for a region of memory.
+}
 
 \begin{table}[H]
   \centering
-  \begin{tabular}{c|c|c|c|c|c|c|}
-    \multicolumn{2}{c}{} & \multicolumn{5}{c}{\textbf{MTRR}} \\ \cline{3-7} 
-    \multicolumn{2}{c|}{} & \textbf{UC} & \textbf{WC} & \textbf{WT} & \textbf{WB} & \textbf{WP} \\ \cline{2-7}
-    \multirow[c]{6}*{\textbf{PAT}} & \textbf{UC} & UC1 & UC2 & UC2 & UC2 & UC2 \\ \cline{2-7}
-    & \textbf{UC-} & UC1 & WC & UC2 & UC2 & WC \\ \cline{2-7}
-    & \textbf{WC} & WC & WC & WC & WC & WC \\ \cline{2-7}
-    & \textbf{WT} & UC1 & WC2 & WT & WT & WT \\ \cline{2-7}
-    & \textbf{WB} & UC1 & WC & WT & WB & WP \\ \cline{2-7}
-    & \textbf{WP} & UC1 & UC2 & WP & WP & WP \\ \cline{2-7}
+  \begin{tabular}{|l|c|>{\centering}m{0.12\linewidth}|>{\centering}m{0.13\linewidth}|c|}
+    \hline \textbf{Memory Type} & \textbf{Cacheable} & \textbf{Write-Back Cacheable} & \textbf{Allows Speculative Reads} & \textbf{Memory Ordering Model} \\ \hline
+    Uncacheable (UC) & No & No & No & Strong Ordering \\
+    Write Combining (WC) & No & No & Yes & Weak Ordering \\
+    Write Through (WT) & Yes & No & Yes & Speculative Processor Ordering \\
+    Write Back (WB) & Yes & Yes & Yes & Speculative Processor Ordering \\
+    Write Protected (WP) & Reads & No & Yes & Speculative Processor Ordering \\ \hline
   \end{tabular}
 \end{table}
 
-UC1 - UC attribute comes from MTRRs so processors are not required to snoop their caches since the data could never have been cached. Preferred over UC2 for performance Reasons.
+\layout{
+  Additional notes for the memory types:
+  \begin{itemize}
+    \item UC: Useful for memory-mapped IO, worst performance.
+    \item WC: Writes may be delayed and combined in the write combining buffer (WC buffer) to reduce memory accesses.
+    \item WT: Writes go to main memory (updating any existing cache lines), write combining is allowed.
+    \item WB: Writes go to cache, write combining is allowed, best performance.
+    \item WP: Writes go to main memory and invalidate all cache lines.
+  \end{itemize}
 
-UC2 - UC attribute came from page-table entry and processors are required to check their caches because the data may be cached due to page aliasing (which is not recommended).
+  \cite[Chapter~13.3]{sdm3}
+}
+
+\layout{
+  \subsubsubsection{MTRRs}
+
+  Memory Type Range Registers (MTRRs) are used to define ranges in physical memory, various MSRs specify the memory type in each range.
+}
+
+\bigskip
+
+\layout{
+  Memory types that can be encoded with MTRRs:
+  \begin{table}[H]
+    \centering
+    \begin{tabular}{|c|c|c|c|c|}
+      \hline \textbf{Encoding} & \textbf{Memory Type} \\ \hline
+      00 & UC \\
+      01 & WC \\
+      02 & Rsvd. \\
+      03 & Rsvd. \\
+      04 & WT \\
+      05 & WP \\
+      06 & WB \\
+      07-FF & Rsvd. \\ \hline
+    \end{tabular}
+  \end{table}
+}
+
+\layout{
+  The IA32\_MTRR\_DEF\_TYPE MSR sets the default memory type for memory regions not specified by an MTRR and is also used to enable MTRRs.
+  \begin{table}[H]
+    \centering
+    \begin{tabular}{|c|c|}
+      \hline \textbf{Bits} & \textbf{Use} \\ \hline
+      7:0 & Default memory type \\
+      10 & Fixed-range MTRRs enable \\
+      11 & (all) MTRRs enable \\ \hline
+    \end{tabular}
+  \end{table}
+}
+
+Fixed Range MTRRs are a type of MTRR which operate on a fixed region of memory.
+There are 11 fixed-range registers of 64 bytes each, each is divided into eight 8-bit fields used to specify the memory type for the sub-ranges of the register.
+The IA32\_MTRR\_FIX64K\_00000 MSR divides the 512-KiB range 7FFFF:00000 into eight 64-KiB sub-ranges.
+The IA32\_MTRR\_FIX16K\_80000 and IA32\_MTRR\_FIX16K\_A0000 MSRs divide the two 128-KiB ranges within the range BFFFF:80000 into sixteen 16-KiB sub-ranges (8 per register).
+The IA32\_MTRR\_FIX4K\_C0000 through IA32\_MTRR\_FIX4K\_F8000 MSRs divide the eight 32-KiB ranges within the range FFFFF:C0000 into sixty-four 4-KiB sub-ranges (8 per register).
+
+\bigskip
+
+Variable Range MTRRs are a type of MTRR which operate on a variable region of memory.
+The number (m) of variable range MTRRs supported is given in bits 7:0 of the IA32\_MTRRCAP MSR.
+The entry in IA32\_MTRR\_PHYSBASEn defines the base address and memory type for the range,
+the entry in IA32\_MTRR\_PHYSMASKn contains a mask used to determine the range,
+where n is an integer in the range 0 to m-1.
+
+\bigskip
+
+\layout{
+  Layout of IA32\_MTRR\_PHYSBASEn MSR:
+  \begin{table}[H]
+    \centering
+    \begin{tabular}{|c|c|}
+      \hline \textbf{Bits} & \textbf{Use} \\ \hline
+      7:0 & Memory type \\
+      12:MAXPHYADDR-1 & Base address \\ \hline
+    \end{tabular}
+  \end{table}
+}
+
+\layout{
+  Layout of IA32\_MTRR\_PHYSMASKn MSR:
+  \begin{table}[H]
+    \centering
+    \begin{tabular}{|c|c|}
+      \hline \textbf{Bits} & \textbf{Use} \\ \hline
+      11 & Valid (enables the MTRR entry) \\
+      12:MAXPHYADDR-1 & Mask \\ \hline
+    \end{tabular}
+  \end{table}
+}
+
+\layout{
+  An address is within the range of a variable MTRR when: \texttt{Address AND Mask = Base AND Mask}.
+  Furthermore there are STRRs (System-Management Range Registers) used in System Management Mode.
+
+  \bigskip
+
+  \cite[Chapter~13.11.2]{sdm3}.
+}
+
+\bigskip
+
+\layout{
+  The MTRR memory type is determined as follows:
+  \begin{itemize}
+    \item If MTRRs are not enabled then all memory accesses are UC.
+    \item Else if the physical address is within the first MiB and fixed MTRRs are enabled then it uses the appropriate fixed-range MTRR.
+    \item Else if the address falls within a variable MTRR then it is used.
+      If it falls within multiple variable MTRRs and they are not identical then, UC is used if one is UC, WT is used if they are all WT or WB otherwise it is undefined.
+    \item Otherwise it uses the default.
+  \end{itemize}
+  \cite[Chapter~13.11.4.1]{sdm3}
+}
+
+\layout{
+  \subsubsubsection{Page Attribute Table}
+
+  The Page Attribute Table (PAT) provides additional functionality to set the memory type for page entries.
+
+  \cite[Chapter~13.12]{sdm3}
+
+  \bigskip
+
+  Furthermore, PAT is supported on all 64-bit processors.
+
+  \cite[Chapter~5.9.1]{sdm3}
+}
+
+\bigskip
+
+\layout{
+  Memory Types that can be encoded with PAT:
+  \begin{table}[H]
+    \centering
+    \begin{tabular}{|c|c|}
+      \hline \textbf{Encoding} & \textbf{Memory Type} \\ \hline
+      00 & UC \\
+      01 & WC \\
+      02 & Rsvd. \\
+      03 & Rsvd. \\
+      04 & WT \\
+      05 & WP \\
+      06 & WB \\
+      07 & UC- \\
+      08-FF & Rsvd. \\ \hline
+    \end{tabular}
+  \end{table}
+}
+
+\layout{
+  The IA32\_PAT MSR stores eight PAT entries, each of which stores a memory type and can be selected by page entries.
+
+  \bigskip
+
+  \cite[Chapter~13.12.2]{sdm3}
+}
+
+\bigskip
+
+\layout{
+  PAT Entries:
+  \begin{table}[H]
+    \centering
+    \begin{tabular}{|c|c|c|c|c|}
+      \hline \textbf{PAT} & \textbf{PCD} & \textbf{PWT} & \textbf{PAT Entry} & \textbf{Default Memory Type} \\ \hline
+      0 & 0 & 0 & PAT0 & WB \\
+      0 & 0 & 1 & PAT1 & WT \\
+      0 & 1 & 0 & PAT2 & UC- \\
+      0 & 1 & 1 & PAT3 & UC \\
+      1 & 0 & 0 & PAT4 & WB \\
+      1 & 0 & 1 & PAT5 & WT \\
+      1 & 1 & 0 & PAT6 & UC- \\
+      1 & 1 & 1 & PAT7 & UC \\ \hline
+    \end{tabular}
+  \end{table}
+}
+
+\layout{
+  Updating the PAT usually requires the OS to invalidate all affected TLB entries
+
+  \bigskip
+
+  \cite[Chapter~13.12.3]{sdm3} \cite[Chapter~13.12.4]{sdm3}
+}
+
+\layout{
+  \subsubsubsection{Effective Memory Type}
+
+  The effective memory type is based on a combination of the MTRR memory type and the PAT (or PCD and PWT if PAT is unsupported) for the memory address.
+  If Paging is not used, then the effective memory type is that of the MTRR.
+  Furthermore if CR0.CD is set then caching is prevented.
+
+  \bigskip
+
+  \cite[Chapter~13.5.2]{sdm3}
+}
+
+\bigskip
+
+\layout{
+  Effective Memory Type (PAT Unsupported):
+  \begin{table}[H]
+    \centering
+    \begin{tabular}{|c|c|c|c|c|c|c|}
+      \hline \multicolumn{2}{|c|}{\textbf{Page Flags}} & \multicolumn{5}{c|}{\textbf{MTRR}} \\ \hline
+      \textbf{PCD} & \textbf{PWT} & \textbf{UC} & \textbf{WC} & \textbf{WT} & \textbf{WB} & \textbf{WP} \\ \hline
+      \textbf{0} & \textbf{0} & UC & WC & WT & WP & WB \\ \hline
+      \textbf{0} & \textbf{1} & UC & WC* & WT & WP* & WT \\ \hline
+      \textbf{1} & \textbf{0} & UC & WC* & UC & WC* & UC \\ \hline
+      \textbf{1} & \textbf{1} & UC & UC & UC & UC & UC \\ \hline
+    \end{tabular}
+  \end{table}
+
+  * Implementation defined, avoid these combinations.
+
+  \bigskip
+
+  \cite[Chapter~13.5.2.1]{sdm3}
+}
+
+\bigskip
+
+\layout{
+  Effective Memory Type (PAT Supported):
+  \begin{table}[H]
+    \centering
+    \begin{tabular}{c|c|c|c|c|c|c|}
+      \multicolumn{2}{c}{} & \multicolumn{5}{c}{\textbf{MTRR}} \\ \cline{3-7}
+      \multicolumn{2}{c|}{} & \textbf{UC} & \textbf{WC} & \textbf{WT} & \textbf{WB} & \textbf{WP} \\ \cline{2-7}
+      \multirow[c]{6}*{\textbf{PAT}} & \textbf{UC} & UC1 & UC2 & UC2 & UC2 & UC2 \\ \cline{2-7}
+      & \textbf{UC-} & UC1 & WC & UC2 & UC2 & WC \\ \cline{2-7}
+      & \textbf{WC} & WC & WC & WC & WC & WC \\ \cline{2-7}
+      & \textbf{WT} & UC1 & UC2 & WT & WT & WT \\ \cline{2-7}
+      & \textbf{WB} & UC1 & WC & WT & WB & WP \\ \cline{2-7}
+      & \textbf{WP} & UC1 & UC2 & WP & WP & WP \\ \cline{2-7}
+    \end{tabular}
+  \end{table}
+
+  UC1 - UC attribute comes from MTRRs so processors are not required to snoop their caches since the data could never have been cached. Preferred over UC2 for performance Reasons.
+
+  UC2 - UC attribute comes from PAT so processors are required to snoop their caches since the data may be cached due to page aliasing (which is not recommended).
+
+  \bigskip
+
+  \cite[Chapter~13.5.2.2]{sdm3}
+}
 
 % TODO: not here, idk where: priviledge levels: checking for instructions, managing (kernel)
 % 3: 13.2
