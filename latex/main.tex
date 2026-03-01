@@ -45,9 +45,15 @@
   frame=single
 }
 
-\newcommand{\subsubsubsection}[1]{
-  \refstepcounter{paragraph}
-  \paragraph*{\theparagraph\enspace #1}\mbox{}\par
+% subsubsubsection
+\setcounter{tocdepth}{4}
+\newcounter{subsubsubsection}[subsubsection]
+\renewcommand\thesubsubsubsection{\thesubsubsection.\arabic{subsubsubsection}}
+\newcommand{\subsubsubsection}[1]{%
+  \refstepcounter{subsubsubsection}%
+  \paragraph*{\thesubsubsubsection\enspace #1}%
+  \addcontentsline{toc}{paragraph}{\protect\numberline{\thesubsubsubsection}#1}%
+  \mbox{}\par
   \medskip
 }
 
@@ -75,76 +81,77 @@
 
 \nocite{*}
 
-\section{Introduction}
+\layout{
+  \section{Introduction}
 
-This document contains the basics of the x86 architecture, and could be used as an introduction into the x86 architecture.
-It assumes you have some knowledge of programming and computer science.
-Additionally it does summarise some sections (such as instructions) to keep them concise, however it should sufficient to write basic x86 assembly programs (some examples can be seen in the appendix) or even a simple bare-metal program/kernel (can also be seen in the appendix);
-all code written is assembled with NASM and linked with ld.
-Furthermore, this document is mainly based off "\texttt{Intel® 64 and IA-32 Architectures Software Developer’s Manuals}", hence may have some content specific to the newest Intel CPUs.
+  This document contains the basics of the x86 architecture, and could be used as an introduction into the x86 architecture.
+  It assumes you have some knowledge of programming and computer science.
+  Additionally it does summarise some sections (such as instructions) to keep them concise, however it should sufficient to write basic x86 assembly programs (some examples can be seen in the appendix) or even a simple bare-metal program/kernel (can also be seen in the appendix);
+  all code written is assembled with NASM and linked with ld.
+  Furthermore, this document is mainly based off "\texttt{Intel® 64 and IA-32 Architectures Software Developer’s Manuals}", hence may have some content specific to the newest Intel CPUs.
+}
 
-\section{x86 architecture}
+\layout{
+  \section{x86 architecture}
 
-Processors run by sequentially executing binary instructions (machine code),
-assembly code is a human readable version of machine code which can be converted (assembled) into machine code using an assembler.
-Every processor has an architecture, this architecture describes how the processor executes machine code (therefore different architectures execute machine code differently, so have different machine code and assembly languages).
-For multiple processors to be able to execute the same machine code they must have the same architecture, some popular architectures include ARM, PowerPC, RISC-V and x86.
-x86 is an example of a Complex Instruction Set Computer (CISC), so it uses a large set of instructions that can perform multiple operations in a single command.
-This is in opposition to Reduced Instruction Set Computer (RISC) which uses a smaller set of simple instructions.
-CISC (x86) is often more powerful than RISC due to its larger instruction set (allowing what would have been multiple RISC instructions to be ran as a single instruction), however this uses a lot more power therefore CISC (x86) is mainly used for desktop computers while RISC is mainly used for embedded and mobile devices.
+  Processors run by sequentially executing binary instructions (machine code),
+  assembly code is a human readable version of machine code which can be converted (assembled) into machine code using an assembler.
+  Every processor has an architecture, this architecture describes how the processor executes machine code (therefore different architectures execute machine code differently, so have different machine code and assembly languages).
+  For multiple processors to be able to execute the same machine code they must have the same architecture, some popular architectures include ARM, PowerPC, RISC-V and x86.
+  x86 is an example of a Complex Instruction Set Computer (CISC), so it uses a large set of instructions that can perform multiple operations in a single command.
+  This is in opposition to Reduced Instruction Set Computer (RISC) which uses a smaller set of simple instructions.
+  CISC (x86) is often more powerful than RISC due to its larger instruction set (allowing what would have been multiple RISC instructions to be ran as a single instruction), however this uses a lot more power therefore CISC (x86) is mainly used for desktop computers while RISC is mainly used for embedded and mobile devices.
+}
 
-% \bigskip
-%
-% x86 assembly code contains one instruction per line, the line starts with the name of the instruction followed by its operands which can either be registers, a memory address or an immediate value (a constant).
-% Lines and constants can be given labels and can be referred to in instructions.
-% The assembler only assembles one file at a time so if a label (symbol) is located in another file, the assembler will fail to assemble the program; this is fixed in NASM by marking the symbol in the file its defined in as global (so its accessible to the linker) and as extern in the file its used in.
-% A program called the linker will combine these object files into a single executable and resolve all extern symbols to their global definitions. Furthermore the linker makes the executable in the correct format for the target platform (eg elf64 on Linux).
+\layout{
+  \subsection{History of x86}
 
-\subsection{History of x86}
+  Below is a list of a few of the notable x86 processors released by Intel.
+  Furthermore, during the development of these processors and more recent processors, there were also significant improvements such as instruction pipelining, performance and features added such as SIMD and virtualisation.
 
-Below is a list of a few of the notable x86 processors released by Intel.
-Furthermore, during the development of these processors and more recent processors, there were also significant improvements such as instruction pipelining, performance and features added such as SIMD and virtualisation.
+  \begin{itemize}
+    \item The first x86 processors were the 8086 and 8088 which were 16-bit.
+      Through the use of segmentation, it allowed a 20-bit address bus so was able to address $2^{20}$ Bytes of memory (1MB).
+    \item The Intel 286 processor introduced protected mode by uses the segment registers as selectors into descriptor tables which describe how a segment can be used (so the OS can ensure each process only accesses memory it has the permission to).
+      Furthermore the descriptors provide a 24-bit base address so can address up to 16MB of memory.
+    \item The Intel 386 processor was the first 32-bit processor, introducing 32-bit registers and paging.
+    \item The Intel 486 introduced an integrated x87 FPU (previously FPUs were separate components).
+    \item The Intel Pentium 4 introduced 64-bit extensions.
+  \end{itemize}
 
-\begin{itemize}
-  \item The first x86 processors were the 8086 and 8088 which were 16-bit.
-    Through the use of segmentation, it allowed a 20-bit address bus so was able to address $2^{20}$ Bytes of memory (1MB).
-  \item The Intel 286 processor introduced protected mode by uses the segment registers as selectors into descriptor tables which describe how a segment can be used (so the OS can ensure each process only accesses memory it has the permission to).
-    Furthermore the descriptors provide a 24-bit base address so can address up to 16MB of memory.
-  \item The Intel 386 processor was the first 32-bit processor, introducing 32-bit registers and paging.
-  \item The Intel 486 introduced an integrated x87 FPU (previously FPUs were separate components).
-  \item The Intel Pentium 4 introduced 64-bit extensions.
-\end{itemize}
+  \cite[Chapter~2.1]{sdm1}
+}
 
-\cite[Chapter~2.1]{sdm1}
-
-\subsection{IBM compatible}
+%\subsection{IBM compatible}
 % TODO: BIOS + UEFI
 
-\subsection{Branch prediction}
+%\subsection{Branch prediction}
 % TODO: Spectre/meltdown, pipelining
 
-\subsection{Operating modes}
+\layout{
+  \subsection{Operating modes}
 
-x86 processors have several different operating modes that they can run in, these operating modes can change the addressing mode, available instruction set and registers.
+  x86 processors have several different operating modes that they can run in, these operating modes can change the addressing mode, available instruction set and registers.
 
-\begin{itemize}
-  \item \textbf{Real Mode\cite{mode-real}}: \\
-    Also called real address mode, all addresses always correspond to physical (real) memory addresses; memory addresses are 20 bit allowing for 1MiB of memory, however there is no memory protection.
-    And all x86 CPU's start in real mode for backwards compatibility and start executing from address FFFF:0000
-  \item \textbf{Protected Mode\cite{mode-protected}}: \\
-    Also called protected virtual address mode, it allows the use of segmentation, virtual memory, paging and safe multi-tasking.
-    To enter protected mode the software must setup a segment descriptor table and enable the Protection Enable (PE) bit in CR0
-  \item \textbf{Long Mode\cite{mode-long}}: \\
-    The 64-bit OS can access 64-bit registers and instructions.
-    64-bit programs run in a sub-mode called 64-bit mode, and 32-bit and 16-bit protected mode programs run in another sub-mode called compatibility mode, however real mode and virtual 8086 mode programs cannot run natively in long mode
-  \item \textbf{Unreal Mode\cite{mode-unreal}}: \\
-    A variant of real mode which allows access to 4GiB of memory
-  \item \textbf{System Management Mode\cite{mode-smm}}: \\
-    Used by firmware (BIOS/UEFI) for power and hardware control.
-    It is entered through a SMI (System Management Interrupt), and executes code in an address space isolated from other operating modes
-  \item \textbf{Virtual 8086 Mode\cite{mode-virt8086}}: \\
-    Also called virtual real mode, it allows real mode processes to run in protected mode. It is a hardware virtualisation technique and uses the 20-bit segmentation that real mode uses but is subject to the protected mode's memory paging
-\end{itemize}
+  \begin{itemize}
+    \item \textbf{Real Mode\cite{mode-real}}: \\
+      Also called real address mode, all addresses always correspond to physical (real) memory addresses; memory addresses are 20 bit allowing for 1MiB of memory, however there is no memory protection.
+      And all x86 CPU's start in real mode for backwards compatibility and start executing from address FFFF:0000
+    \item \textbf{Protected Mode\cite{mode-protected}}: \\
+      Also called protected virtual address mode, it allows the use of segmentation, virtual memory, paging and safe multi-tasking.
+      To enter protected mode the software must setup a segment descriptor table and enable the Protection Enable (PE) bit in CR0
+    \item \textbf{Long Mode\cite{mode-long}}: \\
+      The 64-bit OS can access 64-bit registers and instructions.
+      64-bit programs run in a sub-mode called 64-bit mode, and 32-bit and 16-bit protected mode programs run in another sub-mode called compatibility mode, however real mode and virtual 8086 mode programs cannot run natively in long mode
+    \item \textbf{Unreal Mode\cite{mode-unreal}}: \\
+      A variant of real mode which allows access to 4GiB of memory
+    \item \textbf{System Management Mode\cite{mode-smm}}: \\
+      Used by firmware (BIOS/UEFI) for power and hardware control.
+      It is entered through a SMI (System Management Interrupt), and executes code in an address space isolated from other operating modes
+    \item \textbf{Virtual 8086 Mode\cite{mode-virt8086}}: \\
+      Also called virtual real mode, it allows real mode processes to run in protected mode. It is a hardware virtualisation technique and uses the 20-bit segmentation that real mode uses but is subject to the protected mode's memory paging
+  \end{itemize}
+}
 
 \subsection{Multiprocessor}
 
@@ -155,7 +162,7 @@ This can lead to race conditions if not handled correctly.
 
 x86 processors store writes to memory in a store buffer.
 It allows the processor to continue execution without having to wait for a write to cache/main memory to complete.
-The store buffer is flushed when: a LOCK or a MFENCE/SFENCE is used, an I/O instruction executes or an exception/interrupt is generated\cite[Chapter~13.10]{sdm3}.
+The store buffer is flushed when: a LOCK or a MFENCE/SFENCE is used, an I/O instruction executes or an exception/interrupt is generated \cite[Chapter~13.10]{sdm3}.
 
 % TODO: APIC (ID)
 
@@ -163,42 +170,48 @@ The store buffer is flushed when: a LOCK or a MFENCE/SFENCE is used, an I/O inst
 
 % TODO: Virtualisation
 
-\section{Memory}
+\layout{
+  \section{Memory}
 
-Processors operate on digital signals which can either be high or low (interpreted in binary as a 1 or a 0), a single 1 or 0 is a bit.
+  Processors operate on digital signals which can either be high or low (interpreted in binary as a 1 or a 0), a single 1 or 0 is a bit.
+} \bigskip
 
-\begin{table}[H]
-  \centering
-  \caption{Data sizes}
-  \begin{tabular}{|c|c|c|c|}
-    \hline \textbf{Name} & \textbf{Unit} & \textbf{Bits} & \textbf{Bytes} \\
-    \hline
-    bit & b & 1 & 1/8 \\
-    nibble & - & 4 & 1/2 \\
-    byte & B & 8 & 1 \\
-    word & - & 16 & 2 \\
-    dword (double word) & - & 32 & 4 \\
-    qword (quad word) & - & 64 & 8 \\
-    \hline
-  \end{tabular}
-\end{table}
+\layout{
+  Data sizes:
+  \begin{table}[H]
+    \centering
+    \begin{tabular}{|c|c|c|c|}
+      \hline \textbf{Name} & \textbf{Unit} & \textbf{Bits} & \textbf{Bytes} \\ \hline
+      bit & b & 1 & 1/8 \\
+      nibble & - & 4 & 1/2 \\
+      byte & B & 8 & 1 \\
+      word & - & 16 & 2 \\
+      dword (double word) & - & 32 & 4 \\
+      qword (quad word) & - & 64 & 8 \\ \hline
+    \end{tabular}
+  \end{table}
+}
 
-\noindent
-All memory addresses point to a unique byte in memory therefore a multiple byte integer (eg 64-bit) could be stored in two different orderings (its endianness). In Little-Endian (LE) ordering the least significant byte occupies the smaller address space, while in Big-Endian (BE) ordering the most significant byte occupies the smaller address space. x86 and most other processors use LE while data transmitted over networks uses BE.
-\cite[Chapter~1.3.1]{sdm1}
+\layout{
+  All memory addresses point to a unique byte in memory therefore a multiple byte integer (eg 64-bit) could be stored in two different orderings (its endianness). In Little-Endian (LE) ordering the least significant byte occupies the smaller address space, while in Big-Endian (BE) ordering the most significant byte occupies the smaller address space. x86 and most other processors use LE while data transmitted over networks uses BE.
 
-\subsection{Registers}
+  \bigskip \cite[Chapter~1.3.1]{sdm1}
+}
 
-Resisters store a small amount of memory directly accessible to instructions.
-% https://wiki.osdev.org/CPU_Registers_x86-64
-% TODO: add memory management registers (MTRRs, GDTR etc)
+\layout{
+  \subsection{Registers}
 
-\subsubsection{General Purpose Registers}
+  Resisters store a small amount of memory directly accessible to instructions.
+}
 
-General purpose registers are the most commonly accessed registers, they are used for a variety of uses such as arithmetic, logic and memory addressing.
-Most instructions require a register to be specified while some may implicitly use a specific register (such as stack operations modifying the stack pointer register).
-The registers on the same line in the table overlap in memory (eg the 32-bit register is located in the lower half of the 64-bit register).
-Furthermore both the lower and higher 8-bit registers exist within the 16-bit registers.
+\layout{
+  \subsubsection{General Purpose Registers}
+
+  General purpose registers are the most commonly accessed registers, they are used for a variety of uses such as arithmetic, logic and memory addressing.
+  Most instructions require a register to be specified while some may implicitly use a specific register (such as stack operations modifying the stack pointer register).
+  The registers on the same line in the table overlap in memory (eg the 32-bit register is located in the lower half of the 64-bit register).
+  Furthermore both the lower and higher 8-bit registers exist within the 16-bit registers.
+}
 
 \begin{table}[H]
   \centering
@@ -223,49 +236,57 @@ Furthermore both the lower and higher 8-bit registers exist within the 16-bit re
   \end{tabular}
 \end{table}
 
-Registers 8-15, SIL, DIL, SPL and BPL are only available in 64-bit code since they were added in the 64-bit extensions.
-Furthermore, 64-bit code cannot access a higher 8-bit register and a register added in the 64-bit extensions in the same instruction.
+\layout{
+  Registers 8-15, SIL, DIL, SPL and BPL are only available in 64-bit code since they were added in the 64-bit extensions.
+  Furthermore, 64-bit code cannot access a higher 8-bit register and a register added in the 64-bit extensions in the same instruction.
 
-\medskip
-\cite[Chapter~3.4.1]{sdm1}
+  \bigskip \cite[Chapter~3.4.1]{sdm1}
+}
 
 % TODO: Add Instruction Pointer
 
-\subsubsection{Segment Registers}
-Segment registers are 16-bit registers which are used for memory segmentation \myref{segmentation}.
-The segment registers are:
+\layout{
+  \subsubsection{Segment Registers}
 
-\begin{table}[H]
-  \centering
-  \begin{tabular}{|r|l|}
-    \hline \textbf{Register} & \textbf{Description} \\ \hline
-    CS & Code segment \\
-    DS & Data segment \\
-    SS & Stack segment \\
-    ES & Extra segment (for string operations) \\
-    FS & General purpose segment (Since i386) \\
-    GS & General purpose segment (Since i386) \\ \hline
-  \end{tabular}
-\end{table}
+  Segment registers are 16-bit registers which are used for memory segmentation.
+  The segment registers are:
 
-Furthermore, each segment register contains a hidden 64-bit register which is used as a segment descriptor cache.
+  \begin{table}[H]
+    \centering
+    \begin{tabular}{|c|l|}
+      \hline \textbf{Register} & \textbf{Description} \\ \hline
+      CS & Code segment \\
+      DS & Data segment \\
+      SS & Stack segment \\
+      ES & Extra segment (for string operations) \\
+      FS & General purpose segment (Since i386) \\
+      GS & General purpose segment (Since i386) \\ \hline
+    \end{tabular}
+  \end{table}
+}
 
-\medskip
-\cite[Chapter~3.4.3]{sdm3}
+\layout{
+  Furthermore, each segment register contains a hidden 64-bit register which is used as a segment descriptor cache.
 
-\subsubsection{Control Registers}
+  \bigskip \cite[Chapter~3.4.3]{sdm3}
+}
 
-Control registers contain flags that control the operation of the CPU (such as enabling specific features).
-Control registers not listed in the table below such as CR1 and bits not listed are reserved and should be 0 (writing to a reserved register results in a \#UD exception, setting a reserved bit in CR0[0:31] is ignored, setting a reserved bit in CR0[32:63], CR4 or CR3[MAXPHYADDR:63] causes a \#GP).
-When protection is enabled, control registers can only be written to at CPL 0, however CR2 is writable by software.
-On a 64-bit processor, writing to a control register outside of 64-bit mode sets the upper 32 bits to 0, however when transitioning out of IA-32e mode, the registers retain their upper 32 bits.
-CR8 is only available in 64-bit mode, and CR4[32:63] only affects IA-32e mode and can only be changed in IA-32e mode.
-Below is a list of the control registers and their flags:
+% TODO: add gdtr/ldtr in the segment registers
 
-\begin{longtable}{|c|c|p{0.65\linewidth}|}
+\layout{
+  \subsubsection{Control Registers}
+
+  Control registers contain flags that control the operation of the CPU (such as enabling specific features).
+  Control registers not listed in the table below such as CR1 and bits not listed are reserved and should be 0 (writing to a reserved register results in a \#UD exception, setting a reserved bit in CR0[0:31] is ignored, setting a reserved bit in CR0[32:63], CR4 or CR3[MAXPHYADDR:63] causes a \#GP).
+  When protection is enabled, control registers can only be written to at CPL 0, however CR2 is writable by software.
+  On a 64-bit processor, writing to a control register outside of 64-bit mode sets the upper 32 bits to 0, however when transitioning out of IA-32e mode, the registers retain their upper 32 bits.
+  CR8 is only available in 64-bit mode, and CR4[32:63] only affects IA-32e mode and can only be changed in IA-32e mode.
+} \bigskip
+
+The following table is a list of the control registers and their flags:
+\begin{longtable}{|c|c|m{0.65\linewidth}|}
   \hline \textbf{Bits} & \textbf{Label} & \textbf{Description} \\
-  \hline \multicolumn{3}{|c|}{\textbf{CR0}} \\
-  \multicolumn{3}{|l|}{Contains system control flags that control operating mode and states of the processor} \\ \hline
+  \hline \multicolumn{3}{|l|}{\textbf{CR0} - Contains system control flags that control operating mode and states of the processor} \\ \hline
   0 & PE & Protected Mode Enable \\
   1 & MP & Monitor co-processor \\
   2 & EM & x87 FPU Emulation \\
@@ -277,17 +298,14 @@ Below is a list of the control registers and their flags:
   29 & NW & Not-write through \\
   30 & CD & Cache disable \\
   31 & PG & Paging \\
-  \hline \multicolumn{3}{|c|}{\textbf{CR2}} \\
-  \multicolumn{3}{|l|}{Contains linear address that caused a page fault} \\ \hline
+  \hline \multicolumn{3}{|l|}{\textbf{CR2} - Contains linear address that caused a page fault} \\ \hline
   0:31(63) & PFLA & Page Fault Linear Address \\
-  \hline \multicolumn{3}{|c|}{\textbf{CR3}} \\
-  \multicolumn{3}{|l|}{Contains the physical address of the base of the paging-structure hierarchy and two flags} \\ \hline
-  % Bits 0:11 are assumed to be 0. 3,4 are only used when accessing a PDE in 32-bit paging
+  \hline \multicolumn{3}{|l|}{\textbf{CR3} - Contains the physical address of the base of the paging-structure hierarchy and two flags} \\ \hline
+  % TODO: Bits 0:11 are assumed to be 0. 3,4 are only used when accessing a PDE in 32-bit paging
   3 & PWT & Page-level Write-Through (not used in PAE or if bit CR4.PCIDE = 1 in long mode) \\
   4 & PCD & Page-level Cache Disable (not used in PAE or if bit CR4.PCIDE = 1 in long mode) \\
   12:31(63) & PDBR & Page Directory Base Register (PAE = Base of PDPT, long = base of PML4T/PML5T) \\
-  \hline \multicolumn{3}{|c|}{\textbf{CR4}} \\
-  \multicolumn{3}{|l|}{Contains flags that enable several architectural extentions} \\ \hline
+  \hline \multicolumn{3}{|l|}{\textbf{CR4} - Contains flags that enable several architectural extentions} \\ \hline
   0 & VME & Virtual 8086 Mode Extensions \\
   1 & PVI & Protected-mode Virtual Interrupts \\
   2 & TSD & Time Stamp Disable \\
@@ -311,8 +329,7 @@ Below is a list of the control registers and their flags:
   22 & PKE & Protection Key Enable \\
   23 & CET & Control-flow Enforcement Technology \\
   24 & PKS & Enable Protection Keys for Supervisor-Mode Pages \\
-  \hline \multicolumn{3}{|c|}{\textbf{CR8}} \\
-  \multicolumn{3}{|l|}{Provides access to the Task Priority Register (TPR)} \\ \hline
+  \hline \multicolumn{3}{|l|}{\textbf{CR8} - Provides access to the Task Priority Register (TPR)} \\ \hline
   0:3 & TPL & Task Priority Level \\ \hline
 \end{longtable}
 
@@ -324,18 +341,16 @@ Below is a list of the control registers and their flags:
 
 % TODO: Extended control, debug, test, protected mode (gdtr, ldtr, idtr), RFLAGS
 
-\subsubsection{Model Specific Registers}
-
 \layout{
+  \subsubsection{Model Specific Registers}
+
   Model Specific Registers (MSRs) are registers which may not be present on all processors, some are added for testing features and may not be present in future processors, others may provide unique functionality for the processor (eg if the processor were made to be used in a non-standard environment).
   MSRs are 64-bits in size and identified with a unique 32-bit integer stored in ecx.
   MSRs are witten to using the \texttt{WRMSR} instruction, it writes EAX:EDX to the register;
   MSRs are read from using the \texttt{RDMSR} instruction, it reads from the register into EAX:EDX.
 
-  \cite[Chapter~11.4]{sdm3}
-}
-
-\bigskip
+  \bigskip \cite[Chapter~11.4]{sdm3}
+} \bigskip
 
 \layout{
   The most commonly used MSR is the Extended Feature Enable Register (EFER, sometimes IA32\_EFER), its address is 0xC000\_0080 and its contents are listed in the table below:
@@ -351,9 +366,7 @@ Below is a list of the control registers and their flags:
   \end{table}
 
   \cite[Page~2-87]{sdm4}
-}
-
-\bigskip
+} \bigskip
 
 \layout{
   Various other MSR addresses used in this document (their use is described where they are used):
@@ -383,45 +396,48 @@ Below is a list of the control registers and their flags:
   \cite{sdm4}
 }
 
+\layout{
+  \subsection{Cache}
 
+  Cache is a relatively small amount of memory placed within the processor. It is extremely fast SRAM (as opposed to the slower main memory DRAM). There are typically several layers of cache, with each layer getting larger in capacity and slower to access:
 
-\subsection{Cache}
+  \begin{enumerate}
+    \item L1d: \\
+      Extremely fast data cache
+    \item L1i: \\
+      Extremely fast instruction cache
+    \item L2: \\
+      Very fast cache
+    \item L3: \\
+      Fast cache (shared between cores)
+  \end{enumerate}
+}
 
-Cache is a relatively small amount of memory placed within the processor. It is extremely fast SRAM (as opposed to the slower main memory DRAM). There are typically several layers of cache, with each layer getting larger in capacity and slower to access:
+\layout{
+  \subsubsection{Cache coherency protocol}
 
-\begin{enumerate}
-  \item L1d: \\
-    Extremely fast data cache
-  \item L1i: \\
-    Extremely fast instruction cache
-  \item L2: \\
-    Very fast cache
-  \item L3: \\
-    Fast cache (shared between cores)
-\end{enumerate}
+  Cache coherency protocols ensure the caches on difference processors (cores) store the most recent, correct copy of data.
+  x86 uses MSI-based protocols, such as MESI, MOESI and MESIF (with the latter two being used in newer AMD and Intel processors respectively);
+  MSI-based protocols are a type of write-invalidate snooping protocol, this means that a write on one cache invalidates all other cache.
+  Each cache line is stored with a state, when a cacheline is accessed (read miss or write), its state is updated and it sends a message to all other processors on a bus.
+  The cache controllers snoops the bus, if a message involves a cacheline in its cache, its state is updated to reflect the message.
+} \bigskip
 
-\subsubsection{Cache coherency protocol}
-
-Cache coherency protocols ensure the caches on difference processors (cores) store the most recent, correct copy of data.
-x86 uses MSI-based protocols, such as MESI, MOESI and MESIF (with the latter two being used in newer AMD and Intel processors respectively);
-MSI-based protocols are a type of write-invalidate snooping protocol, this means that a write on one cache invalidates all other cache.
-Each cache line is stored with a state, when a cacheline is accessed (read miss or write), its state is updated and it sends a message to all other processors on a bus.
-The cache controllers snoops the bus, if a message involves a cacheline in its cache, its state is updated to reflect the message.
-% https://web.archive.org/web/20170619232736/http://developer.amd.com/wordpress/media/2012/10/24593_APM_v21.pdf#page=217
-
-The accesses to cache which affect state are:
-\begin{enumerate}
-  \item PR - current Processor Reads (cache miss)
-  \item PW - current Processor Writes
-  \item BR - Bus Read (cache miss, another processor reads)
-  \item BW - Bus Write (another processor writes)
-\end{enumerate}
+\layout{
+  The accesses to cache which affect state are:
+  \begin{enumerate}
+    \item PR - current Processor Reads (cache miss)
+    \item PW - current Processor Writes
+    \item BR - Bus Read (cache miss, another processor reads)
+    \item BW - Bus Write (another processor writes)
+  \end{enumerate}
+}
 
 The state transitions are defined by a finite state machine, the invalid state is considered as a cache miss and uncached items can be considered to be in the invalid state.
 
 \begin{table}[H]
   \centering
-  \begin{tabular}{|l|l|l|p{0.5\linewidth}|}
+  \begin{tabular}{|c|c|c|p{0.5\linewidth}|}
     \hline \textbf{State} & \textbf{Data} & \textbf{Responds to BR} & \textbf{Description} \\ \hline
     Modified & Dirty & Yes & Only copy of the data \\
     Exclusive & Clean & Yes & Only copy of the data \\
@@ -438,97 +454,109 @@ The state transitions are defined by a finite state machine, the invalid state i
 
 Owned and Modified states write to main memory (or next-level cache) when switching to a clean state or when evicted from cache.
 Furthermore, states with the only copy of cache (Modified and Exclusive) do not have to send a bus message when writing to its cache.
-The following finite state machines represent the transitions between the states of their respective protocols (MSI has been included since it is the foundation of the protocols but is not used in x86).
 
-\begin{table}[H]
-  \centering
-  \begin{tabular}{|c|c|c|c|c|}
-    \cline{2-5} \multicolumn{1}{c|}{} & \multicolumn{4}{c|}{\textbf{Access}} \\ \hline
-    \textbf{State} & \textbf{PR} & \textbf{PW} & \textbf{BR} & \textbf{BW} \\ \hline
-    \multicolumn{5}{|c|}{MSI transitions \cite{cache-msi}} \\ \hline
-    M & M & M & S & I \\
-    S & S & M & S & I \\
-    I & S & M & I & I \\ \hline
-    \multicolumn{5}{|c|}{MESI transitions \cite{cache-mesi}} \\ \hline
-    M & M & M & S & I \\
-    E & E & M & S & I \\
-    S & S & M & S & I \\
-    I & * & M & I & I \\ \hline
-    \multicolumn{5}{|c|}{MOESI transitions \cite{cache-moesi}} \\ \hline
-    M & M & M & O & I \\
-    O & O & M & O & I \\
-    E & E & M & S & I \\
-    S & S & M & S & I \\
-    I & * & M & I & I \\ \hline
-    \multicolumn{5}{|c|}{MESIF transitions \cite{cache-mesif}} \\ \hline
-    M & M & M & S & I \\
-    E & E & M & S & I \\
-    S & S & M & S & I \\
-    I & ** & M & I & I \\
-    F & F & M & S & I \\ \hline
-  \end{tabular}
-\end{table}
+\layout{
+  The following finite state machines represent the transitions between the states of their respective protocols (MSI has been included since it is the foundation of the protocols but is not used in x86).
+  \begin{table}[H]
+    \centering
+    \begin{tabular}{|c|c|c|c|c|}
+      \cline{2-5} \multicolumn{1}{c|}{} & \multicolumn{4}{c|}{\textbf{Access}} \\ \hline
+      \textbf{State} & \textbf{PR} & \textbf{PW} & \textbf{BR} & \textbf{BW} \\ \hline
+      \multicolumn{5}{|c|}{MSI transitions \cite{cache-msi}} \\ \hline
+      M & M & M & S & I \\
+      S & S & M & S & I \\
+      I & S & M & I & I \\ \hline
+      \multicolumn{5}{|c|}{MESI transitions \cite{cache-mesi}} \\ \hline
+      M & M & M & S & I \\
+      E & E & M & S & I \\
+      S & S & M & S & I \\
+      I & * & M & I & I \\ \hline
+      \multicolumn{5}{|c|}{MOESI transitions \cite{cache-moesi}} \\ \hline
+      M & M & M & O & I \\
+      O & O & M & O & I \\
+      E & E & M & S & I \\
+      S & S & M & S & I \\
+      I & * & M & I & I \\ \hline
+      \multicolumn{5}{|c|}{MESIF transitions \cite{cache-mesif}} \\ \hline
+      M & M & M & S & I \\
+      E & E & M & S & I \\
+      S & S & M & S & I \\
+      I & ** & M & I & I \\
+      F & F & M & S & I \\ \hline
+    \end{tabular}
+  \end{table}
 
-* Transitions to E if exclusive or S if shared.
+  * Transitions to E if exclusive or S if shared.
 
-** Transitions to E if exclusive or F if shared.
+  ** Transitions to E if exclusive or F if shared.
+}
 
-\subsubsection{Cache Placement Policy}
+\layout{
+  \subsubsection{Cache Placement Policy}
 
-Cache placement policies determine which cacheline to place a block of memory, it is required for efficient lookup and utilisation of cache.
-There are three main cache placement policies:
+  Cache placement policies determine which cacheline to place a block of memory, it is required for efficient lookup and utilisation of cache.
+} \bigskip
 
-\begin{itemize}
-  \item Direct: \\
-    Each physical address is split into three parts: tag, block and offset.
-    The block is used to identify a specific cacheline, each cacheline stores a tag and the tags are compared, if equal its considered a cache hit else it is a cache miss.
-    On a hit, the offset is used to retrieve a byte from the cacheline.
-    On a miss, the new data is fetched from main memory and replaces the cacheline.
-  \item Associative: \\
-    Each physical address is split into two parts: tag and offset.
-    Every cacheline is checked in parallel for if the tags are equal.
-    On a hit, the offset is used to retrieve a byte from the cacheline.
-    On a miss, the new data is fetched from main memory and replaces a cacheline usually identified by a LRU algorithm (Least Recently Used).
-  \item N-Way Set-Associative: \\
-    Each physical address is split into three parts: tag, block and offset.
-    The block is used to identify a specific set (each set stores N cachelines).
-    Each cacheline in the set is checked in parallel for if the tags are equal.
-    On a hit, the offset is used to retrieve a byte from the cacheline.
-    On a miss, the new data is fetched from main memory and replaces a cacheline within the set usually identified by a LRU algorithm.
-\end{itemize}
+\layout{
+  There are three main cache placement policies:
+  \begin{itemize}
+    \item Direct: \\
+      Each physical address is split into three parts: tag, block and offset.
+      The block is used to identify a specific cacheline, each cacheline stores a tag and the tags are compared, if equal its considered a cache hit else it is a cache miss.
+      On a hit, the offset is used to retrieve a byte from the cacheline.
+      On a miss, the new data is fetched from main memory and replaces the cacheline.
+    \item Associative: \\
+      Each physical address is split into two parts: tag and offset.
+      Every cacheline is checked in parallel for if the tags are equal.
+      On a hit, the offset is used to retrieve a byte from the cacheline.
+      On a miss, the new data is fetched from main memory and replaces a cacheline usually identified by a LRU algorithm (Least Recently Used).
+    \item N-Way Set-Associative: \\
+      Each physical address is split into three parts: tag, block and offset.
+      The block is used to identify a specific set (each set stores N cachelines).
+      Each cacheline in the set is checked in parallel for if the tags are equal.
+      On a hit, the offset is used to retrieve a byte from the cacheline.
+      On a miss, the new data is fetched from main memory and replaces a cacheline within the set usually identified by a LRU algorithm.
+  \end{itemize}
+}
 
-\begin{table}[H]
-  \centering
-  \begin{tabular}{|>{\centering\arraybackslash}m{0.15\linewidth}|m{0.25\linewidth}|m{0.25\linewidth}|}
-    \hline \textbf{Policy} & \textbf{Pros} & \textbf{Cons} \\ \hline
-    Direct & Fast (spacial locality) & Cache lines often get evicted if they have the same block \\ \hline
-    Associative & Cache lines only get evicted if not used (temporal locality) & Slow/Expensive \\ \hline
-    Set-Associative & Faster than Associative with similar positives & Slower than Direct and Conflict misses can occur \\ \hline
-  \end{tabular}
-\end{table}
+\layout{
+  The Following table summarises the pros and cons of each policy:
+  \begin{table}[H]
+    \centering
+    \begin{tabular}{|>{\centering\arraybackslash}m{0.15\linewidth}|m{0.25\linewidth}|m{0.25\linewidth}|}
+      \hline \textbf{Policy} & \textbf{Pros} & \textbf{Cons} \\ \hline
+      Direct & Fast (spacial locality) & Cache lines often get evicted if they have the same block \\ \hline
+      Associative & Cache lines only get evicted if not used (temporal locality) & Slow/Expensive \\ \hline
+      Set-Associative & Faster than Associative with similar positives & Slower than Direct and Conflict misses can occur \\ \hline
+    \end{tabular}
+  \end{table}
 
-\cite{cache-placement}
-\medskip
+  \cite{cache-placement}
 
-Most x86 processors use N-Way Set-Associative caches, with the more performant processors using larger set sizes.
+  \bigskip
 
-\subsubsection{Cache misses}
+  Most x86 processors use N-Way Set-Associative caches, with the more performant processors using larger set sizes.
+}
 
-A cache miss occurs when valid data does not exist in the processor's cache, requiring a read from main memory.
-The first three types of cache miss are commonly known as the three C's.
+\layout{
+  \subsubsection{Cache misses}
 
-\begin{enumerate}
-  \item Compulsory (cold) miss: \\
-    Occurs when accessing memory for the first time (so was never cached)
-  \item Capacity miss: \\
-    Occurs when cache is full and a cacheline was evicted but later used
-  \item Conflict miss: \\
-    Occurs when multiple cache lines are mapped to the same location in cache, causing one to get evicted so if read again later it is a miss
-  \item Coherence miss: \\
-    The (write-invalidate) cache coherency protocol (eg MESI) invalidated the cacheline because it was written in another processor
-\end{enumerate}
+  A cache miss occurs when valid data does not exist in the processor's cache, requiring a read from main memory.
+  The first three types of cache miss are commonly known as the three C's.
 
-\cite{cache-miss}
+  \begin{enumerate}
+    \item Compulsory (cold) miss: \\
+      Occurs when accessing memory for the first time (so was never cached)
+    \item Capacity miss: \\
+      Occurs when cache is full and a cacheline was evicted but later used
+    \item Conflict miss: \\
+      Occurs when multiple cache lines are mapped to the same location in cache, causing one to get evicted so if read again later it is a miss
+    \item Coherence miss: \\
+      The (write-invalidate) cache coherency protocol (eg MESI) invalidated the cacheline because it was written in another processor
+  \end{enumerate}
+
+  \cite{cache-miss}
+}
 
 \layout{
   \subsubsection{Memory Types}
@@ -565,9 +593,7 @@ The first three types of cache miss are commonly known as the three C's.
   \subsubsubsection{MTRRs}
 
   Memory Type Range Registers (MTRRs) are used to define ranges in physical memory, various MSRs specify the memory type in each range.
-}
-
-\bigskip
+} \bigskip
 
 \layout{
   Memory types that can be encoded with MTRRs:
@@ -600,21 +626,21 @@ The first three types of cache miss are commonly known as the three C's.
   \end{table}
 }
 
-Fixed Range MTRRs are a type of MTRR which operate on a fixed region of memory.
-There are 11 fixed-range registers of 64 bytes each, each is divided into eight 8-bit fields used to specify the memory type for the sub-ranges of the register.
-The IA32\_MTRR\_FIX64K\_00000 MSR divides the 512-KiB range 7FFFF:00000 into eight 64-KiB sub-ranges.
-The IA32\_MTRR\_FIX16K\_80000 and IA32\_MTRR\_FIX16K\_A0000 MSRs divide the two 128-KiB ranges within the range BFFFF:80000 into sixteen 16-KiB sub-ranges (8 per register).
-The IA32\_MTRR\_FIX4K\_C0000 through IA32\_MTRR\_FIX4K\_F8000 MSRs divide the eight 32-KiB ranges within the range FFFFF:C0000 into sixty-four 4-KiB sub-ranges (8 per register).
+\layout{
+  Fixed Range MTRRs are a type of MTRR which operate on a fixed region of memory.
+  There are 11 fixed-range registers of 64 bytes each, each is divided into eight 8-bit fields used to specify the memory type for the sub-ranges of the register.
+  The IA32\_MTRR\_FIX64K\_00000 MSR divides the 512-KiB range 7FFFF:00000 into eight 64-KiB sub-ranges.
+  The IA32\_MTRR\_FIX16K\_80000 and IA32\_MTRR\_FIX16K\_A0000 MSRs divide the two 128-KiB ranges within the range BFFFF:80000 into sixteen 16-KiB sub-ranges (8 per register).
+  The IA32\_MTRR\_FIX4K\_C0000 through IA32\_MTRR\_FIX4K\_F8000 MSRs divide the eight 32-KiB ranges within the range FFFFF:C0000 into sixty-four 4-KiB sub-ranges (8 per register).
+} \bigskip
 
-\bigskip
-
-Variable Range MTRRs are a type of MTRR which operate on a variable region of memory.
-The number (m) of variable range MTRRs supported is given in bits 7:0 of the IA32\_MTRRCAP MSR.
-The entry in IA32\_MTRR\_PHYSBASEn defines the base address and memory type for the range,
-the entry in IA32\_MTRR\_PHYSMASKn contains a mask used to determine the range,
-where n is an integer in the range 0 to m-1.
-
-\bigskip
+\layout{
+  Variable Range MTRRs are a type of MTRR which operate on a variable region of memory.
+  The number (m) of variable range MTRRs supported is given in bits 7:0 of the IA32\_MTRRCAP MSR.
+  The entry in IA32\_MTRR\_PHYSBASEn defines the base address and memory type for the range,
+  the entry in IA32\_MTRR\_PHYSMASKn contains a mask used to determine the range,
+  where n is an integer in the range 0 to m-1.
+} \bigskip
 
 \layout{
   Layout of IA32\_MTRR\_PHYSBASEn MSR:
@@ -644,12 +670,8 @@ where n is an integer in the range 0 to m-1.
   An address is within the range of a variable MTRR when: \texttt{Address AND Mask = Base AND Mask}.
   Furthermore there are STRRs (System-Management Range Registers) used in System Management Mode.
 
-  \bigskip
-
-  \cite[Chapter~13.11.2]{sdm3}.
-}
-
-\bigskip
+  \bigskip \cite[Chapter~13.11.2]{sdm3}
+} \bigskip
 
 \layout{
   The MTRR memory type is determined as follows:
@@ -668,16 +690,12 @@ where n is an integer in the range 0 to m-1.
 
   The Page Attribute Table (PAT) provides additional functionality to set the memory type for page entries.
 
-  \cite[Chapter~13.12]{sdm3}
-
-  \bigskip
+  \cite[Chapter~13.12]{sdm3} \bigskip
 
   Furthermore, PAT is supported on all 64-bit processors.
 
   \cite[Chapter~5.9.1]{sdm3}
-}
-
-\bigskip
+} \bigskip
 
 \layout{
   Memory Types that can be encoded with PAT:
@@ -701,12 +719,8 @@ where n is an integer in the range 0 to m-1.
 \layout{
   The IA32\_PAT MSR stores eight PAT entries, each of which stores a memory type and can be selected by page entries.
 
-  \bigskip
-
-  \cite[Chapter~13.12.2]{sdm3}
-}
-
-\bigskip
+  \bigskip \cite[Chapter~13.12.2]{sdm3}
+} \bigskip
 
 \layout{
   PAT Entries:
@@ -729,9 +743,7 @@ where n is an integer in the range 0 to m-1.
 \layout{
   Updating the PAT usually requires the OS to invalidate all affected TLB entries
 
-  \bigskip
-
-  \cite[Chapter~13.12.3]{sdm3} \cite[Chapter~13.12.4]{sdm3}
+  \bigskip \cite[Chapter~13.12.3]{sdm3} \cite[Chapter~13.12.4]{sdm3}
 }
 
 \layout{
@@ -741,12 +753,8 @@ where n is an integer in the range 0 to m-1.
   If Paging is not used, then the effective memory type is that of the MTRR.
   Furthermore if CR0.CD is set then caching is prevented.
 
-  \bigskip
-
-  \cite[Chapter~13.5.2]{sdm3}
-}
-
-\bigskip
+  \bigskip \cite[Chapter~13.5.2]{sdm3}
+} \bigskip
 
 \layout{
   Effective Memory Type (PAT Unsupported):
@@ -764,12 +772,8 @@ where n is an integer in the range 0 to m-1.
 
   * Implementation defined, avoid these combinations.
 
-  \bigskip
-
-  \cite[Chapter~13.5.2.1]{sdm3}
-}
-
-\bigskip
+  \bigskip \cite[Chapter~13.5.2.1]{sdm3}
+} \bigskip
 
 \layout{
   Effective Memory Type (PAT Supported):
@@ -791,39 +795,67 @@ where n is an integer in the range 0 to m-1.
 
   UC2 - UC attribute comes from PAT so processors are required to snoop their caches since the data may be cached due to page aliasing (which is not recommended).
 
-  \bigskip
+  \bigskip \cite[Chapter~13.5.2.2]{sdm3}
+}
 
-  \cite[Chapter~13.5.2.2]{sdm3}
+\layout{
+  \subsection{Memory addressing}
+
+  Memory addresses are used to reference specific locations in memory (which can be accessed by dereferencing the address), (effective) memory addresses in assembly code have the syntax: \texttt{[Base + Index * Scale + Displacement]}.
+  Furthermore a segment override can be added using the syntax: \texttt{Segment:[...]}.
+} \bigskip
+
+\layout{
+  x86 has different types of memory address:
+  \begin{enumerate}
+    \item Logical: \\
+      Consists of a segment selector (16-bit) and an offset (same bit size as the code).
+      Usually inferred from the type of memory access (eg uses CS for code, SS for stack) or from a segment override.
+      Produces a linear address after segmentation.
+    \item Effective: \\
+      Consists of a combination of a \texttt{Base} register, an \texttt{Index} register (optionally with an immediate \texttt{Scale} which is 1, 2, 4, or 8) and an immediate \texttt{Displacement}.
+      Once the effective address is computed it is used as the offset in the logical address.
+    \item Linear: \\
+      If paging is not used, the linear address is equal to the physical address.
+      If paging is used, the corresponding physical address is found using the paging hierarchy.
+    \item Virtual: \\
+      A valid linear address that does not correspond to an in-memory page, causing the kernel to generate the page via an interrupt (eg load it from disk).
+    \item Physical: \\
+      The physical location of the memory in main memory.
+  \end{enumerate}
 }
 
 % TODO: not here, idk where: priviledge levels: checking for instructions, managing (kernel)
-% 3: 13.2
-% if evicted is dirty, it is written back to main memory
-% lines are caches on write miss but writes are only written to main memory on eviction (defer writes)
 % https://stackoverflow.com/questions/20155304/does-linux-use-x86-cpus-pcid-feature-for-tlb-if-not-why
-\subsection{Segmentation}\label{segmentation}
-% TODO: TTS
 
-Segmentation is a method of memory management that separates parts of a processes address space into different segments (such as code and data), it uses the 6 segment registers to keep track of the segments.
-It is used to convert a logical address (which consists of a segment register and an offset) into a linear address.
-Segmentation has different behaviours depending on what operating mode the processor is in, unlike paging it is always enabled.
+\layout{
+  \subsection{Segmentation}
 
-% TODO: CITE
+  Segmentation is a method of memory management that separates parts of a processes address space into different segments (such as code and data), it uses the 6 segment registers to keep track of the segments.
+  It is used to convert a logical address (which consists of a segment register and an offset) into a linear address.
+  Segmentation has different behaviours depending on what operating mode the processor is in, unlike paging it is always enabled.
 
-\subsubsection{Real Mode}
+  \bigskip \cite[Chapter~3.1]{sdm3}
+}
 
-The value in the segment register is left shifted by 4 (multiplied by 16) then added to the offset to produce a 20-bit physical address allowing up to 1MiB of memory instead of the 16-bit limit of 64KiB \cite[Chapter~22.1.1]{sdm3}.
-The kernel allocates memory for each running process and gives them each different segments, this allows the programs to be able to be loaded into any part of the address space and to not affect other program's memory.
-However there is no hardware enforcement of memory protection as any process can read and modify any memory location.
+\layout{
+  \subsubsection{Real Mode}
 
-\subsubsection{Protected Mode}
+  The value in the segment register is left shifted by 4 (multiplied by 16) then added to the offset to produce a 20-bit physical address allowing up to 1MiB of memory instead of the 16-bit limit of 64KiB \cite[Chapter~22.1.1]{sdm3}.
+  The kernel allocates memory for each running process and gives them each different segments, this allows the programs to be able to be loaded into any part of the address space and to not affect other program's memory.
+  However there is no hardware enforcement of memory protection as any process can read and modify any memory location.
+}
 
-The value in the segment register is a segment selector, it is used as an index into the LDT/GDT to select a segment descriptor.
-Each segment descriptor contains a base address, limit and flags.
-The base address is a linear address and points to the base of the segment, the limit is the size of the segment and the flags set the segments properties such as permissions, 32 or 16 bit code and granularity of the limit.
-% TODO: add gdt/ldt and their registers and add flags in the segment registers
-There are many models which can be used to implement segmentation; some common models are listed below, other models exist and additional functionality can be added to the models such using the code segment to point to ROM.
-\cite[Chapter~3.1]{sdm3}
+\layout{
+  \subsubsection{Protected Mode}
+
+  The value in the segment register is a segment selector, it is used as an index into the LDT/GDT to select a segment descriptor.
+  Each segment descriptor contains a base address, limit and flags.
+  The base address is a linear address and points to the base of the segment, the limit is the size of the segment and the flags set the segments properties such as permissions, 32 or 16 bit code and granularity of the limit.
+  There are many models which can be used to implement segmentation; some common models are listed below, other models exist and additional functionality can be added to the models such using the code segment to point to ROM.
+
+  \bigskip \cite[Chapter~3.1]{sdm3}
+}
 
 \begin{enumerate}
   \item Basic Flat Model \cite[Chapter~3.2.1]{sdm3}: \\
@@ -840,134 +872,148 @@ There are many models which can be used to implement segmentation; some common m
     Hardware checks can be used to enforce the program to access memory it owns and in a way the OS allows (such as not writing to code/read-only memory)
 \end{enumerate}
 
-\subsubsection{Long Mode}
+\layout{
+  \subsubsection{Long Mode}
 
-The behaviour of segmentation in long mode depends if it is running in 64-bit or compatibility mode.
-In compatibility mode it functions the same as it does in protected mode.
-In 64-bit mode, segmentation is generally disabled (but not completely), which creates a flat 64-bit linear address space.
-The base address of the CS, DS, ES and SS are treated as 0 (the effective address is equal to the linear address), and the processor does not perform limit checks (on all segment registers).
-The FS and GS registers are often used to reference thread-local or kernel data structures since their base address still applies.
-\cite[Chapter~3.2.4]{sdm3}
+  The behaviour of segmentation in long mode depends if it is running in 64-bit or compatibility mode.
+  In compatibility mode it functions the same as it does in protected mode.
+  In 64-bit mode, segmentation is generally disabled (but not completely), which creates a flat 64-bit linear address space.
+  The base address of the CS, DS, ES and SS are treated as 0 (the effective address is equal to the linear address), and the processor does not perform limit checks (on all segment registers).
+  The FS and GS registers are often used to reference thread-local or kernel data structures since their base address still applies.
 
-\subsubsection{Segment Selectors}
+  \bigskip \cite[Chapter~3.2.4]{sdm3}
+}
 
-Segment selectors are used as a 16-bit identifier for a segment descriptor.
-Segment selectors contain 3 parts:
+\layout{
+  \subsubsection{Segment Selectors}
 
-\begin{enumerate}
-  \item Bits 15:3 - Index: \\
-    The index into the descriptor table, selects one of the 8192 segment descriptors in the table.
-    Its value is multiplied by 8 then added to the base address of the of the descriptor table.
-  \item Bit 2 - Table Indicator (TI) flag: \\
-    Selects between the two descriptor tables: 0 selects the GDT to be used, 1 selects the LDT to be used.
-  \item Bits 1:0 - Requested Privilege Level (RPL): \\
-    Specifies the privilege level of the selector.
-\end{enumerate}
+  Segment selectors are used as a 16-bit identifier for a segment descriptor.
+} \bigskip
 
-If the index is 0, it implicitly selects a null segment.
-Additionally both the CS and SS registers have to be loaded with a present descriptor else a \#GP exception is generated; furthermore if the SS is loaded with a non-writeable segment, a \#GP is generated.
-\cite[Chapter~3.4.2]{sdm3}
+\layout{
+  Segment selectors contain 3 parts:
+  \begin{enumerate}
+    \item Bits 15:3 - Index: \\
+      The index into the descriptor table, selects one of the 8192 segment descriptors in the table.
+      Its value is multiplied by 8 then added to the base address of the of the descriptor table.
+    \item Bit 2 - Table Indicator (TI) flag: \\
+      Selects between the two descriptor tables: 0 selects the GDT to be used, 1 selects the LDT to be used.
+    \item Bits 1:0 - Requested Privilege Level (RPL): \\
+      Specifies the privilege level of the selector.
+  \end{enumerate}
+}
 
-\subsubsection{Segment Descriptors}
+\layout{
+  If the index is 0, it implicitly selects a null segment.
+  Additionally both the CS and SS registers have to be loaded with a present descriptor else a \#GP exception is generated; furthermore if the SS is loaded with a non-writeable segment, a \#GP is generated.
 
-Segment descriptors are identifiers for segments of memory.
-They contain multiple parts which can be categorised into: (linear) base address of the segment, limit (size of segment - 1), and flags (controls the abilities of the segment).
+  \bigskip \cite[Chapter~3.4.2]{sdm3}
+}
 
-\begin{table}[H]
-  \centering
-  \begin{tabular}{|c|c|l|l|}
-    \hline \textbf{Bits} & \textbf{Size} & \textbf{Name} & \textbf{Use} \\ \hline
-    63:56 & 8 & Base 31:24 & 1 byte of the base address \\
-    55:55 & 1 & Granularity (G) & 0 = limit in bytes, 1 = limit in 4-KiB \\
-    54:54 & 1 & D/B & Default operation size, 0 = 16-bit, 1 = 32-bit \\
-    53:53 & 1 & L & 1 = 64-bit code segment (IA-32e mode only) \\
-    52:52 & 1 & AVL & Available for use by system software \\
-    51:48 & 4 & Limit 19:16 & 4 bits of the limit \\
-    47:47 & 1 & Present (P) & 0 = segment not present, 1 = segment present \\
-    46:45 & 2 & DPL & Descriptor privilege level \\
-    44:44 & 1 & S & Descriptor type, 0 = system, 1 = code/data \\
-    43:40 & 4 & Type & Segment type \\
-    39:16 & 24 & Base 23:00 & 3 byte of the base address \\
-    15:00 & 16 & Limit 15:00 & 2 bytes of the base address \\ \hline
-  \end{tabular}
-\end{table}
+\layout{
+  \subsubsection{Segment Descriptors}
 
-\cite[Chapter~3.4.5]{sdm3}
+  Segment descriptors are identifiers for segments of memory.
+  They contain multiple parts which can be categorised into: (linear) base address of the segment, limit (size of segment - 1), and flags (controls the abilities of the segment).
+} \bigskip
 
-\medskip
+\layout{
+  Layout of segment descriptors:
+  \begin{table}[H]
+    \centering
+    \begin{tabular}{|c|c|l|l|}
+      \hline \textbf{Bits} & \textbf{Size} & \textbf{Name} & \textbf{Use} \\ \hline
+      63:56 & 8 & Base 31:24 & 1 byte of the base address \\
+      55:55 & 1 & Granularity (G) & 0 = limit in bytes, 1 = limit in 4-KiB \\
+      54:54 & 1 & D/B & Default operation size, 0 = 16-bit, 1 = 32-bit \\
+      53:53 & 1 & L & 1 = 64-bit code segment (IA-32e mode only) \\
+      52:52 & 1 & AVL & Available for use by system software \\
+      51:48 & 4 & Limit 19:16 & 4 bits of the limit \\
+      47:47 & 1 & Present (P) & 0 = segment not present, 1 = segment present \\
+      46:45 & 2 & DPL & Descriptor privilege level \\
+      44:44 & 1 & S & Descriptor type, 0 = system, 1 = code/data \\
+      43:40 & 4 & Type & Segment type \\
+      39:16 & 24 & Base 23:00 & 3 byte of the base address \\
+      15:00 & 16 & Limit 15:00 & 2 bytes of the base address \\ \hline
+    \end{tabular}
+  \end{table}
 
-The segment types are described below:
+  \cite[Chapter~3.4.5]{sdm3}
+} \bigskip
 
-\begin{table}[H]
-  \centering
-  \begin{tabular}{|c|c|c|c|c|p{0.303\linewidth}|p{0.303\linewidth}|}
-    \cline{2-5} \multicolumn{1}{c|}{} & \multicolumn{4}{c|}{\textbf{Type}} & \multicolumn{2}{c}{} \\ \hline
-    \textbf{S} & \textbf{3} & \textbf{2} & \textbf{1} & \textbf{0} & \multicolumn{1}{c|}{\textbf{32-bit mode}} & \multicolumn{1}{c|}{\textbf{IA-32e mode}} \\ \hline
-    0 & 0 & 0 & 0 & 0 & Reserved & Reserved \\
-    0 & 0 & 0 & 0 & 1 & 16-bit TSS (Available) & Reserved \\
-    0 & 0 & 0 & 1 & 0 & LDT & LDT \\
-    0 & 0 & 0 & 1 & 1 & 16-bit TSS (Busy) & Reserved \\
-    0 & 0 & 1 & 0 & 0 & 16-bit Call Gate & Reserved \\
-    0 & 0 & 1 & 0 & 1 & Task Gate & Reserved \\
-    0 & 0 & 1 & 1 & 0 & 16-bit Interrupt Gate & Reserved \\
-    0 & 0 & 1 & 1 & 1 & 16-bit Trap Gate & Reserved \\
-    0 & 1 & 0 & 0 & 0 & Reserved & Reserved \\
-    0 & 1 & 0 & 0 & 1 & 32-bit TSS (Available) & 64-bit TSS (Available) \\
-    0 & 1 & 0 & 1 & 0 & Reserved & Reserved \\
-    0 & 1 & 0 & 1 & 1 & 32-bit TSS (Busy) & 64-bit TSS (Busy) \\
-    0 & 1 & 1 & 0 & 0 & 32-bit Call Gate & 64-bit Call Gate \\
-    0 & 1 & 1 & 0 & 1 & Reserved & Reserved \\
-    0 & 1 & 1 & 1 & 0 & 32-bit Interrupt Gate & 64-bit Interrupt Gate \\
-    0 & 1 & 1 & 1 & 1 & 32-bit Trap Gate & 64-bit Trap Gate \\ \hline
-    \textbf{-} & \textbf{-} & \textbf{E} & \textbf{W} & \textbf{A} & \multicolumn{1}{c|}{\textbf{Type}} & \multicolumn{1}{c|}{\textbf{Description}} \\ \hline
-    1 & 0 & 0 & 0 & 0 & Data & Read-Only \\
-    1 & 0 & 0 & 0 & 1 & Data & Read-Only, accessed \\
-    1 & 0 & 0 & 1 & 0 & Data & Read-Write \\
-    1 & 0 & 0 & 1 & 1 & Data & Read-Write, accessed \\
-    1 & 0 & 1 & 0 & 0 & Data & Read-Only, expand-down \\
-    1 & 0 & 1 & 0 & 1 & Data & Read-Only, expand-down, accessed \\
-    1 & 0 & 1 & 1 & 0 & Data & Read-Write, expand-down \\
-    1 & 0 & 1 & 1 & 1 & Data & Read-Write, expand-down, accessed \\ \hline
-    \textbf{-} & \textbf{-} & \textbf{C} & \textbf{R} & \textbf{A} & \multicolumn{1}{c|}{\textbf{Type}} & \multicolumn{1}{c|}{\textbf{Description}} \\ \hline
-    1 & 1 & 0 & 0 & 0 & Code & Execute-Only \\
-    1 & 1 & 0 & 0 & 1 & Code & Execute-Only, accessed \\
-    1 & 1 & 0 & 1 & 0 & Code & Execute-Read \\
-    1 & 1 & 0 & 1 & 1 & Code & Execute-Read, accessed \\
-    1 & 1 & 1 & 0 & 0 & Code & Execute-Only, conforming \\
-    1 & 1 & 1 & 0 & 1 & Code & Execute-Only, conforming, accessed \\
-    1 & 1 & 1 & 1 & 0 & Code & Execute-Read, conforming \\
-    1 & 1 & 1 & 1 & 1 & Code & Execute-Read, conforming, accessed \\ \hline
-  \end{tabular}
-\end{table}
+\layout{
+  Segment types:
+  \begin{table}[H]
+    \centering
+    \begin{tabular}{|c|c|c|c|c|p{0.303\linewidth}|p{0.303\linewidth}|}
+      \cline{2-5} \multicolumn{1}{c|}{} & \multicolumn{4}{c|}{\textbf{Type}} & \multicolumn{2}{c}{} \\ \hline
+      \textbf{S} & \textbf{3} & \textbf{2} & \textbf{1} & \textbf{0} & \multicolumn{1}{c|}{\textbf{32-bit mode}} & \multicolumn{1}{c|}{\textbf{IA-32e mode}} \\ \hline
+      0 & 0 & 0 & 0 & 0 & Reserved & Reserved \\
+      0 & 0 & 0 & 0 & 1 & 16-bit TSS (Available) & Reserved \\
+      0 & 0 & 0 & 1 & 0 & LDT & LDT \\
+      0 & 0 & 0 & 1 & 1 & 16-bit TSS (Busy) & Reserved \\
+      0 & 0 & 1 & 0 & 0 & 16-bit Call Gate & Reserved \\
+      0 & 0 & 1 & 0 & 1 & Task Gate & Reserved \\
+      0 & 0 & 1 & 1 & 0 & 16-bit Interrupt Gate & Reserved \\
+      0 & 0 & 1 & 1 & 1 & 16-bit Trap Gate & Reserved \\
+      0 & 1 & 0 & 0 & 0 & Reserved & Reserved \\
+      0 & 1 & 0 & 0 & 1 & 32-bit TSS (Available) & 64-bit TSS (Available) \\
+      0 & 1 & 0 & 1 & 0 & Reserved & Reserved \\
+      0 & 1 & 0 & 1 & 1 & 32-bit TSS (Busy) & 64-bit TSS (Busy) \\
+      0 & 1 & 1 & 0 & 0 & 32-bit Call Gate & 64-bit Call Gate \\
+      0 & 1 & 1 & 0 & 1 & Reserved & Reserved \\
+      0 & 1 & 1 & 1 & 0 & 32-bit Interrupt Gate & 64-bit Interrupt Gate \\
+      0 & 1 & 1 & 1 & 1 & 32-bit Trap Gate & 64-bit Trap Gate \\ \hline
+      \textbf{-} & \textbf{-} & \textbf{E} & \textbf{W} & \textbf{A} & \multicolumn{1}{c|}{\textbf{Type}} & \multicolumn{1}{c|}{\textbf{Description}} \\ \hline
+      1 & 0 & 0 & 0 & 0 & Data & Read-Only \\
+      1 & 0 & 0 & 0 & 1 & Data & Read-Only, accessed \\
+      1 & 0 & 0 & 1 & 0 & Data & Read-Write \\
+      1 & 0 & 0 & 1 & 1 & Data & Read-Write, accessed \\
+      1 & 0 & 1 & 0 & 0 & Data & Read-Only, expand-down \\
+      1 & 0 & 1 & 0 & 1 & Data & Read-Only, expand-down, accessed \\
+      1 & 0 & 1 & 1 & 0 & Data & Read-Write, expand-down \\
+      1 & 0 & 1 & 1 & 1 & Data & Read-Write, expand-down, accessed \\ \hline
+      \textbf{-} & \textbf{-} & \textbf{C} & \textbf{R} & \textbf{A} & \multicolumn{1}{c|}{\textbf{Type}} & \multicolumn{1}{c|}{\textbf{Description}} \\ \hline
+      1 & 1 & 0 & 0 & 0 & Code & Execute-Only \\
+      1 & 1 & 0 & 0 & 1 & Code & Execute-Only, accessed \\
+      1 & 1 & 0 & 1 & 0 & Code & Execute-Read \\
+      1 & 1 & 0 & 1 & 1 & Code & Execute-Read, accessed \\
+      1 & 1 & 1 & 0 & 0 & Code & Execute-Only, conforming \\
+      1 & 1 & 1 & 0 & 1 & Code & Execute-Only, conforming, accessed \\
+      1 & 1 & 1 & 1 & 0 & Code & Execute-Read, conforming \\
+      1 & 1 & 1 & 1 & 1 & Code & Execute-Read, conforming, accessed \\ \hline
+    \end{tabular}
+  \end{table}
+}
 
-Many of the bits are described below:
+\layout{
+  Description of bits used by the segment types:
+  \begin{enumerate}
+    \item E = Expansion-direction: \\
+      If 0, the segment is expand-up;
+      this means that the range of valid offsets is [0, limit].
+      Therefore the range of linear addresses of the segment is [base, base + limit], increasing the limit increases the maximum address (useful for data segments).
+      If 1, the segment is expand-down;
+      this means that the range of valid offsets is (limit, 0xFFFFF] if B = 0 or (limit, 0xFFFFFFFF] if B = 1.
+      Therefore the range of linear addresses of the segment is (base + limit, base + (0xFFFFF or 0xFFFFFFFF)], decreases the limit decreases the minimum address (useful for stack segments).
+    \item W = Write-enabled: \\
+      Allows the segment to be written; the stack segment must be writeable, loading the SS register with a read only segment causes a \#GP exception.
+    \item A = Accessed: \\
+      The processor sets it to 1 if it accessed the segment.
+      The kernel can clear its value and it is often useful for debugging.
+      If the segment descriptor is placed in ROM, the processor may enter an infinite loop attempting to set the Accessed bit.
+      To prevent this, the segment descriptors in ROM should have their Accessed bit set.
+    \item C = Conforming: \\
+      A transfer of execution into a more privileged conforming segment will continue at the current privilege level.
+      Transferring execution into a more privileged non-conforming segment or less privileged segment will result in a \#GP exception if a call or task gate is not used. % TODO: Check that a high to low privilege will prevent a GP if a gate is used
+      All data segments are non-conforming so cannot be accessed by less privileged processes, however unlike code segments higher privileged processes can access lower privileged data segments without the use of a gate.
+    \item R = Read-enabled: \\
+      Allows the code segment to be read and is useful if constants or static data are placed within the code segment.
+      The code segments can be read either by using a CS override or by loading the segment into a data-segment register (DS, ES, GS, FS).
+  \end{enumerate}
 
-\begin{enumerate}
-  \item E = Expansion-direction: \\
-    If 0, the segment is expand-up;
-    this means that the range of valid offsets is [0, limit].
-    Therefore the range of linear addresses of the segment is [base, base + limit], increasing the limit increases the maximum address (useful for data segments).
-    If 1, the segment is expand-down;
-    this means that the range of valid offsets is (limit, 0xFFFFF] if B = 0 or (limit, 0xFFFFFFFF] if B = 1.
-    Therefore the range of linear addresses of the segment is (base + limit, base + (0xFFFFF or 0xFFFFFFFF)], decreases the limit decreases the minimum address (useful for stack segments).
-  \item W = Write-enabled: \\
-    Allows the segment to be written; the stack segment must be writeable, loading the SS register with a read only segment causes a \#GP exception.
-  \item A = Accessed: \\
-    The processor sets it to 1 if it accessed the segment.
-    The kernel can clear its value and it is often useful for debugging.
-    If the segment descriptor is placed in ROM, the processor may enter an infinite loop attempting to set the Accessed bit.
-    To prevent this, the segment descriptors in ROM should have their Accessed bit set.
-  \item C = Conforming: \\
-    A transfer of execution into a more privileged conforming segment will continue at the current privilege level.
-    Transferring execution into a more privileged non-conforming segment or less privileged segment will result in a \#GP exception if a call or task gate is not used. % TODO: Check that a high to low privilege will prevent a GP if a gate is used
-    All data segments are non-conforming so cannot be accessed by less privileged processes, however unlike code segments higher privileged processes can access lower privileged data segments without the use of a gate.
-  \item R = Read-enabled: \\
-    Allows the code segment to be read and is useful if constants or static data are placed within the code segment.
-    The code segments can be read either by using a CS override or by loading the segment into a data-segment register (DS, ES, GS, FS).
-\end{enumerate}
-
-\cite[Chapter~3.4.5]{sdm3} \cite[Chapter~3.4.5.1]{sdm3} \cite[Chapter~3.5]{sdm3}
-\medskip
+  \cite[Chapter~3.4.5]{sdm3} \cite[Chapter~3.4.5.1]{sdm3} \cite[Chapter~3.5]{sdm3}
+} \bigskip
 
 Furthermore, when a segment register is loaded with a segment selector, the processor stores the corresponding descriptor in the hidden part of the segment register (the descriptor cache), if the descriptor is changed it is the responsibility of the software to reload the segment selector \cite[Chapter~3.4.3]{sdm3}.
 
@@ -975,281 +1021,310 @@ Furthermore, when a segment register is loaded with a segment selector, the proc
 
 Additionally in IA-32e mode, system descriptors are expended to 16 bytes (occupying the space of two entries) \cite[Chapter~3.52]{sdm3}.
 
-\subsubsection{Segment Descriptor Tables}
+\layout{
+  \subsubsection{Segment Descriptor Tables}
 
-The Global Descriptor Table (GDT) contains segment descriptors, its base address (linear) and limit (number of bytes in the GDT - 1) are stored in the GDTR (GDT Register).
-The \texttt{LGDT} instruction stores the base address and limit from a memory location into the GDTR.
-The $0^{th}$ descriptor of the GDT is often used to store the address and limit since it will never be loaded as a descriptor since the selector would be null.
-There is usually only a single GDT used by all processes.
+  The Global Descriptor Table (GDT) contains segment descriptors, its base address (linear) and limit (number of bytes in the GDT - 1) are stored in the GDTR (GDT Register).
+  The \texttt{LGDT} instruction stores the base address and limit from a memory location into the GDTR.
+  The $0^{th}$ descriptor of the GDT is often used to store the address and limit since it will never be loaded as a descriptor since the selector would be null.
+  There is usually only a single GDT used by all processes.
+} \bigskip
+
+\layout{
+  The Local Descriptor Table (LDT) also contains segment descriptors; however unlike the GDT there are usually many LDTs (in a non-flat segmentation model), this is so that each process can have its own set of segments.
+  Unlike the GDTR, the LDTR (LDT Register) stores the segment selector for the LDT table segment stored in the GDT.
+  The \texttt{LLDT} instruction stores the segment selector of the new LDT in the LDTR.
+  Furthermore in 32-bit task switches the LDTR is automatically loaded with the segment selector and descriptor for the LDT of the new task.
+
+  \bigskip \cite[Chapter~3.5.1]{sdm3}
+}
+
+% TODO: check if these are needed: sections, tss
+
+\layout{
+  \subsection{Paging}
+
+  % TODO: Cite this first bit here
+
+  Paging is a method of memory management that separates the linear address space from the physical address space.
+  It occurs after segmentation but unlike segmentation it does not need to be enabled, if it is disabled linear addresses are the same as physical addresses.
+  The OS splits up the physical address space into pages, each process has a paging hierarchy which the OS manages, it consists of many paging structures.
+  When a process accesses memory, the processor translates the linear address into its corresponding physical address using the paging hierarchy (by traversing the paging hierarchy), this is called a hardware-assisted page walk.
+  There are four different paging modes.
+}
+
+\layout{
+  \subsubsection{Enabling Paging}
+
+  Before paging is enabled, CR3 should contain the physical address of the first paging structure, and protection (CR0.PE) is enabled.
+  Furthermore, once paging is enabled a different paging mode can be used but paging should be disabled first before changing flags since exceptions may occur by changing the flags whilst paging is enabled.
+  Paging is enabled by setting CR0.PG.
+
+  \bigskip \cite[Chapter~5.1.2]{sdm3}
+} \bigskip
+
+\layout{
+  The following table shows which combination of flags is used to enable which paging mode:
+  \begin{table}[H]
+    \centering
+    \begin{tabular}{|c|c|c|c|}
+      \hline \textbf{Mode} & \textbf{CR4.PAE} & \textbf{IA32\_EFER.LME} & \textbf{CR4.LA57} \\ \hline
+      32-bit & 0 & 0 & -  \\
+      PAE & 1 & 0 & -  \\
+      4-level & 1 & 1 & 0 \\
+      5-level & 1 & 1 & 1 \\ \hline
+    \end{tabular}
+  \end{table}
+}
+
+\layout{
+  Since IA32\_EFER.LME enables long mode (IA-32e), 32-bit and PAE can only be used in legacy protected mode and 4-level and 5-level can only be used in long mode.
+  Furthermore, in compatibility mode (sub mode of IA-32e), bits 63-32 of the linear address are treated as 0.
+
+  \bigskip \cite[Chapter~5.1.1]{sdm3}
+}
+
+\layout{
+  \subsubsection{Paging Structures}
+
+  All four paging modes translate linear addresses using hierarchical paging structures.
+  Each structure is 4096 bytes (4-KiB) in size and comprises several entries,
+  in 32-bit paging each entry is 32 bits (4 bytes) hence there are 1024 entries in each structure,
+  in the other paging modes each entry is 64 bits (8 bytes) hence there are 512 entries in each structure.
+  However in PAE paging, there is a structure 32 bytes in size containing 4 64-bit entries.
+} \bigskip
+
+\layout{
+  The processor uses the upper portion of a linear address to identify a series of paging-structure entries. The last of these entries identifies the physical address of the region to which the linear address translates (called the page frame). The lower portion of the linear address (called the page offset) identifies the specific address within that region to which the linear address translates.
+  Each paging structure entry contains a physical address which is either the address of another paging structure or a page frame. In the first case it is said to reference the other paging structure; in the second the entry is said to map a page.
+  CR3 contains the physical address of the first paging structure (unless HLAT paging is used).
+} \bigskip
+
+\layout{
+  Linear addresses are translated into physical addresses using an iterative procedure:
+  a portion of the linear address (initially the uppermost bits) is used to select an entry in a paging structure (initially the one referenced in CR3), if the entry references another structure then the process continues using another portion of the linear address (immediately below the portion just used), if the entry maps a page then the remaining lower portion of the linear address is used as a page offset.
+} \bigskip
+
+\layout{
+  A paging-structure entry is marked as not present if its P flag (bit 0) is clear, if it is encountered during translation it causes a page-fault exception; if the exception handler returns, the instruction that generated the exception is restarted.
+  Usually an address is mapped to a 4 KiB page, if it is not the final paging structure then bit 7 (PS - Page Size) is checked;
+  if PS = 0 then it references a page structure, else if PS = 1 then the entry maps a larger page (4MiB for 32-bit paging if CR4.PSE = 1, 2MiB for other paging modes regardless of CR4.PSE; 4-level and 5-level paging may also support 1GiB pages),
+} \bigskip
+
+\cite[Chapter~5.2]{sdm3} \bigskip
+
+\layout{
+  The following table lists paging structures along with: the structure that stores their physical address (CR3/previous structure), the bits of the linear address that is used to select the entry within them, and the size of the page they map to (if they map to a page).
+
+  \newcommand{\pgtable}[2]{\multicolumn{1}{>{\raggedright\arraybackslash}m{#1\linewidth}|}{\textbf{#2}}}
+
+  \begin{table}[H]
+    \centering
+    \begin{tabular}{|p{0.165\linewidth}|p{0.09\linewidth}|l|p{0.105\linewidth}|p{0.14\linewidth}|p{0.18\linewidth}|}
+      % \hline \textbf{Paging Structure} & \textbf{Entry Name} & \textbf{Paging Mode} & \textbf{Physical Address of Structure} & \textbf{Bits Selecting Entry} & \textbf{Page Mapping} \\ \hline
+      \hline \textbf{Paging Structure} & \pgtable{0.09}{Entry Name} & \textbf{Paging Mode} & \pgtable{0.105}{Physical Address of Structure} & \pgtable{0.14}{Bits Selecting Entry} & \textbf{Page Mapping} \\ \hline
+      \multirow[l]{2}{\linewidth}{PML5 table} & \multirow[l]{2}{\linewidth}{PML5E} & 32-bit, PAE, 4-level & \multicolumn{3}{c|}{N/A} \\ \cline{3-6}
+       & & 5-level & CR3 & 56:48 & N/A (PS must be 0) \\ \hline
+      \multirow[l]{3}{\linewidth}{PML4 table} & \multirow[l]{3}{\linewidth}{PML4E} & 32-bit, PAE & \multicolumn{3}{c|}{N/A} \\ \cline{3-6}
+        & & 4-level & CR3 & \multirow[l]{2}{\linewidth}{47:39} & \multirow[l]{2}{\linewidth}{N/A (PS must be 0)} \\ \cline{3-4}
+        & & 5-level & PML5E & & \\ \hline
+      \multirow[l]{3}{\linewidth}{Page-directory-pointer table} & \multirow[l]{3}{\linewidth}{PDPTE} & 32-bit & \multicolumn{3}{c|}{N/A} \\ \cline{3-6}
+        & & PAE & CR3 & 31:30 & N/A (PS must be 0) \\ \cline{3-6}
+        & & 4-level, 5-level & PML4E & 38:30 & 1-GiB page if PS=1 \\ \hline
+      \multirow[l]{2}{\linewidth}{Page directory} & \multirow[l]{2}{\linewidth}{PDE} & 32-bit & CR3 & 31:22 & 4-MiB page if PS=1 \\ \cline{3-6}
+       & & PAE, 4-level, 5-level & PDPTE & 29:21 & 2-MiB page if PS=1 \\ \hline
+      \multirow[l]{2}{\linewidth}{Page table} & \multirow[l]{2}{\linewidth}{PTE} & 32-bit & \multirow[l]{2}{\linewidth}{PDE} & 21:12 & \multirow[l]{2}{\linewidth}{4-KiB page} \\ \cline{3-3} \cline{5-5}
+       & & PAE, 4-level, 5-level & & 20:12 & \\ \hline
+    \end{tabular}
+  \end{table}
+
+  \cite[Chapter~5.2]{sdm3}
+} \bigskip
+
+The following tables describe the layout of the paging structures (M = MAXPHYADDR, * = Pointer to next paging structure or page frame).
 
 \bigskip
-
-The Local Descriptor Table (LDT) also contains segment descriptors; however unlike the GDT there are usually many LDTs (in a non-flat segmentation model), this is so that each process can have its own set of segments.
-Unlike the GDTR, the LDTR (LDT Register) stores the segment selector for the LDT table segment stored in the GDT.
-The \texttt{LLDT} instruction stores the segment selector of the new LDT in the LDTR.
-Furthermore in 32-bit task switches the LDTR is automatically loaded with the segment selector and descriptor for the LDT of the new task.
-
-\medskip
-
-\cite[Chapter~3.5.1]{sdm3}
-
-% TODO: check if these are needed:
-% sections, tss
-
-\subsection{Paging}
-
-% TODO: cite
-
-Paging is a method of memory management that separates a programs address space (linear address) from the physical address space.
-It occurs after segmentation but unlike segmentation it does not need to be enabled, if it is disabled linear addresses are the same as physical addresses.
-The OS splits up the physical address space into 4KiB pages, each process has a paging hierarchy which the OS manages, it consists of many layers (page tables);
-each layer consists of the entries for either the physical address of the next layer or page and flags.
-When a process accesses memory, the processor hardware converts the linear address into its corresponding physical address using the paging hierarchy (by traversing the page tables) and then uses it to access memory, this is called a hardware-assisted page walk.
-If the page walk encountered a non-present entry then a \#PF exception is generated; if the exception handler returns, the instruction that generated the exception is restarted.
-
-% TODO: TLB + its cache misses, tlb shootdown
-
-% CR3 contains the physical address of the first paging structure unless HLAT (Hypervisor-managed Linear-Address-Translation) paging is used where it is stored in HLATP.
-
-\subsubsection{Enabling Paging}
-
-Before paging is enabled, CR3 should contain the physical address of the first paging structure, and protection (CR0.PE) is enabled.
-Furthermore, once paging is enabled a different paging method can be used but paging should be disabled first before changing flags since exceptions may occur by changing the flags whilst paging is enabled.
-The table below shows which combination of flags is used to enable which type of paging, once the flags are set, set CR0.PG to enable paging.
-
-\begin{table}[H]
-  \centering
-  \begin{tabular}{|c|c|c|c|}
-    \hline \textbf{Method} & \textbf{CR4.PAE} & \textbf{IA32\_EFER.LME} & \textbf{CR4.LA57} \\ \hline
-    32-bit & 0 & 0 & -  \\
-    PAE & 1 & 0 & -  \\
-    4-level & 1 & 1 & 0 \\
-    5-level & 1 & 1 & 1 \\ \hline
-  \end{tabular}
-\end{table}
-
-\noindent
-Since IA32\_EFER.LME enables long mode (IA-32e), 32-bit and PAE can only be used in legacy protected mode and 4-level and 5-level can only be used in long mode.
-Furthermore, in compatibility mode (sub mode of IA-32e), bits 63-32 of the linear address are treated as 0.
-
-\subsubsection{Paging Structure}
-
-% TODO: include diagram from page 112 of VOL 3 or similar
-
-5.2 - Paging structure
-
-% TODO: write this up better
-Each structure is 4096 bytes in size and comprises a number of individual entries.
-In 32-bit paging each entry is 32 bits (4 bytes) so there are 1024 entries in each structure.
-In 64-bit paging each entry is 64 bits (8 bytes) there are thus 512 entries in each structure.
-(In PAE however there is a structure 32 bytes in size containing 4 64-bit entries)
-
-The processor uses the upper portion of a linear address to identify a series of paging-structure entries. The last of these entries identifies the physical address of the region to which the linear address translates (called the page frame). The lower portion of the linear address (called the page offset) identifies the specific address within that region to which the linear address translates.
-
-Each paging structure entry contains a physical address - either the address of another paging structure or a page frame. In the first case it is said to reference the other paging structure; in the second the entry is said to map a page.
-
-CR3 contains the first paging structure. (unless HLAT paging)
-
-A paging-structure entry is marked as not present if its P flag (bit 0) is clear, if it is encountered during translation it causes a page-fault exception.
-
-Usually an address is mapped to a 4 KiB page, if it is not the final paging structure then bit 7 (PS - page size) is checked, if it is 0 the process continues normally, else if it is 1 the entry maps a larger page (4MiB for 32-bit paging if CR4.PSE = 1, 2MiB for other paging modes regardless of CR4.PSE; 4-level and 5-level paging may also support 1GiB pages).
-Bit 7 is used for other purposes if its in the final paging structure.
-
-paging structure:
-
-\newcommand{\pgtable}[2]{\multicolumn{1}{>{\raggedright\arraybackslash}m{#1\linewidth}|}{\textbf{#2}}}
-
-\begin{table}[H]
-  \centering
-  \begin{tabular}{|p{0.165\linewidth}|p{0.09\linewidth}|l|p{0.105\linewidth}|p{0.14\linewidth}|p{0.18\linewidth}|}
-    % \hline \textbf{Paging Structure} & \textbf{Entry Name} & \textbf{Paging Mode} & \textbf{Physical Address of Structure} & \textbf{Bits Selecting Entry} & \textbf{Page Mapping} \\ \hline
-    \hline \textbf{Paging Structure} & \pgtable{0.09}{Entry Name} & \textbf{Paging Mode} & \pgtable{0.105}{Physical Address of Structure} & \pgtable{0.14}{Bits Selecting Entry} & \textbf{Page Mapping} \\ \hline
-    \multirow[l]{2}{\linewidth}{PML5 table} & \multirow[l]{2}{\linewidth}{PML5E} & 32-bit, PAE, 4-level & \multicolumn{3}{c|}{N/A} \\ \cline{3-6}
-     & & 5-level & CR3 & 56:48 & N/A (PS must be 0) \\ \hline
-    \multirow[l]{3}{\linewidth}{PML4 table} & \multirow[l]{3}{\linewidth}{PML4E} & 32-bit, PAE & \multicolumn{3}{c|}{N/A} \\ \cline{3-6}
-      & & 4-level & CR3 & \multirow[l]{2}{\linewidth}{47:39} & \multirow[l]{2}{\linewidth}{N/A (PS must be 0)} \\ \cline{3-4}
-      & & 5-level & PML5E & & \\ \hline
-    \multirow[l]{3}{\linewidth}{Page-directory-pointer table} & \multirow[l]{3}{\linewidth}{PDPTE} & 32-bit & \multicolumn{3}{c|}{N/A} \\ \cline{3-6}
-      & & PAE & CR3 & 31:30 & N/A (PS must be 0) \\ \cline{3-6}
-      & & 4-level, 5-level & PML4E & 38:30 & 1-GiB page if PS=1 \\ \hline
-    \multirow[l]{2}{\linewidth}{Page directory} & \multirow[l]{2}{\linewidth}{PDE} & 32-bit & CR3 & 31:22 & 4-MiB page if PS=1 \\ \cline{3-6}
-     & & PAE, 4-level, 5-level & PDPTE & 29:21 & 2-MiB page if PS=1 \\ \hline
-    \multirow[l]{2}{\linewidth}{Page table} & \multirow[l]{2}{\linewidth}{PTE} & 32-bit & \multirow[l]{2}{\linewidth}{PDE} & 21:12 & \multirow[l]{2}{\linewidth}{4-KiB page} \\ \cline{3-3} \cline{5-5}
-     & & PAE, 4-level, 5-level & & 20:12 & \\ \hline
-  \end{tabular}
-\end{table}
-
-% Bits 11:0 of the paging structure control flags which modify the use of the corresponding page/paging structure.
-% These flags are:
-Layout of a paging structure (M = MAXPHYADDR, * = Pointer to next paging structure or page frame):
 
 \setlength{\tabcolsep}{0pt}
 
-32-bit:
+\layout{
+  32-bit Paging:
+  \begin{table}[H]
+    \centering
+    \begin{tabular}{|*{6}{>{\centering\arraybackslash}m{0.13\linewidth}|}}
+      \hline \textbf{Bits} & \textbf{CR3} & \textbf{PDE: 4MB} & \textbf{PDE: PTE} & \textbf{PTE: 4KB} & \textbf{Not Present} \\ \hline
+      31:22 & \multirow{4}*{PD*} & 31:22 Page* & \multirow{4}*{PT*} & \multirow{4}*{Page*} & \multirow{15}*{Ign.} \\ \cline{1-1} \cline{3-3}
+      21:17 & & Rsvd. & & & \\ \cline{1-1} \cline{3-3}
+      16:13 & & 39:32 Page* & & & \\ \cline{1-1} \cline{3-3}
+      12 & & PAT & & & \\ \cline{1-5}
 
-\begin{table}[H]
-  \centering
-  \begin{tabular}{|*{6}{>{\centering\arraybackslash}p{0.099\linewidth}|}}
-    \hline \textbf{Bits} & \textbf{CR3} & \textbf{PDE: 4MB} & \textbf{PDE: PTE} & \textbf{PTE: 4KB} & \textbf{Not Present} \\ \hline
-    31:22 & \multirow{4}*{PD*} & 31:22 Page* & \multirow{4}*{PT*} & \multirow{4}*{Page*} & \multirow{15}*{Ign.} \\ \cline{1-1} \cline{3-3}
-    21:17 & & Rsvd. & & & \\ \cline{1-1} \cline{3-3}
-    16:13 & & 39:22 Page* & & & \\ \cline{1-1} \cline{3-3}
-    12 & & PAT & & & \\ \cline{1-5}
+      11 & \multirow{7}*{Ign.} & \multirow{3}*{Ign.} & \multirow{4}*{Ign.} & \multirow{3}*{Ign.} & \\ \cline{1-1}
+      10 & & & & & \\ \cline{1-1}
+      9 & & & & & \\ \cline{1-1} \cline{3-3} \cline{5-5}
+      8 & & G & & G & \\ \cline{1-1} \cline{3-5}
+      7 & & 1 & 0 & PAT & \\ \cline{1-1} \cline{3-5}
+      6 & & D & Ign. & D & \\ \cline{1-1} \cline{3-5}
+      5 & & A & A & A & \\ \cline{1-5}
+      4 & PCD & PCD & PCD & PCD & \\ \cline{1-5}
+      3 & PWT & PWT & PWT & PWT & \\ \cline{1-5}
+      2 & \multirow{3}*{Ign.} & U/S & U/S & U/S & \\ \cline{1-1} \cline{3-5}
+      1 & & R/W & R/W & R/W & \\ \cline{1-1} \cline{3-6}
+      0 & & 1 & 1 & 1 & 0 \\ \hline
+    \end{tabular}
+  \end{table}
 
-    11 & \multirow{7}*{Ign.} & \multirow{3}*{Ign.} & \multirow{4}*{Ign.} & \multirow{3}*{Ign.} & \\ \cline{1-1}
-    10 & & & & & \\ \cline{1-1}
-    9 & & & & & \\ \cline{1-1} \cline{3-3} \cline{5-5}
-    8 & & G & & G & \\ \cline{1-1} \cline{3-5}
-    7 & & 1 & 0 & PAT & \\ \cline{1-1} \cline{3-5}
-    6 & & D & Ign. & D & \\ \cline{1-1} \cline{3-5}
-    5 & & A & A & A & \\ \cline{1-5}
-    4 & PCD & PCD & PCD & PCD & \\ \cline{1-5}
-    3 & PWT & PWT & PWT & PWT & \\ \cline{1-5}
-    2 & \multirow{3}*{Ign.} & U/S & U/S & U/S & \\ \cline{1-1} \cline{3-5}
-    1 & & R/W & R/W & R/W & \\ \cline{1-1} \cline{3-6}
-    0 & & 1 & 1 & 1 & 0 \\ \hline
-  \end{tabular}
-\end{table}
+  \cite[Chapter~5.3]{sdm3}
+} \bigskip
 
-PAE:
+\layout{
+  PAE Paging:
+  \begin{table}[H]
+    \centering
+    \begin{tabular}{|*{7}{>{\centering\arraybackslash}m{0.13\linewidth}|}}
+      \hline \textbf{Bits} & \textbf{CR3} & \textbf{PDPTE} & \textbf{PDE: 2MB} & \textbf{PDE: PTE} & \textbf{PTE: 4KB} & \textbf{Not Present} \\ \hline
+      63 & \multirow{3}*{Ign.} & \multirow{2}*{Rsvd.} & XD & XD & XD & \multirow{15}{*}{Ign.} \\ \cline{1-1} \cline{4-6}
+      62:M & & & Rsvd. & Rsvd. & Rsvd. & \\ \cline{1-1} \cline{3-6}
+      M-1:32 & & \multirow{4}*{PDE*} & \multirow{2}*{Page*} & \multirow{4}*{PT*} & \multirow{4}*{Page*} & \\ \cline{1-2}
+      31:21 & \multirow{10}*{PDPT*} & & & & & \\ \cline{1-1} \cline{4-4}
+      20:13 & & & Rsvd. & & & \\ \cline{1-1} \cline{4-4}
+      12 & & & PAT & & & \\ \cline{1-1} \cline{3-6}
 
-\begin{table}[H]
-  \centering
-  \begin{tabular}{|*{7}{>{\centering\arraybackslash}p{0.099\linewidth}|}}
-    \hline \textbf{Bits} & \textbf{CR3} & \textbf{PDPTE} & \textbf{PDE: 2MB} & \textbf{PDE: PTE} & \textbf{PTE: 4KB} & \textbf{Not Present} \\ \hline
-    63 & \multirow{3}*{Ign.} & \multirow{2}*{Rsvd.} & XD & XD & XD & \multirow{15}{*}{Ign.} \\ \cline{1-1} \cline{4-6}
-    62:M & & & Rsvd. & Rsvd. & Rsvd. & \\ \cline{1-1} \cline{3-6}
-    M-1:32 & & \multirow{4}*{PDE*} & \multirow{2}*{Page*} & \multirow{4}*{PT*} & \multirow{4}*{Page*} & \\ \cline{1-2}
-    31:21 & \multirow{10}*{PDPT*} & & & & & \\ \cline{1-1} \cline{4-4}
-    20:13 & & & Rsvd. & & & \\ \cline{1-1} \cline{4-4}
-    12 & & & PAT & & & \\ \cline{1-1} \cline{3-6}
+      11 & & \multirow{3}*{Ign.} & \multirow{3}*{Ign.} & \multirow{4}*{Ign.} & \multirow{3}*{Ign.} & \\ \cline{1-1}
+      10 & & & & & & \\ \cline{1-1}
+      9 & & & & & & \\ \cline{1-1} \cline{3-4} \cline{6-6}
+      8 & & \multirow{4}*{Rsvd.} & G & & G & \\ \cline{1-1} \cline{4-6}
+      7 & & & 1 & 0 & PAT & \\ \cline{1-1} \cline{4-6}
+      6 & & & D & Ign. & D & \\ \cline{1-1} \cline{4-6}
+      5 & & & A & A & A & \\ \cline{1-6}
+      4 & \multirow{5}*{Ign.} & PCD & PCD & PCD & PCD & \\ \cline{1-1} \cline{3-6}
+      3 & & PWT & PWT & PWT & PWT & \\ \cline{1-1} \cline{3-6}
+      2 & & \multirow{2}*{Rsvd.} & U/S & U/S & U/S & \\ \cline{1-1} \cline{4-6}
+      1 & & & R/W & R/W & R/W & \\ \cline{1-1} \cline{3-7}
+      0 & & 1 & 1 & 1 & 1 & 0 \\ \hline
+    \end{tabular}
+  \end{table}
 
-    11 & & \multirow{3}*{Ign.} & \multirow{3}*{Ign.} & \multirow{4}*{Ign.} & \multirow{3}*{Ign.} & \\ \cline{1-1}
-    10 & & & & & & \\ \cline{1-1}
-    9 & & & & & & \\ \cline{1-1} \cline{3-4} \cline{6-6}
-    8 & & \multirow{4}*{Rsvd.} & G & & G & \\ \cline{1-1} \cline{4-6}
-    7 & & & 1 & 0 & PAT & \\ \cline{1-1} \cline{4-6}
-    6 & & & D & Ign. & D & \\ \cline{1-1} \cline{4-6}
-    5 & & & A & A & A & \\ \cline{1-6}
-    4 & \multirow{5}*{Ign.} & PCD & PCD & PCD & PCD & \\ \cline{1-1} \cline{3-6}
-    3 & & PWT & PWT & PWT & PWT & \\ \cline{1-1} \cline{3-6}
-    2 & & \multirow{2}*{Rsvd.} & U/S & U/S & U/S & \\ \cline{1-1} \cline{4-6}
-    1 & & & R/W & R/W & R/W & \\ \cline{1-1} \cline{3-7}
-    0 & & 1 & 1 & 1 & 1 & 0 \\ \hline
-  \end{tabular}
-\end{table}
+  \cite[Chapter~5.4]{sdm3}
+} \bigskip
 
-4/5 Level paging:
+\layout{
+  4/5 Level paging:
+  \begin{table}[H]
+    \centering
+    \begin{tabular}{|*{10}{>{\centering\arraybackslash}p{0.099\linewidth}|}}
+      \hline \textbf{Bits} & \textbf{CR3} & \textbf{PML5E: PLM4E} & \textbf{PLM4E: PDPTE} & \textbf{PDPTE: 1GB} & \textbf{PDPTE: PDE} & \textbf{PDE: 2MB} & \textbf{PDE: PTE} & \textbf{PTE: 4KB} & \textbf{Not Present} \\ \hline
+      63 & \multirow{4}*{Rsvd.} & XD & XD & XD & XD & XD & XD & XD & \multirow{15}{*}{Ign.} \\ \cline{1-1} \cline{3-9}
+      62:59 & & \multirow{2}*{Ign.} & \multirow{2}*{Ign.} & Prot & \multirow{2}*{Ign.} & Prot & \multirow{2}*{Ign.} & Prot & \\ \cline{1-1} \cline{5-5} \cline{7-7} \cline{9-9}
+      58:52 & & & & Ign. & & Ign. & & Ign. & \\ \cline{1-1} \cline{3-9}
+      51:M & & Rsvd. & Rsvd. & Rsvd. & Rsvd. & Rsvd. & Rsvd. & Rsvd. & \\ \cline{1-9}
 
-\begin{table}[H]
-  \centering
-  \begin{tabular}{|*{10}{>{\centering\arraybackslash}p{0.099\linewidth}|}}
-    \hline \textbf{Bits} & \textbf{CR3} & \textbf{PML5E: PLM4E} & \textbf{PLM4E: PDPTE} & \textbf{PDPTE: 1GB} & \textbf{PDPTE: PDE} & \textbf{PDE: 2MB} & \textbf{PDE: PTE} & \textbf{PTE: 4KB} & \textbf{Not Present} \\ \hline
-    63 & \multirow{4}*{Rsvd.} & XD & XD & XD & XD & XD & XD & XD & \multirow{15}{*}{Ign.} \\ \cline{1-1} \cline{3-9}
-    62:59 & & \multirow{2}*{Ign.} & \multirow{2}*{Ign.} & Prot & \multirow{2}*{Ign.} & Prot & \multirow{2}*{Ign.} & Prot & \\ \cline{1-1} \cline{5-5} \cline{7-7} \cline{9-9}
-    58:52 & & & & Ign. & & Ign. & & Ign. & \\ \cline{1-1} \cline{3-9}
-    51:M & & Rsvd. & Rsvd. & Rsvd. & Rsvd. & Rsvd. & Rsvd. & Rsvd. & \\ \cline{1-9}
+      M-1:30 & \multirow{4}{=}{\centering PML4* \\ / \\ PML5*} & \multirow{4}{=}{\centering PML4*} & \multirow{4}{=}{\centering PDPT*} & Page* & \multirow{4}{=}{\centering PD*} & \multirow{2}{=}{\centering Page*} & \multirow{4}{=}{\centering PT*} & \multirow{4}{=}{\centering Page*} & \\ \cline{1-1} \cline{5-5}
+      29:21 & & & & \multirow{2}{=}{\centering Rsvd.} & & & & & \\ \cline{1-1} \cline{7-7}
+      20:13 & & & & & & Rsvd. & & & \\ \cline {1-1} \cline{5-5} \cline{7-7}
+      12 & & & & PAT & & PAT & & & \\ \cline{1-9}
 
-    M-1:30 & \multirow{4}{=}{\centering PML4* \\ / \\ PML5*} & \multirow{4}{=}{\centering PML4*} & \multirow{4}{=}{\centering PDPT*} & Page* & \multirow{4}{=}{\centering PD*} & \multirow{2}{=}{\centering Page*} & \multirow{4}{=}{\centering PT*} & \multirow{4}{=}{\centering Page*} & \\ \cline{1-1} \cline{5-5}
-    29:21 & & & & \multirow{2}{=}{\centering Rsvd.} & & & & & \\ \cline{1-1} \cline{7-7}
-    20:13 & & & & & & Rsvd. & & & \\ \cline {1-1} \cline{5-5} \cline{7-7}
-    12 & & & & PAT & & PAT & & & \\ \cline{1-9}
+      11 & \multirow{7}*{Ign.} & R & R & R & R & R & R & R & \\ \cline{1-1} \cline{3-9}
+      10 & & \multirow{3}*{Ign.} & \multirow{3}*{Ign.} & \multirow{2}*{Ign.} & \multirow{3}*{Ign.} & \multirow{2}*{Ign.} & \multirow{3}*{Ign.} & \multirow{2}*{Ign.} & \\ \cline{1-1}
+      9 & & & & & & & & & \\ \cline{1-1} \cline{5-5} \cline{7-7} \cline{9-9}
+      8 & & & & G & & G & & G & \\ \cline{1-1} \cline{3-9}
+      7 & & Rsvd. & Rsvd. & 1 & 0 & 1 & 0 & PAT & \\ \cline{1-1} \cline{3-9}
+      6 & & Ign. & Ign. & D & Ign. & D & Ign. & D & \\ \cline{1-1} \cline{3-9}
+      5 & & A & A & A & A & A & A & A & \\ \cline{1-9}
+      4 & PCD & PCD & PCD & PCD & PCD & PCD & PCD & PCD & \\ \cline{1-9}
+      3 & PWT & PWT & PWT & PWT & PWT & PWT & PWT & PWT & \\ \cline{1-9}
+      2 & \multirow{3}*{Ign.} & U/S & U/S & U/S & U/S & U/S & U/S & U/S & \\ \cline{1-1} \cline{3-9}
+      1 & & R/W & R/W & R/W & R/W & R/W & R/W & R/W & \\ \cline{1-1} \cline{3-10}
+      0 & & 1 & 1 & 1 & 1 & 1 & 1 & 1 & 0 \\ \hline
+    \end{tabular}
+  \end{table}
 
-    11 & \multirow{7}*{Ign.} & R & R & R & R & R & R & R & \\ \cline{1-1} \cline{3-9}
-    10 & & \multirow{3}*{Ign.} & \multirow{3}*{Ign.} & \multirow{2}*{Ign.} & \multirow{3}*{Ign.} & \multirow{2}*{Ign.} & \multirow{3}*{Ign.} & \multirow{2}*{Ign.} & \\ \cline{1-1}
-    9 & & & & & & & & & \\ \cline{1-1} \cline{5-5} \cline{7-7} \cline{9-9}
-    8 & & & & G & & G & & G & \\ \cline{1-1} \cline{3-9}
-    7 & & Rsvd. & Rsvd. & 1 & 0 & 1 & 0 & PAT & \\ \cline{1-1} \cline{3-9}
-    6 & & Ign. & Ign. & D & Ign. & D & Ign. & D & \\ \cline{1-1} \cline{3-9}
-    5 & & A & A & A & A & A & A & A & \\ \cline{1-9}
-    4 & PCD & PCD & PCD & PCD & PCD & PCD & PCD & PCD & \\ \cline{1-9}
-    3 & PWT & PWT & PWT & PWT & PWT & PWT & PWT & PWT & \\ \cline{1-9}
-    2 & \multirow{3}*{Ign.} & U/S & U/S & U/S & U/S & U/S & U/S & U/S & \\ \cline{1-1} \cline{3-9}
-    1 & & R/W & R/W & R/W & R/W & R/W & R/W & R/W & \\ \cline{1-1} \cline{3-10}
-    0 & & 1 & 1 & 1 & 1 & 1 & 1 & 1 & 0 \\ \hline
-  \end{tabular}
-\end{table}
+  \cite[Chapter~5.5]{sdm3}
+} \bigskip
 
 \setlength{\tabcolsep}{6pt}
 
-% TODO: finish table (???)
-\begin{table}[H]
-  \centering
-  \begin{tabular}{|c|l|l|}
-    \hline \textbf{Label} & \textbf{Name} & \textbf{Description} \\ \hline
-    P (Bit 0) & Present & If 1 it maps to the next structure else it raises a \#PF \\
-    R/W & Read/Write & If 0, writes are not allowed \\
-    U/S & User/Supervisor & If 0, user-mode accesses are not allowed \\
-    PWT & Page-level Write-Through & Indirectly determines the memory type used to access the page \\
-    PCD & Page-level Cache Disable & Indirectly determines the memory type used to access the page \\
-    A & Accessed & Indicates whether the software has accessed the page \\
-    D & Dirty & Indicates whether the software has written to the page \\
-    PAT & Page Attribute Table & Indirectly determines the memory type used to access the page \\
-    G & Global & If 1 and CR4.PGE = 1, the translation is global \\
-    R & Restart & If HLAT paging, restart using ordinary paging \\
-    Prot & Protection key & If CR4.PKE = 1 or CR4.PKS = 1, the page's access rights, else ignored \\
-    XD & Execute Disable & If IA32\_EFER.NXE = 1, Disabled instruction fetches \\
-    Ign. & Ignored & Bits are not used \\
-    Rsvd. & Reserved & Bits must be 0 \\ \hline
-  \end{tabular}
-\end{table}
+\layout{
+  Description of many of the bits/labels used in the page entries:
+  \begin{table}[H]
+    \centering
+    \begin{tabular}{|c|l|l|}
+      \hline \textbf{Label} & \textbf{Name} & \textbf{Description} \\ \hline
+      P (Bit 0) & Present & If 1 it maps to the next structure else it raises a \#PF \\
+      R/W & Read/Write & If 0, writes are not allowed \\
+      U/S & User/Supervisor & If 0, user-mode accesses are not allowed \\
+      PWT & Page-level Write-Through & Indirectly determines the memory type used to access the page \\
+      PCD & Page-level Cache Disable & Indirectly determines the memory type used to access the page \\
+      A & Accessed & Indicates whether the software has accessed the page \\
+      D & Dirty & Indicates whether the software has written to the page \\
+      PAT & Page Attribute Table & Indirectly determines the memory type used to access the page \\
+      G & Global & If 1 and CR4.PGE = 1, the translation is global \\
+      R & Restart & If 1 and HLAT paging, restart using ordinary paging \\
+      Prot & Protection key & If CR4.PKE = 1 or CR4.PKS = 1, the page's access rights, else ignored \\
+      XD & Execute Disable & If IA32\_EFER.NXE = 1, Disabled instruction fetches \\
+      Ign. & Ignored & Bits are not used \\
+      Rsvd. & Reserved & Bits must be 0 \\ \hline
+    \end{tabular}
+  \end{table}
 
-5.3 - 32-bit paging
+  \cite[Chapter~5.3]{sdm3} \cite[Chapter~5.4]{sdm3} \cite[Chapter~5.5]{sdm3}
+}
 
-5.4 - PAE paging
+% TODO: ??
+% 5.6 - Access rights
+% 5.7 - page fault exceptions
 
-5.5 - 4 and 5 level paging
+\layout{
+  \subsubsection{Translation Lookaside Buffer}
 
-5.6 - Access rights
+  The Translation Lookaside Buffer (TLB) is a specialised cache which stores linear address translations, they contain entries that map page numbers to page frames.
+  \cite[Chapter~5.10.2]{sdm3}
+} \bigskip
 
-5.7 - page fault exceptions
+\layout{
+  Each entry in a TLB is an individual translation;
+  each entry is referenced by a page number and stores: physical address of the page frame, access rights, attributes (dirty flag, memory type).
+  Other information may also be stored and special-use TLBs may not store all this information (eg instruction TLB would not store the dirty flag).
+  TLB entries are associated with the current PCID when they are created.
+  \cite[Chapter~5.10.2.2]{sdm3}
+} \bigskip
 
-5.8-5.11 - ???
+\layout{
+  The processor may cache translations that were not used (eg due to speculative execution),
+  furthermore some processors may cache a large page (one greater than 4-KiB) as multiple 4-KiB TLB entries.
+  \cite[Chapter~5.10.2.3]{sdm3}
+} \bigskip
 
-5.12 - virtual memory
+\layout{
+  In addition to TLBs there are paging structure caches.
+  There is a cache specific to each paging structure, each entry in these caches contains information from the paging structure (eg its physical address and flags) and the bits from the linear address used to identify the entry.
+  \cite[Chapter~5.10.3]{sdm3}
+} \bigskip
 
-\subsubsection{Translation Lookaside Buffer}
+\layout{
+  To ensure the paging caches contain up to date information, the OS must invalidate any cached entries when they are updated.
+  \cite[Chapter~5.10.4]{sdm3}
+} \bigskip
 
-The Translation Lookaside Buffer (TLB) is a specialised cache which stores linear address translations.
-% TODO: Finish section
+\layout{
+  In multiprocessor systems the OS may be required to invalidate the cache in other processors, this requires the OS to perform a TLB shootdown; a shootdown can be achieved by using an interprocessor interrupt (IPI) to interrupt all processors and use the interrupt handler to invalidate the cache.
+  \cite[Chapter~5.10.5]{sdm3}
+}
 
-\subsection{Virtual Memory}
+\layout{
+  \subsection{Virtual Memory}
 
-% TODO: CITE
-Virtual memory is a method of extending main memory by temporarily moving sections of it into secondary storage then moving them back when needed.
-While it is possible to implement virtual memory through segmentation (by moving entire segments in and out of secondary storage), it is most commonly implemented through paging.
+  Virtual memory is a method of extending main memory by temporarily moving sections of it into secondary storage then moving them back when needed.
+  While it is possible to implement virtual memory through segmentation (by moving entire segments in and out of secondary storage), it is most commonly implemented through paging.
+} \bigskip
 
-\bigskip
+\layout{
+  If the OS runs out of memory, it may move several (rarely used) pages into secondary storage (often into a swap file or swap partition), and clearing the present flag for its corresponding page entry.
+  If a process attempts to access one of these pages, the page walk will encounter a non-present entry and a \#PF exception will be generated.
+  The exception handler will be called and will move the page back into main memory, updating the page entry to the new physical address and setting the present flag.
+  When the exception handler returns, the instruction that generated the exception is restarted.
 
-If the OS runs out of memory, it may move several (rarely used) pages into secondary storage (often into a swap file or swap partition), and clearing the present flag for its corresponding page entry.
-If a process attempts to access one of these pages, the page walk will encounter a non-present entry and a \#PF exception will be generated.
-The exception handler will be called and will move the page back into main memory, updating the page entry to the new physical address and setting the present flag.
-When the exception handler returns, the instruction that generated the exception is restarted.
-
-\subsection{Memory addressing}
-
-% TODO: CITE
-
-Memory addressing is used to access specific locations in main memory, memory addresses have the syntax: \\
-\texttt{[Segment:Base + Index*Scale + Displacement]} \\
-x86 has multiple different types of address:
-
-\begin{enumerate}
-  \item Logical: \\
-    Consists of a segment selector (16-bit) and an offset (same bit size as the code).
-    Usually inferred from the type of memory access (eg uses CS for code, SS for stack) or from a segment override.
-    Produces a linear address after segmentation.
-  \item Effective: \\
-    Consists of a combination of a \texttt{Base} register, an \texttt{Index} register (optionally with an immediate \texttt{Scale} which is 1, 2, 4, or 8) and an immediate \texttt{Displacement}.
-    Once the effective address is computed it is used as the offset in the logical address.
-  \item Linear: \\
-    If paging is not used, the linear address is equal to the physical address.
-    If paging is used, the corresponding physical address is found using the paging hierarchy.
-  \item Virtual: \\
-    A valid linear address that does not correspond to an in-memory page, causing the kernel to generate the page via an interrupt (eg load it from disk).
-  \item Physical: \\
-    The physical location of the memory in main memory.
-\end{enumerate}
+  \bigskip \cite[Chapter~5.12]{sdm3}
+}
 
 \section{Instructions}
 
@@ -1435,56 +1510,55 @@ Some instructions can be prefixed with LOCK, this makes the instruction atomic a
     \insopxx{r}{r|m} \insend
   \insname{2}{[LOCK] NOT}{One's Complement Negation}{4-168}{Performs a bitwise NOT on OP1 and stores the result in OP1}
     \insopx{r|m} \inslinea \insend
-
 \end{longtable}
 \setlength{\tabcolsep}{6pt}
 
-\subsection{Conditions Codes}
+\layout{
+  The condition codes (cc) are used in conditional instructions such as Jcc and replace the cc (not all codes are supported by all conditional instructions).
+  Different codes check different flags or registers, the codes are described below along with their conditions:
 
-The condition codes (cc) are used in conditional instructions such as Jcc and replace the cc (not all codes are supported by all conditional instructions).
-Different codes check different flags or registers, the codes are described below along with their conditions:
+  \begin{table}[H]
+    \centering
+    \begin{tabular}{|l|l|l|l|}
+      \hline \textbf{Code} & \textbf{Description} & \textbf{Flags} & \textbf{Signed-ness} \\ \hline
+      O & Overflow & OF = 1 & \\ \hline
+      NO & Not Overflow & OF = 0 & \\ \hline
+      S & Sign & SF = 1 & \\ \hline
+      NS & Not Sign & SF = 0 & \\ \hline
+      E & Equal & \multirow{2}*{ZF = 1} & \\ \cline{1-2}
+      Z & Zero & & \\ \hline
+      NE & Not Equal & \multirow{2}*{ZF = 0} & \\ \cline{1-2}
+      NZ & Not Zero & & \\ \hline
+      B & Below & \multirow{3}*{CF = 1} & \multirow{3}*{Unsigned} \\ \cline{1-2}
+      NAE & Not Above or Equal & & \\ \cline{1-2}
+      C & Carry & & \\ \hline
+      NB & Not Below & \multirow{3}*{CF = 0} & \multirow{3}*{Unsigned} \\ \cline{1-2}
+      AE & Above or Equal & & \\ \cline{1-2}
+      NC & Not Carry & & \\ \hline
+      BE & Below or Equal & \multirow{2}*{CF = 1 or ZF = 1} & \multirow{2}*{Unsigned} \\ \cline{1-2}
+      NA & Not Above & & \\ \hline
+      A & Above & \multirow{2}*{CF = 0 and ZF = 0} & \multirow{2}*{Unsigned} \\ \cline{1-2}
+      NBE & Not Below or Equal & & \\ \hline
+      L & Less & \multirow{2}*{SF != OF} & \multirow{2}*{Signed} \\ \cline{1-2}
+      NGE & Not Greater or Equal & & \\ \hline
+      GE & Greater or Equal & \multirow{2}*{SF = OF} & \multirow{2}*{Signed} \\ \cline{1-2}
+      NL & Not Less & & \\ \hline
+      LE & Less or Equal & \multirow{2}*{ZF = 1 or SF != OF} & \multirow{2}*{Signed} \\ \cline{1-2}
+      NG & Not Greater & & \\ \hline
+      G & Greater & \multirow{2}*{ZF = 0 and SF = OF} & \multirow{2}*{Signed} \\ \cline{1-2}
+      NLE & Not Less or Equal & & \\ \hline
+      P & Parity & \multirow{2}*{PF = 1} & \\ \cline{1-2}
+      PE & Parity Even & & \\ \hline
+      NP & Not Parity & \multirow{2}*{PF = 0} & \\ \cline{1-2}
+      PO & Parity Odd & & \\ \hline
+      CXZ & CX = 0 & & \\ \cline{1-2}
+      ECXZ & ECX = 0 & & \\ \cline{1-2}
+      RCXZ & RCX = 0 & & \\ \hline
+    \end{tabular}
+  \end{table}
 
-\begin{table}[H]
-  \centering
-  \begin{tabular}{|l|l|l|l|}
-    \hline \textbf{Code} & \textbf{Description} & \textbf{Flags} & \textbf{Signed-ness} \\ \hline
-    O & Overflow & OF = 1 & \\ \hline
-    NO & Not Overflow & OF = 0 & \\ \hline
-    S & Sign & SF = 1 & \\ \hline
-    NS & Not Sign & SF = 0 & \\ \hline
-    E & Equal & \multirow{2}*{ZF = 1} & \\ \cline{1-2}
-    Z & Zero & & \\ \hline
-    NE & Not Equal & \multirow{2}*{ZF = 0} & \\ \cline{1-2}
-    NZ & Not Zero & & \\ \hline
-    B & Below & \multirow{3}*{CF = 1} & \multirow{3}*{Unsigned} \\ \cline{1-2}
-    NAE & Not Above or Equal & & \\ \cline{1-2}
-    C & Carry & & \\ \hline
-    NB & Not Below & \multirow{3}*{CF = 0} & \multirow{3}*{Unsigned} \\ \cline{1-2}
-    AE & Above or Equal & & \\ \cline{1-2}
-    NC & Not Carry & & \\ \hline
-    BE & Below or Equal & \multirow{2}*{CF = 1 or ZF = 1} & \multirow{2}*{Unsigned} \\ \cline{1-2}
-    NA & Not Above & & \\ \hline
-    A & Above & \multirow{2}*{CF = 0 and ZF = 0} & \multirow{2}*{Unsigned} \\ \cline{1-2}
-    NBE & Not Below or Equal & & \\ \hline
-    L & Less & \multirow{2}*{SF != OF} & \multirow{2}*{Signed} \\ \cline{1-2}
-    NGE & Not Greater or Equal & & \\ \hline
-    GE & Greater or Equal & \multirow{2}*{SF = OF} & \multirow{2}*{Signed} \\ \cline{1-2}
-    NL & Not Less & & \\ \hline
-    LE & Less or Equal & \multirow{2}*{ZF = 1 or SF != OF} & \multirow{2}*{Signed} \\ \cline{1-2}
-    NG & Not Greater & & \\ \hline
-    G & Greater & \multirow{2}*{ZF = 0 and SF = OF} & \multirow{2}*{Signed} \\ \cline{1-2}
-    NLE & Not Less or Equal & & \\ \hline
-    P & Parity & \multirow{2}*{PF = 1} & \\ \cline{1-2}
-    PE & Parity Even & & \\ \hline
-    NP & Not Parity & \multirow{2}*{PF = 0} & \\ \cline{1-2}
-    PO & Parity Odd & & \\ \hline
-    CXZ & CX = 0 & & \\ \cline{1-2}
-    ECXZ & ECX = 0 & & \\ \cline{1-2}
-    RCXZ & RCX = 0 & & \\ \hline
-  \end{tabular}
-\end{table}
-
-\cite{cc-table}
+  \cite{cc-table}
+}
 
 % TODO: Finish this section a bit better
 % In long mode, to access many of its features the REX prefix has to be placed before an instruction.
@@ -1495,7 +1569,7 @@ Different codes check different flags or registers, the codes are described belo
 % it cannot be encoded when using a high byte register (AH, BH, CH, DH)
 % default 64-bit instructions in long mode are:
 % CALL (near), ENTER, LEAVE, LGDT, LIDT, LLDT, LOOP, LOOPcc, LTR, MOV CR(n), MOV DR(n), POP r|m, POP r, POP FS, POP GS, POPFQ, PUSH i8, PUSH i32, PUSH r|m, PUSH r, PUSH FS, PUSH GS, PUSHFQ, RET (near)
-% Almost every assembler automatically uses the nessissary REX prefixes when required so it is not needed to add
+% Almost every assembler automatically uses the necessary REX prefixes when required so it is not needed to add
 % It can be done by using db followed by the required byte in the line above the instruction
 % Sometimes REX can cause AH,BH,CH,DH to be interpreted as SPL, BPL, SIL, DIL
 
@@ -1548,36 +1622,36 @@ There are three types of interrupts:
 
 \subsection{Syscalls}
 
-\subsection{Linux Syscalls}
+\layout{
+  \subsection{Linux Syscalls}
 
-% TODO: finish + cite
+  In order for a program to communicate with the OS it has to hand over control of the processor back to the OS.
+  32-bit programs use the interrupt \texttt{int 80h}, while 64-bit programs use the instruction \texttt{syscall}.
+  The parameters for the syscall are placed in specific registers, below is a list of registers used and their use in syscalls:
 
-In order for a program to communicate with the OS it has to hand over control of the processor back to the OS.
-32-bit programs use the interrupt \texttt{int 80h}, while 64-bit programs use the instruction \texttt{syscall}.
-The parameters for the syscall are placed in specific registers, below is a list of registers used and their use in syscalls:
+  \begin{table}[H]
+    \centering
+    \begin{tabular}{|c|c|c|}
+      \hline \textbf{i386 Registers} & \textbf{x86-64 Registers} & \textbf{Usage} \\ \hline
+      EBX & RDI & Arg1 \\
+      ECX & RSI & Arg2 \\
+      EDX & RDX & Arg3 \\
+      ESI & R10 & Arg4 \\
+      EDI & R8 & Arg5 \\
+      EBP & R9 & Arg6 \\
+      EAX & EAX & Syscall \\
+      EAX & RAX & Return \\
+      \hline
+    \end{tabular}
+  \end{table}
+}
 
-\begin{table}[H]
-  \centering
-  \begin{tabular}{|c|c|c|}
-    \hline \textbf{i386 Registers} & \textbf{x86-64 Registers} & \textbf{Usage} \\ \hline
-    EBX & RDI & Arg1 \\
-    ECX & RSI & Arg2 \\
-    EDX & RDX & Arg3 \\
-    ESI & R10 & Arg4 \\
-    EDI & R8 & Arg5 \\
-    EBP & R9 & Arg6 \\
-    EAX & EAX & Syscall \\
-    EAX & RAX & Return \\
-    \hline
-  \end{tabular}
-\end{table}
+\layout{
+  Furthermore, the values in these registers (and others such as R11 and RCX) may be clobbered (their value changing after the syscall) so it is best to follow the System V ABI when performing syscalls.
+  When using the syscall function in C if the syscall had a negative return (error), it is negated and copied to errno, and the function returns -1.
 
-Furthermore, the values in these registers (and others such as R11 and RCX) may be clobbered (their value changing after the syscall) so it is best to follow the System V ABI when performing syscalls.
-When using the syscall function in C, if the syscall had a negative return (error), it is negated and copied to errno and the function returns -1.
-
-\medskip
-
-\cite{man-syscall}
+  \bigskip \cite{man-syscall}
+} \bigskip
 
 \newcommand{\sysd}[1]{\hline \multicolumn{10}{|p{0.97\linewidth}|}{#1} \\}
 \newcommand{\sysxxxxxx}[6]{\sysxxxxx{#1}{#2}{#3}{#4}{#5} \\ 6: #6}
@@ -1608,9 +1682,7 @@ When using the syscall function in C, if the syscall had a negative return (erro
   \end{tabular} \\ \hline
 }
 
-\medskip
-
-The table below contains the arguments, descriptions, return information, syscall number (for both i386\cite{syscall-number-32} and x86-64\cite{syscall-number-64}) for various common Linux syscalls:
+The following table contains the arguments, descriptions, return information, syscall number (for both i386\cite{syscall-number-32} and x86-64\cite{syscall-number-64}) for various common Linux syscalls:
 
 \setlength{\tabcolsep}{0pt}
 \begin{longtable}{|p{0.975\linewidth}|}
@@ -1633,9 +1705,11 @@ The table below contains the arguments, descriptions, return information, syscal
 \end{longtable}
 \setlength{\tabcolsep}{6pt}
 
-A fd (file descriptor) in Linux is an integer used to refer to a file, when opening a file the kernel returns an integer to the program to refer to the file with (lowest unused integer) and the kernel keeps track of the open file.
-Integers 0, 1 and 2 refer to stdin, stdout and stderr respectively; any negative fd is invalid -1 is usually used to refer to no file\cite{unix-fd}.
-Furthermore any arguments in the table which contain a * such as buf* are pointers.
+\layout{
+  A fd (file descriptor) in Linux is an integer used to refer to a file, when opening a file the kernel returns an integer to the program to refer to the file with (lowest unused integer) and the kernel keeps track of the open file.
+  Integers 0, 1 and 2 refer to stdin, stdout and stderr respectively; any negative fd is invalid -1 is usually used to refer to no file\cite{unix-fd}.
+  Furthermore any arguments in the table which contain a * such as buf* are pointers.
+}
 
 \section{Appendix}
 All of the code used/written has been appended below, it includes programs that can run on Linux or baremetal
