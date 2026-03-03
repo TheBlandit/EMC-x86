@@ -49,10 +49,10 @@
 \setcounter{tocdepth}{4}
 \newcounter{subsubsubsection}[subsubsection]
 \renewcommand\thesubsubsubsection{\thesubsubsection.\arabic{subsubsubsection}}
-\newcommand{\subsubsubsection}[1]{%
-  \refstepcounter{subsubsubsection}%
-  \paragraph*{\thesubsubsubsection\enspace #1}%
-  \addcontentsline{toc}{paragraph}{\protect\numberline{\thesubsubsubsection}#1}%
+\newcommand{\subsubsubsection}[1]{
+  \refstepcounter{subsubsubsection}
+  \paragraph*{\thesubsubsubsection\enspace #1}
+  \addcontentsline{toc}{paragraph}{\protect\numberline{\thesubsubsubsection}#1}
   \mbox{}\par
   \medskip
 }
@@ -288,8 +288,13 @@ The store buffer is flushed when: a LOCK or a MFENCE/SFENCE is used, an I/O inst
 
 The following table is a list of the control registers and their flags:
 \begin{longtable}{|c|c|m{0.65\linewidth}|}
-  \hline \textbf{Bits} & \textbf{Label} & \textbf{Description} \\
-  \hline \multicolumn{3}{|l|}{\textbf{CR0} - Contains system control flags that control operating mode and states of the processor} \\ \hline
+  \hline \textbf{Bits} & \textbf{Label} & \textbf{Description} \\ \hline
+  \endhead
+
+  \hline
+  \endfoot
+
+  \multicolumn{3}{|l|}{\textbf{CR0} - Contains system control flags that control operating mode and states of the processor} \\ \hline
   0 & PE & Protected Mode Enable \\
   1 & MP & Monitor co-processor \\
   2 & EM & x87 FPU Emulation \\
@@ -333,7 +338,7 @@ The following table is a list of the control registers and their flags:
   23 & CET & Control-flow Enforcement Technology \\
   24 & PKS & Enable Protection Keys for Supervisor-Mode Pages \\
   \hline \multicolumn{3}{|l|}{\textbf{CR8} - Provides access to the Task Priority Register (TPR)} \\ \hline
-  0:3 & TPL & Task Priority Level \\ \hline
+  0:3 & TPL & Task Priority Level \\
 \end{longtable}
 
 \cite[Chapter~2.5]{sdm3}
@@ -1373,6 +1378,7 @@ Some instructions can be prefixed with LOCK, this makes the instruction atomic a
 \setlength{\tabcolsep}{0pt}
 \begin{longtable}{|>{\centering\arraybackslash}p{\dimexpr\linewidth-1pt\relax}|}
   \hline \instable \textbf{Instruction} & \textbf{OP 1} & \textbf{OP 2} & \textbf{OP 3} \insend
+  \endhead
 
   \institle{Memory}
 
@@ -1682,69 +1688,70 @@ Some instructions can be prefixed with LOCK, this makes the instruction atomic a
 } \bigskip
 
 \layout{
+  The processor does not permit transfer of execution to a higher CPL, hence the handler should run at CPL 0.
+
+  \bigskip \cite[Chapter~7.12.1.2]{sdm3}
+} \bigskip
+
+\layout{
+  \subsubsection{Protected Mode Handling}
+
   In protected mode, if there was no CPL change when calling the interrupt then the stack uses the interrupted program's stack,
   it pushes: EFLAGS, CS, EIP, then the Error Code (if there was an error code).
   If there was a CPL change then it switches the stack (SS and ESP for the handler are obtained from the TSS) and pushes to the new one: SS, ESP, EFLAGS, CS, EIP, then the Error Code (if there was an error code), furthermore in this case \texttt{IRET also restores the original stack}.
   % TODO: shadow stack?
 
-  \bigskip \cite[Chapter~7.12.1]{sdm3}
-} \bigskip
+  \bigskip \cite[Chapter~7.12.1]{sdm3} \bigskip
+}
 
-7.12.1.2
-The processor does not permit transfer of execution to a higher CPL, hence the handler should be placed in CPL0.
+Handlers can be either 16-bit or 32-bit and interrupt-stack-pushes are the same size.
 
-7.12.1.3
-only difference between interrupt and trap gates is that interrupt clears EFLAGS.IF which prevents other interrupts from occurring, whilst trap gates do not.
+\bigskip
 
-???
-stack IDT entry size determines interrupt-stack-frame pushes
+\layout{
+  Task gates can be used which cause a task switch to occur, this has the benefits of: automatically saving the entire context of the interrupted process, switching to a new CPL 0 stack, and handler can be isolated in separate address space (via a separate LDT).
+  However it has worse performance and requires the handler to disable interrupts while the TSS is marked as busy (else another interrupt could attempt to use it and cause a \#GP).
 
-7.12.2
-prot task gate:
-Task switch occurs
-Entrie Context of interrupted program is saved automatically
-TSS permits handler to use a new CPL 0 stack 
-Handler can be isolated by giving it a separate address space
-The handler must disable interrupts while the TSS is marked as busy otherwise another interrupt could attempt to access the TSS causing a \#GP.
+  \bigskip \cite[Chapter~7.12.2]{sdm3}
+}
 
 \layout {
-  % TODO: finish (64 bit stack contents + stack switches)
-  7.14
+  \subsubsection{IA-32e Mode Handling}
 
-  In IA-32e mode:
-  Handlers are 64-bit
-  Interrupt-stack pushes is fixed at 64 bits (zero extended stores).
-  SS:RSP always pushed.
-  SS is set to null on CPL change.
-  IRET behaviour changes
-  new stack switch/shadow stack
-  Alignment of interrupt stack frame is different
+  In IA-32e mode, handlers are always 64-bit and interrupt-stack pushes are fixed at 64 bits (zero extended stores).
+  SS:RSP always pushed, and SS is set to null on CPL change.
 
-  7.14.2
-  if shadow stacks enabled, and interrupted procedure was not CPL 3 then CS:LIP:SSP is pushed
-  RSP handler is aligned to 16-byte
-
-  7.14.4
-  RSP loaded from TSS
-  (long mode stack switch identical to legacy except loaded SS is null)
-
-  7.14.5
-  Part of the 64-bit TSS
-  Useful for executing specific interrupts (eg NMI, double-fault, machine-check) or execute on a known-good stack
-
-  IST (interrupt stack table) provides up to seven IST pointers in the TSS.
-  The pointers are referenced by IDT descriptors.
-
-  Descriptor contains 3-bit IST index that provides an offset into the IST section of the TSS.
-  The processor loads the value pointed by an IST pointer into the RSP.
-  SS is set to NULL and its RPL is set to new CPL.
-  Old SS, RSP, RFLAGS, CS and RIP are pushed to the new stack
-  If IST index is 0 then modified legacy stack-switching is used.
-
-
+  \bigskip \cite[Chapter~7.14]{sdm3}
 } \bigskip
 
 \layout{
+  Handlers stack is aligned to 16-bytes
+
+  \bigskip \cite[Chapter~7.14.2]{sdm3}
+} \bigskip
+
+\layout{
+  Old SS, RSP, RFLAGS, CS and RIP are pushed to the new stack.
+
+  \bigskip
+
+  The IST (interrupt stack table) provides up to seven IST pointers in the TSS,
+  it is useful for executing specific interrupts (eg NMI, double-fault, machine-check) to execute on a known-good stack.
+  Descriptors contain a 3-bit IST index that provides an offset into the IST section of the TSS.
+  If the IST index is non-zero then the IST value at the index is loaded intp RSP.
+  If the IST index is 0 then RSP is loaded with the RSP corresponding to the CPL in the TSS.
+  SS is set to NULL and its RPL is set to new CPL.
+
+  \bigskip \cite[Chapter~7.14.5]{sdm3}
+} \bigskip
+
+\layout{
+  \subsubsection{Error Codes}
+
+  Some exceptions push an error code to the stack after their return address.
+
+  \bigskip
+
   Format of the error code:
   \begin{table}[H]
     \centering
@@ -1760,7 +1767,7 @@ The handler must disable interrupts while the TSS is marked as busy otherwise an
 
   % TODO: finish
   Format is different for \#PF and \#CF.
-  Reserved portion may not be pushed as to align the stack to 32-bits.
+  Reserved portion may not be pushed in order to align the stack.
   IRET does not pop off error code so ISR must do it.
 
   \bigskip \cite[Chapter~7.13]{sdm3}
@@ -1853,8 +1860,246 @@ The handler must disable interrupts while the TSS is marked as busy otherwise an
 The APIC (Advanced Programmable Interrupt Controller) is the updated standard for the older PIC.
 The APIC is used for sophisticated interrupt redirection and for sending interrupts between processors in multiprocessor systems.
 When using the APIC the PICs should be disabled, this can be done by sending 0xFF to both PIC mask ports.
+The PIC should still be remapped as it could still give spurious interrupts which would then be misinterpreted by the OS.
 
-\subsection{IPI}
+12.4.6
+APIC ID is returned in EBX[31:24] by CPUID 1
+
+12.4.1
+The Local APIC contains registers
+They are memory mapped in a single 4-KiB space.
+They are 32-bits and 128-bit aligned and should be accessed using 32-bit load/stores.
+The memory between registers should not be accessed.
+Wider registers are accessed via multiple 32-bit accesses.
+
+By default memory-mapped to a 4-KiB region starting at 0xFEE00000 and should be designated as strong uncacheable (UC).
+It can be relocated using the IA32\_APIC\_BASE MSR
+
+\begin{longtable}{|c|l|c|}
+  \hline \textbf{Offset} & \textbf{Register Name} & \textbf{R/W} \\ \hline
+  \endhead
+
+  \hline
+  \endfoot
+
+  000H & Rsvd. & \\
+  010H & Rsvd. & \\
+  020H & Local APIC ID Register & RW \\
+  030H & Local APIC Version Register & R \\
+  040H & Rsvd. & \\
+  050H & Rsvd. & \\
+  060H & Rsvd. & \\
+  070H & Rsvd. & \\
+  080H & Task Priority Register (TPR) & RW \\
+  090H & Arbitration Priority Register (APR) & R \\
+  0A0H & Processor Priority Register (PPR) & R \\
+  0B0H & EOI Register & W \\
+  0C0H & Remote Read Register (RRD) & R \\
+  0D0H & Logical Destination Register & RW \\
+  0E0H & Destination Format Register & RW \\
+  0F0H & Spurious Interrupt Vector Register & RW \\
+  100H & In-Service Register (ISR); bits 31:0 & R \\
+  110H & In-Service Register (ISR); bits 63:32 & R \\
+  120H & In-Service Register (ISR); bits 95:64 & R \\
+  130H & In-Service Register (ISR); bits 127:96 & R \\
+  140H & In-Service Register (ISR); bits 159:128 & R \\
+  150H & In-Service Register (ISR); bits 191:160 & R \\
+  160H & In-Service Register (ISR); bits 223:192 & R \\
+  170H & In-Service Register (ISR); bits 255:224 & R \\
+  180H & Trigger Mode Register (TMR); bits 31:0 & R \\
+  190H & Trigger Mode Register (TMR); bits 63:32 & R \\
+  1A0H & Trigger Mode Register (TMR); bits 95:64 & R \\
+  1B0H & Trigger Mode Register (TMR); bits 127:96 & R \\
+  1C0H & Trigger Mode Register (TMR); bits 159:128 & R \\
+  1D0H & Trigger Mode Register (TMR); bits 191:160 & R \\
+  1E0H & Trigger Mode Register (TMR); bits 223:192 & R \\
+  1F0H & Trigger Mode Register (TMR); bits 255:224 & R \\
+  200H & Interrupt Request Register (IRR); bits 31:0 & R \\
+  210H & Interrupt Request Register (IRR); bits 63:32 & R \\
+  220H & Interrupt Request Register (IRR); bits 95:64 & R \\
+  230H & Interrupt Request Register (IRR); bits 127:96 & R \\
+  240H & Interrupt Request Register (IRR); bits 159:128 & R \\
+  250H & Interrupt Request Register (IRR); bits 191:160 & R \\
+  260H & Interrupt Request Register (IRR); bits 223:192 & R \\
+  270H & Interrupt Request Register (IRR); bits 255:224 & R \\
+  280H & Error Status Register & RW \\
+  290H & Rsvd. & \\
+  2A0H & Rsvd. & \\
+  2B0H & Rsvd. & \\
+  2C0H & Rsvd. & \\
+  2D0H & Rsvd. & \\
+  2E0H & Rsvd. & \\
+  2F0H & LVT Corrected Machine Check Interrupt (CMCI) Register & RW \\
+  300H & Interrupt Command Register (ICR); bits 31:0 & RW \\
+  310H & Interrupt Command Register (ICR); bits 63:31 & RW \\
+  320H & LVT Timer Register & RW \\
+  330H & LVT Thermal Sensor Register & RW \\
+  340H & LVT Performance Monitoring Counters Register & RW \\
+  350H & LVT LINT0 Register & RW \\
+  360H & LVT LINT1 Register & RW \\
+  370H & LVT Error Register & RW \\
+  380H & Initial Count Register (for Timer) & RW \\
+  390H & Current Count Register (for TImer) & R \\
+  3A0H & Rsvd. & \\
+  3B0H & Rsvd. & \\
+  3C0H & Rsvd. & \\
+  3D0H & Rsvd. & \\
+  3E0H & Divide Configuration Register (for Timer) & RW \\
+  0F0H & Rsvd. & \\
+\end{longtable}
+
+12.5.1
+Local Vector Table (LVT)
+
+\begin{table}[H]
+  \centering
+  \begin{tabular}{|c*{10}{|c}|}
+    \hline \textbf{LVT} & \textbf{31:19} & \textbf{18:17} & \textbf{16} & \textbf{15} & \textbf{14} & \textbf{13} & \textbf{12} & \textbf{11} & \textbf{10:8} & \textbf{7:0} \\ \hline
+
+    \textbf{Timer} & Rsvd. & TM1 & Mask & Rsvd. & Rsvd. & Rsvd. & DS & Rsvd. & Rsvd. & Vector \\
+    \textbf{CMCI} & Rsvd. & Rsvd. & Mask & Rsvd. & Rsvd. & Rsvd. & DS & Rsvd. & DM & Vector \\
+    \textbf{LINT0} & Rsvd. & Rsvd. & Mask & TM2 & RIRR & IIPP & DS & Rsvd. & DM & Vector \\
+    \textbf{LINT1} & Rsvd. & Rsvd. & Mask & TM2 & RIRR & IIPP & DS & Rsvd. & DM & Vector \\
+    \textbf{Error} & Rsvd. & Rsvd. & Mask & Rsvd. & Rsvd. & Rsvd. & DS & Rsvd. & Rsvd. & Vector \\
+    \textbf{Perf Counters} & Rsvd. & Rsvd. & Mask & Rsvd. & Rsvd. & Rsvd. & DS & Rsvd. & DM & Vector \\
+    \textbf{Thermal Sensor} & Rsvd. & Rsvd. & Mask & Rsvd. & Rsvd. & Rsvd. & DS & Rsvd. & DM & Vector \\ \hline
+  \end{tabular}
+\end{table}
+
+\begin{itemize}
+  \item Timer Mode (TM1): \\
+    00 = One-shot, 01 = Periodic, 10 = TSC-Deadline (uses the absolute target value in the IA32\_TSC\_DEADLINE MSR)
+  \item Mask: \\
+    0 = Not Masked, 1 = Masked. When the performance counter interrupt is generated, its mask bit is set.
+  \item Vector: \\
+    Interrupt Vector Number
+  \item Delivery Status (DS) - Read only: \\
+    0 = Idle, 1 = Send Pending
+  \item Delivery Mode (DM): \begin{itemize}
+      \item 000 = Fixed - delivers the interrupt in the vector field
+      \item 010 = SMI - delivers a SMI interrupt, vector should be set to 0
+      \item 100 = NMI - delivers a NMI interrupt, vector is ignored
+      \item 101 = INIT - delivers an INIT request, vector should be set to 0, not supported by CMCI, thermal monitor or performance counter
+      \item 111 = ExtINT - causes the processor to respond to the interrupt as if it originated from an externally connected (8259A-compatible) interrupt controller, a INTA signal is sent to the external controller which is expected to provide the vector information, only one processor should contain an ExtINT and there should only be one ExtINT source.
+      Not supported by CMCI, thermal monitor or performance counter
+    \end{itemize}
+  \item Trigger Mode (TM2): \\
+    0 = Edge sensitive, 1 = Level sensitive. Only used when delivery mode is fixed otherwise it is always edge sensitive, unless the delivery mode is ExtINT then it is level sensitive. Timer and error interrupts are treated as edge sensitive.  If the local APIC is not used with an I/O APIC and fixed delivery mode is used then it will always use level sensitive mode. Level-sensitive interrupts are not supported for LINT1
+  \item Remote IRR (RIRR) - Read only: \\
+    For fixed-mode level-triggered interrupts, this flag is set then the local APIC accepts the interrupt for servicing and is reset when an EOI command is received from the processor
+  \item Interrupt Input Pin Polarity (IIPP): \\
+    0 = Active high, 1 = Active low
+\end{itemize}
+
+\layout{
+  \subsubsection{Interprocessor Interrupts}
+  Interprocessor Interrupts (IPIs) are used to send interrupts to other processors, usually for the following function:
+
+  \begin{itemize}
+    \item Send an interrupt to another processor
+    \item Allow the processor to forward an interrupt to another processor to be serviced
+    \item To direct the processor to interrupt itself
+    \item To deliver special IPIs such as the start-up IPI (SIPI) message to other processors
+  \end{itemize}
+
+  The Interrupt Command Register (ICR) is used to program the IPI.
+
+  \bigskip \cite[Chapter~12.6]{sdm3}
+} \bigskip
+
+\layout{
+  Interrupt Command Register:
+  \begin{table}[H]
+    \centering
+    \begin{tabular}{|c|l|}
+      \hline \textbf{Bits} & \textbf{Name} \\ \hline
+      63:56 & Destination Field \\
+      55:20 & Rsvd. \\
+      19:18 & Destination Shorthand \\
+      17:16 & Rsvd. \\
+      15 & Trigger Mode \\
+      14 & Level \\
+      13 & Rsvd. \\
+      12 & Delivery Status \\
+      11 & Destination Mode \\
+      10:8 & Delivery Mode \\
+      7:0 & Vector \\ \hline
+    \end{tabular}
+  \end{table}
+}
+
+\layout{
+  Description of fields used in the ICR:
+  \begin{itemize}
+    \item Destination Field: \\
+      Only used when shorthand is 00, if the destination mode is physical then it is the APIC ID of the target processor otherwise if it is logical its interpretation depends on the settings of the DFR and LDR registers of the local APICS in all the processors
+    \item Destination Shorthand: \\
+      00 = No shorthand, 01 = Self, 10 = All including self, 11 = All excluding self
+    \item Trigger Mode: \\
+      0 = Edge, 1 = Level. Only used when using the INIT level de-assert deliver mode
+    \item Level: \\
+      0 = De-assert, 1 = Assert. For INIT level de-assert delivery mode this flag must be set to 0, otherwise it must be set to 1
+    \item Delivery Status (Read-Only): \\
+      0 = Idle, 1 = Send Pending
+    \item Destination Mode: \\
+      0 = Physical, 1 = Logical
+    \item Delivery Mode: \begin{itemize}
+        \item 000 = Fixed - Delivers the interrupt in vector to the processor
+        \item 001 = Lowest Priority - Same as fixed but uses the lowest priority. Model specific, do not use
+        \item 010 = SMI - Delivers an SMI interrupt, vector should be 0
+        \item 011 = Rsvd.
+        \item 100 = NMI - Delivers an NMI interrupt, vector is ignored
+        \item 101 = INIT - Sends INIT request to the processor which causes it to perform an INIT, vector should be 0. If level = 0 and trigger = 1, sends a sync message to all local APICs to set their arbitration IDs to their APIC IDs, software should still specify shorthand = 10
+        \item 110 = Start Up - Sends Start-up IPI (SIPI), vector points to start-up routine. It is software's responsitiblity to detect errors in sending
+        \item 111 = Rsvd.
+      \end{itemize}
+    \item Vector: \\
+      vector number of the interrupt being sent
+  \end{itemize}
+}
+
+\layout{
+  Writing to the lower ICR register causes the IPI to be sent.
+
+  \bigskip \cite[Chapter~12.6.1]{sdm3}
+} \bigskip
+
+\layout{
+  In logical destination mode, the Logical Destination Register (LDR) contains the Logical APIC ID in its highest byte (bits 31:24).
+  The Destination Format Register (DFR) selects between two different logical models, 0xFFFFFFFF selects the flat model (default) while 0x0FFFFFF selects the cluster model.
+
+  In the flat model, each local APIC performs a bitwise AND between its logical APIC ID and the IPI's destination field, it it is non-zero then the local APIC accepts the IPI.
+
+  % TODO: cluster model
+
+  \bigskip \cite[12.6.2.2]{sdm3}
+}
+
+\layout{
+  \subsubsection{Timer}
+
+  The local APIC contains a programmable 32-bit timer.
+  Its frequency is either bus clock or crystal clock frequency (when it is enumerated in CPUID 15H) divided by the value in the Divide Configuration Register.
+  The timer can be programmed through the LVT Timer register for one-shot or periodic operation.
+  The timer is started by programming the Initial Count Register, which is copied to the Current Count Register and count down begins, when it reaches zero the timer interrupt is generated.
+  In one-shot mode when the timer reaches zero it is not restarted, in periodic mode it is restarted with the value in the Initial Count Register.
+  Writing to the Initial Count Register restarts the timer with the new value (even if it is currently counting down), writing zero to it stops the timer.
+} \bigskip
+
+\layout{
+  Divide configuration Register (bits 3, 1, 0):
+  \begin{table}[H]
+    \centering
+    \begin{tabular}{|c|c|c|c|c|c|c|c|c|}
+      \hline \textbf{Bits} & 000 & 001 & 010 & 011 & 100 & 101 & 110 & 111 \\ \hline
+      \textbf{Divide} & 2 & 4 & 8 & 16 & 32 & 64 & 128 & 1 \\ \hline
+    \end{tabular}
+  \end{table}
+
+  Default divide is 2
+
+  \bigskip \cite[Chapter~13.5.4]{sdm3}
+}
 
 \layout{
   \subsection{Interrupt Descriptor Table}
@@ -1876,7 +2121,11 @@ When using the APIC the PICs should be disabled, this can be done by sending 0xF
     \item Interrupt-gate descriptor (both)
     \item Trap-gate descriptor (both)
   \end{enumerate}
-}
+
+  The only difference between interrupt gates and trap gates is that interrupt gates clears EFLAGS.IF which prevents other interrupts from occurring while the ISR is running, whilst trap gates do not.
+
+  \bigskip \cite[Chapter~7.12.1.3]{sdm3}
+} \bigskip
 
 \layout{
   Protected mode Task-gate descriptor:
@@ -1920,7 +2169,7 @@ When using the APIC the PICs should be disabled, this can be done by sending 0xF
   IA-32e Interrupt/Trap gate descriptor:
   \begin{table}[H]
     \centering
-    \begin{tabular}{|c|c|m{0.5\linewidth}|}
+    \begin{tabular}{|c|c|l|}
       \hline \textbf{Bits} & \textbf{Label} & \textbf{Description} \\ \hline
       127:96 & Rsvd. & Reserved (must be 0) \\
       95:64 & Offset 63:32 & Bits 63:32 of the address of the ISR \\
@@ -2014,6 +2263,7 @@ The following table contains the arguments, descriptions, return information, an
       \end{tabular}
     \end{tabular} & \textbf{Arguments}
   \end{tabular} \\ \hline
+  \endhead
 
   \sysentry{read\cite{man-read}}{length|error}{3}{0}{Attempts to read up to \texttt{count} bytes from the current position of the file referred to by \texttt{fd} into the buffer pointed to by \texttt{buf}. The true number of bytes read is returned (if EOF less bytes would be read) and the position in the file is advanced by this many bytes, otherwise returns an error}{\sysxxx{fd}{buf*}{count}}
   \sysentry{write\cite{man-write}}{length|error}{4}{1}{Writes up to \texttt{count} bytes from \texttt{buf} into the file referred to by \texttt{fd} at the current position of the file, and its position is advanced by the number of bytes written. On success the number of bytes written is returned, otherwise returns an error}{\sysxxx{fd}{buf*}{count}}
