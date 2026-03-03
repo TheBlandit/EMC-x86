@@ -165,8 +165,6 @@ x86 processors store writes to memory in a store buffer.
 It allows the processor to continue execution without having to wait for a write to cache/main memory to complete.
 The store buffer is flushed when: a LOCK or a MFENCE/SFENCE is used, an I/O instruction executes or an exception/interrupt is generated \cite[Chapter~13.10]{sdm3}.
 
-% TODO: APIC (ID)
-
 % TODO: reorder buffer + out of order execution + multithreading + locks + mutex + synchronisation + visibility
 
 % TODO: Virtualisation
@@ -204,8 +202,6 @@ The store buffer is flushed when: a LOCK or a MFENCE/SFENCE is used, an I/O inst
 
   Resisters store a small amount of memory directly accessible to instructions.
 }
-
-% TODO: add EFLAGS/RFLAGS
 
 \layout{
   \subsubsection{General Purpose Registers}
@@ -246,7 +242,65 @@ The store buffer is flushed when: a LOCK or a MFENCE/SFENCE is used, an I/O inst
   \bigskip \cite[Chapter~3.4.1]{sdm1}
 }
 
-% TODO: Add Instruction Pointer
+\layout{
+  \subsubsection{EFLAGS}
+
+  The EFLAGS register is a 32-bit register that contains: status flags, a control flag, and system flags.
+  It cannot be directly accessed, instead it can be accessed via instructions such as PUSHFD and POPFD.
+  In IA-32e mode the EFLAGS register is extended to the 64-bit RFLAGS register, the additional 32-bits are all reserved.
+} \bigskip
+
+\layout{
+  The following table describes the flags in the EFLAGS register (unlisted bits are reserved):
+  \begin{table}[H]
+    \centering
+    \begin{tabular}{|c|c|c|l|}
+      \hline \textbf{Bits} & \textbf{Type} & \textbf{Label} & \textbf{Description} \\ \hline
+      0 & Status & CF & Carry flag \\
+      2 & Status & PF & Parity flag \\
+      4 & Status & AF & Auxiliary flag \\
+      6 & Status & ZF & Zero flag \\
+      7 & Status & SF & Sign flag \\
+      8 & System & TF & Trap flag \\
+      9 & System & IF & Interrupt enable flag \\
+      10 & Control & DF & Direction flag \\
+      11 & Status & OF & Overflow flag \\
+      13:12 & System & IOPL & I/O privilege level \\
+      14 & System & T & Nested task flag \\
+      16 & System & F & Resume flag \\
+      17 & System & M & Virtual 8086 mode flag \\
+      18 & System & C & Alignment check \\
+      19 & System & IF & Virtual interrupt flag \\
+      20 & System & IP & Virtual interrupt pending \\
+      21 & System & D & Identification flag \\ \hline
+    \end{tabular}
+  \end{table}
+
+  If the program is able to set/clear the identification flag then the processor supports the CPUID instruction.
+
+  \bigskip \cite[Chapter~3.4.3]{sdm1}
+}
+
+\layout{
+  \subsubsection{Instruction Pointer}
+
+  The Instruction Pointer register contains a pointer to the next instruction to be executed.
+  It cannot be directly accessed by software, it is controlled by instructions such as JMP, CALL, RET etc.
+  The only way to read the register is to execute the \texttt{CALL} instruction and read it from the stack, it can be indirectly loaded by modifying the return address on the stack then executing \texttt{RET} or \texttt{IRET}.
+  64-bit mode supports the use of RIP-relative addressing where the effective address is determined by adding a displacement to the RIP of the next instruction, this allows support for Position Independent Executables (PIE).
+
+  \begin{table}[H]
+    \centering
+    \begin{tabular}{|c|c|}
+      \hline \textbf{Name} & \textbf{Bits} \\ \hline
+      IP & 16 \\
+      EIP & 32 \\
+      RIP & 64 \\ \hline
+    \end{tabular}
+  \end{table}
+
+  \cite[Chapter~3.5]{sdm1}
+}
 
 \layout{
   \subsubsection{Segment Registers}
@@ -309,7 +363,6 @@ The following table is a list of the control registers and their flags:
   \hline \multicolumn{3}{|l|}{\textbf{CR2} - Contains linear address that caused a page fault} \\ \hline
   0:31(63) & PFLA & Page Fault Linear Address \\
   \hline \multicolumn{3}{|l|}{\textbf{CR3} - Contains the physical address of the base of the paging-structure hierarchy and two flags} \\ \hline
-  % TODO: Bits 0:11 are assumed to be 0. 3,4 are only used when accessing a PDE in 32-bit paging
   3 & PWT & Page-level Write-Through (not used in PAE or if bit CR4.PCIDE = 1 in long mode) \\
   4 & PCD & Page-level Cache Disable (not used in PAE or if bit CR4.PCIDE = 1 in long mode) \\
   12:31(63) & PDBR & Page Directory Base Register (PAE = Base of PDPT, long = base of PML4T/PML5T) \\
@@ -343,11 +396,7 @@ The following table is a list of the control registers and their flags:
 
 \cite[Chapter~2.5]{sdm3}
 
-% TODO: EFLAGS
-% https://wiki.osdev.org/CPU_Registers_x86
-% https://wiki.osdev.org/CPU_Registers_x86-64
-
-% TODO: Extended control, debug, test, protected mode (gdtr, ldtr, idtr), RFLAGS
+% TODO: Extended control, debug, test, protected mode (gdtr, ldtr, idtr)
 
 \layout{
   \subsubsection{Model Specific Registers}
@@ -397,6 +446,8 @@ The following table is a list of the control registers and their flags:
       IA32\_MTRR\_PHYSBASEn & 0x0202 + 2n \\
       IA32\_MTRR\_PHYSMASKn & 0x0201 + 2n \\
       IA32\_PAT & 0x0227 \\
+      IA32\_FS\_BASE & 0xC000\_0100 \\
+      IA32\_GS\_BASE & 0xC000\_0101 \\
       \hline
     \end{tabular}
   \end{table}
@@ -887,7 +938,7 @@ Furthermore, states with the only copy of cache (Modified and Exclusive) do not 
   In compatibility mode it functions the same as it does in protected mode.
   In 64-bit mode, segmentation is generally disabled (but not completely), which creates a flat 64-bit linear address space.
   The base address of the CS, DS, ES and SS are treated as 0 (the effective address is equal to the linear address), and the processor does not perform limit checks (on all segment registers).
-  The FS and GS registers are often used to reference thread-local or kernel data structures since their base address still applies.
+  The FS and GS registers are often used to reference thread-local or kernel data structures since their base address still applies, however they are stored in the IA32\_FS\_BASE and IA32\_GS\_BASE MSRs respectively.
 
   \bigskip \cite[Chapter~3.2.4]{sdm3}
 }
@@ -1277,10 +1328,6 @@ The following tables describe the layout of the paging structures (M = MAXPHYADD
   \cite[Chapter~5.3]{sdm3} \cite[Chapter~5.4]{sdm3} \cite[Chapter~5.5]{sdm3}
 }
 
-% TODO: ??
-% 5.6 - Access rights
-% 5.7 - page fault exceptions
-
 \layout{
   \subsubsection{Translation Lookaside Buffer}
 
@@ -1334,33 +1381,319 @@ The following tables describe the layout of the paging structures (M = MAXPHYADD
   \bigskip \cite[Chapter~5.12]{sdm3}
 }
 
-\section{Instructions}
+\layout{
+  \section{Task Management}
 
-This section contains many of the x86 instructions and their use, it is not an exhaustive list and is a simplification of how many instructions work (by not including many of the potential exceptions which may be raised, not including how the instructions are encoded in machine code etc, or the flags set/cleared), however it should be sufficient enough to create simple programs.
-The format of the instruction is \texttt{instruction op1, op2, op3} eg \texttt{'MOV RAX, 10'}.
-Each instruction has different limitations to what type an operand can be, these types are
+  Task management can be used to switch the currently executing task by dispatching a new task and suspending the current task.
+  A task is a unit of work that the processor can dispatch, execute, and suspend.
+  It can be used to execute a process, task, process, interrupt handler, etc.
+  All processor execution takes place from within a task, even simple systems must define at least one task.
 
-\begin{table}[H]
-  \centering
-  \begin{tabular}{|c|c|l|}
-    \hline \textbf{Symbol} & \textbf{Name} & \textbf{Description} \\ \hline
-    r & General purpose register & A register such as eax \\
-    m & Memory address & A memory address such as \texttt{[eax + 4*ebx + 4]} \\
-    i & Immediate & A constant value such as 80h or a pointer to a label \\
-    s & Segment Register & A register such as ES \\
-    d & Debug Register & A register such as DR0 \\
-    c & Control Register & A register such as CR3 \\ \hline
-  \end{tabular}
-\end{table}
+  \bigskip \cite[Chapter~9.1]{sdm3}
+} \bigskip
 
-The types of an operand or identical instructions with different names will be separated by \texttt{(|)}, the size in bits may also be appended to the type and (') may be used to exclude a single size (eg \texttt{i8|i16} means an 8 or 16 bit immediate value and \texttt{r'8} means a 16, 32 or 64 bit register).
-Some instructions have more than one row of operands, each row shows a different combination of operand types. Most instructions should only operate on a single word size (eg 64-bit), if an instruction is used with different sized operands then it may cause an assembler error, cause an invalid opcode exception, truncate the source or bit extend it (either arithmetically or logically).
-Furthermore many of these instructions set/clear flags, for example the OF (overflow flag) is set on signed overflow, CF (carry flag) is set on unsigned overflow and ZF (zero flag) is set when the result is zero.
-Some instructions can be prefixed with LOCK, this makes the instruction atomic and will give the thread exclusive access to the cache line it is accessing; LOCK can only be used when the destination is a memory location and the instruction supports it else it will generate a \#UD exception.
+\layout{
+  A task is made up of two parts: a task execution space and a Task-State Segment (TSS).
+  The execution space consists of a code, stack and at least one data segment, if privilege levels are used then it also provides a separate stack for each privilege level.
+  The TSS specifies the segments that make up the task execution space and provides a storage space for the task state, in multitasking systems it also provides a mechanism for linking tasks.
+  A task is identified by the segment selector for its TSS, when a task is loaded its TSS segment descriptor is loaded into the task register.
+  If paging is used, the base address for the paging hierarchy is loaded into CR3.
+
+  \bigskip \cite[Chapter~9.1.1]{sdm3}
+} \bigskip
+
+\layout{
+  The state of the currently executing task is defined by: segment registers, general purpose registers, EFLAGS, EIP, CR3, Task register, LDT segment selector, I/O map base address and I/O map, stack pointers to privilege 0, 1, 2 stacks, a link to previously executed task, and state of the shadow stack pointer.
+  All of these are stored in TSS except task register.
+
+  \bigskip \cite[Chapter~9.1.2]{sdm3}
+} \bigskip
+
+\layout{
+  The Task Register (TR) holds the segment selector and segment descriptor for the TSS of the current task.
+  The \texttt{LTR} and \texttt{STR} instructions load and store the task register with a TSS descriptor.
+  \cite[Chapter~9.2.4]{sdm3}
+} \bigskip
+
+\layout{
+  When in protected mode there must be at least one TSS and one TSS descriptor, and the segment selector for the TSS must be loaded into the task register.
+  \cite[Chapter~9.2]{sdm3}
+} \bigskip
+
+\layout{
+  Software can dispatch a task by: an explicit call to a task, explicit jump to a task, implicit call to an interrupt-handler task, or an IRET when EFLAGS.NT is set.
+  A task switch occurs between the currently running and the dispatched task, the current execution context of the current task is saved in its TSS and its execution is suspended, the context for the dispatched task is loaded into the processor and execution resumes with the new task.
+  If the current task called the dispatched task, its TSS selector is stored in the TSS of the dispatched task to provide a link back to the previous task.
+
+  \bigskip
+
+  Interrupts can be handled using a task switch, upon returning it automatically switches back to the interrupted task.
+  During a switch the processor can also switch the LDT and CR3 allowing each task to have a different LDT and page hierarchy.
+  Tasks cannot jump to themselves, and the use of tasks and task switching is optional.
+
+  \bigskip \cite[Chapter~9.1.3]{sdm3}
+} \bigskip
+
+\layout{
+  EFLAGS.NT indicates if the current task is nested within the execution of another, it then uses the previous task link field to return to the previous task.
+  Using \texttt{CALL} nests a task while \texttt{JMP} does not.
+
+  \bigskip \cite[Chapter~9.4]{sdm3}
+}
+
+\layout{
+  \subsection{32-bit TSS}
+
+  Layout of the 32-bit TSS:
+  \begin{table}[H]
+    \centering
+    \begin{tabular}{|c|l|}
+      \hline \textbf{Bytes} & \textbf{Description} \\ \hline
+      1:0 & Previous Task Link \\
+      3:2 & Rsvd. \\
+      7:4 & ESP0 \\
+      9:8 & SS0 \\
+      11:10 & Rsvd. \\
+      15:12 & ESP1 \\
+      17:16 & SS1 \\
+      19:18 & Rsvd. \\
+      23:20 & ESP2 \\
+      25:24 & SS2 \\
+      27:26 & Rsvd. \\
+      31:28 & CR3 \\
+      35:32 & EIP \\
+      39:36 & EFLAGS \\
+      43:40 & EAX \\
+      47:44 & ECX \\
+      51:48 & EDX \\
+      55:52 & EBX \\
+      59:56 & ESP \\
+      63:60 & EBP \\
+      67:64 & ESI \\
+      71:68 & EDI \\
+      73:72 & ES \\
+      75:74 & Rsvd. \\
+      77:76 & CS \\
+      79:78 & Rsvd. \\
+      81:80 & SS \\
+      83:82 & Rsvd. \\
+      85:84 & DS \\
+      87:86 & Rsvd. \\
+      89:88 & FS \\
+      91:90 & Rsvd. \\
+      93:92 & GS \\
+      95:94 & Rsvd. \\
+      97:96 & LDT Segment Selector \\
+      99:98 & Rsvd. \\
+      101:100 & Rsvd.* \\
+      103:102 & I/O Map Base Address \\
+      107:104 & SSP \\ \hline
+    \end{tabular}
+  \end{table}
+
+  * If bit 0 is set then a debug exception is raised when a task switch to this task occurs.
+} \bigskip
+
+\layout{
+  The TSS contains both dynamic and static fields, dynamic fields are changed by the processor when the task saves state, static fields are not changed.
+  The dynamic fields are: general purpose registers, segment selectors, EFLAGS, EIP, and Previous Task Link (previous TSS segment selector), all other fields are static.
+  The SS and ESP fields are logical addresses used for privilege levels 0, 1, and 2.
+  SSP contains the shadow stack pointer.
+
+  \bigskip \cite[Chapter~9.2.1]{sdm3}
+}
+
+\layout{
+  \subsection{Segment Descriptors}
+
+  There are two different segment descriptors used for handling the TSS: TSS descriptor and task-gate descriptor.
+
+  The TSS descriptor can only be stores in the GDT, and has the same format as segment descriptors. % TODO: this not true???
+  Its limit must be large enough to contain the entire TSS, larger limits are used for I/O maps.
+  Only processes whose CPL is equal to or less than the DPL of the TSS can dispatch it with a call or jump.
+
+  \bigskip \cite[Chapter~9.2.2]{sdm3}
+} \bigskip
+
+\layout{
+  A task-gate descriptor provides an indirect protected reference to a task.
+  The RPL of its segment selector is not used, when a program makes a call/jump to a task through a task gate, the CPL and RPL of the selector must be less than or equal to the gate's DPL.
+} \bigskip
+
+\layout{
+  Layout of the task-gate descriptor:
+  \begin{table}[H]
+    \centering
+    \begin{tabular}{|c|l|}
+      \hline \textbf{Bits} & \textbf{Description} \\ \hline
+      63:48 & Rsvd. \\
+      47 & 0 = Not Present, 1 = Present \\
+      46:45 & Descriptor Privilege Level (DPL) \\
+      44:40 & 00101 \\
+      39:32 & Rsvd. \\
+      31:16 & TSS Segment Selector \\
+      15:0 & Rsvd. \\ \hline
+    \end{tabular}
+  \end{table}
+
+  \cite[Chapter~9.2.5]{sdm3}
+}
+
+\layout{
+  \subsection{16-bit TSS}
+
+  The 16-bit TSS cannot be used to implement a virtual-8086 task, furthermore the I/O map is not supported.
+
+  \bigskip
+
+  Format of the 16-bit TSS:
+  \begin{table}[H]
+    \centering
+    \begin{tabular}{|c|l|}
+      \hline \textbf{Bytes} & \textbf{Description} \\ \hline
+      1:0 & Previous Task Link \\
+      3:2 & SP0 \\
+      5:4 & SS0 \\
+      7:6 & SP1 \\
+      9:8 & SS1 \\
+      11:10 & SP2 \\
+      13:12 & SS2 \\
+      15:14 & IP \\
+      17:16 & FLAG \\
+      19:18 & AX \\
+      21:20 & CX \\
+      23:22 & DX \\
+      25:24 & BX \\
+      27:26 & SP \\
+      29:28 & BP \\
+      31:30 & SI \\
+      33:32 & DI \\
+      35:34 & ES \\
+      37:36 & CS \\
+      39:38 & SS \\
+      41:40 & DS \\
+      43:42 & LDT Selector \\ \hline
+    \end{tabular}
+  \end{table}
+
+  \cite[Chapter~9.6]{sdm3}
+}
+
+\layout{
+  \subsection{64-bit mode}
+
+  Task switching is not supported in 64-bit mode and must be performed by software.
+  The 64-bit TSS contains stack pointers for privilege levels 0-2, interrupt stack table pointers and the I/O map base address.
+
+  \bigskip
+
+  Format of the 64-bit TSS:
+  \begin{table}[H]
+    \centering
+    \begin{tabular}{|c|l|}
+      \hline \textbf{Bytes} & \textbf{Description} \\ \hline
+      3:0 & Rsvd. \\
+      11:4 & RSP0 \\
+      19:12 & RSP1 \\
+      27:20 & RSP2 \\
+      35:28 & Rsvd. \\
+      43:36 & IST1 \\
+      51:44 & IST2 \\
+      59:52 & IST3 \\
+      67:60 & IST4 \\
+      75:68 & IST5 \\
+      83:76 & IST6 \\
+      91:84 & IST7 \\
+      101:92 & Rsvd. \\
+      103:102 & I/O Map Base Address \\ \hline
+    \end{tabular}
+  \end{table}
+
+  \cite[Chapter~9.7]{sdm3}
+}
+
+\layout{
+  \subsection{Call Gates}
+
+  Call gates facilitate controlled transfers of program control between different privilege levels.
+  Typically only used in operating systems that use privilege-level protection, also useful for transferring control between 16-bit and 32-bit code segments.
+} \bigskip
+
+\layout{
+  Format of a 16/32-bit call-gate descriptor:
+  \begin{table}[H]
+    \centering
+    \begin{tabular}{|c|l|l|}
+      \hline \textbf{Bits} & \textbf{Name} & \textbf{Use} \\ \hline
+      63:48 & Offset 31:16 & Entry point in segment \\
+      47:47 & Present (P) & 0 = Not present, 1 = Present \\
+      46:45 & DPL & Descriptor privilege level \\
+      44:36 & 01100000 & Must be 01100000 \\
+      35:32 & Param. Count & Parameter Count \\
+      31:16 & Segment Selector & Code Segment Selector \\
+      15:0 & Offset 15:0 & Entry point in segment \\ \hline
+    \end{tabular}
+  \end{table}
+
+  If a stack switch occurs, the parameter count specifies the number of optional parameters to be copied between stacks.
+  The size of values to be pushed onto the target stack is equal to the size of the gate (determined by the size of the code segment).
+  The DPL is the privilege level required to access the procedure through the gate.
+
+  \bigskip \cite[Chapter~6.8.3]{sdm3}
+} \layout
+
+\layout{
+  Format of a 64-bit call-gate:
+  \begin{table}[H]
+    \centering
+    \begin{tabular}{|c|l|l|}
+      \hline \textbf{Bits} & \textbf{Name} & \textbf{Use} \\ \hline
+      127:96 & Rsvd. & Must be 0 \\
+      95:48 & Offset 63:16 & Entry point in segment \\
+      47:47 & Present (P) & 0 = Not present, 1 = Present \\
+      46:45 & DPL & Descriptor privilege level \\
+      44:32 & 0110000000000 & Must be 0110000000000 \\
+      31:16 & Segment Selector & Code Segment Selector \\
+      15:0 & Offset 15:0 & Entry point in segment \\ \hline
+    \end{tabular}
+  \end{table}
+
+  Unlike 16/32-bit gates, parameter copying is not performed.
+
+  \bigskip \cite[Chapter~6.8.3.1]{sdm3}
+}
+
+\layout{
+  \section{Instructions}
+
+  This section contains many of the x86 instructions and their use, it is not an exhaustive list and is a simplification of how many instructions work (by not including many of the potential exceptions which may be raised, not including how the instructions are encoded in machine code etc, or the flags set/cleared), however it should be sufficient enough to create simple programs.
+  The format of the instruction is \texttt{instruction op1, op2, op3} eg \texttt{'MOV RAX, 10'}.
+} \bigskip
+
+\layout{
+  Each instruction has different limitations to what type an operand can be, these types are:
+  \begin{table}[H]
+    \centering
+    \begin{tabular}{|c|c|l|}
+      \hline \textbf{Symbol} & \textbf{Name} & \textbf{Description} \\ \hline
+      r & General purpose register & A register such as eax \\
+      m & Memory address & A memory address such as \texttt{[eax + 4*ebx + 4]} \\
+      i & Immediate & A constant value such as 80h or a pointer to a label \\
+      s & Segment Register & A register such as ES \\
+      d & Debug Register & A register such as DR0 \\
+      c & Control Register & A register such as CR3 \\ \hline
+    \end{tabular}
+  \end{table}
+}
+
+\layout{
+  The types of an operand or identical instructions with different names will be separated by \texttt{(|)}, the size in bits may also be appended to the type and (') may be used to exclude a single size (eg \texttt{i8|i16} means an 8 or 16 bit immediate value and \texttt{r'8} means a 16, 32 or 64 bit register).
+  Some instructions have more than one row of operands, each row shows a different combination of operand types. Most instructions should only operate on a single word size (eg 64-bit), if an instruction is used with different sized operands then it may cause an assembler error, cause an invalid opcode exception, truncate the source or bit extend it (either arithmetically or logically).
+  Furthermore many of these instructions set/clear flags, for example the OF (overflow flag) is set on signed overflow, CF (carry flag) is set on unsigned overflow and ZF (zero flag) is set when the result is zero.
+  Some instructions can be prefixed with LOCK, this makes the instruction atomic and will give the thread exclusive access to the cache line it is accessing; LOCK can only be used when the destination is a memory location and the instruction supports it else it will generate a \#UD exception.
+}
 
 % TODO: REGISTERS SUCH AS DX:AX, words like qword ptr.
-% TODO: (arithmetic) xor, (logical) cmp test, CACHE LINE
-% LOCK: ADD, ADC, AND, BTC, BTR, BTS, CMPXCHG, CMPXCH8B, CMPXCHG16B, DEC, INC, NEG, NOT, OR, SBB, SUB, XOR, XADD, and XCHG
 
 \newcommand{\insend}{\end{tabular} \setlength{\tabcolsep}{0pt} \\ \hline} % End of final row of operands
 \newcommand{\institle}[1]{#1 \\ \hline}
@@ -1436,14 +1769,13 @@ Some instructions can be prefixed with LOCK, this makes the instruction atomic a
     \insopx{i16} \inslinea \inslineb \inslineb \insend
   \insname{4}{IRET|IRETD|IRETQ}{Interrupt Return}{3-546}{Returns control to the interrupted program from the interrupt handler. It pops off the data pushed to the stack during the interrupt such as EFLAGS, Instruction Pointer and CS}
     \insop \inslinea \inslineb \inslineb \insend
-  % TODO: HLT, fences, descriptors, TLB, MSRs, CLI, ENTER, CPUID
+  % TODO: HLT, fences, descriptors, CLI, ENTER, CPUID
   \insname{2}{INT}{Call to Interrupt Procedure}{3-524}{Generates a call to the interrupt handler specified by OP1}
     \insopx{i8} \inslinea \insend
 
   \institle{Syscalls}
   \insnote{These instructions are used for syscalls (both calling and returning), SYSCALL and SYSRET are better supported on 64-bit CPUs and operating systems. All these instructions set the CS and SS segment selector registers to values defined in MSRs, and their descriptor caches to fixed values with base 0, limit 0xFFFFF, and flags as defined below (in 3 hexadecimal nibbles where the granularity flag is the most significant bit and the type is the last nibble). It is the responsibility of the OS to ensure that the fixed values of the descriptors match the descriptors referenced by the selectors}
 
-  % TODO: if not in 64-bit mode or EFER_EFER.SCE is not set then #UD
   \insname{9}{SYSCALL}{Fast System Call}{4-696}{Invokes the OS system-call handler at privilege level 0, it does so by loading RIP from IA32\_LSTAR MSR and saves the address of the instruction following SYSCALL into RCX. Furthermore RFLAGS is stored into R11, RFLAGS is then masked with NOT(IA32\_FMASK MSR) (clears every bit in RFLAGS which is set in the MSR). The CS selector is loaded with IA32\_STAR[47:32] AND 0xFFFC, and SS is loaded with IA32\_STAR[47:32] + 8. The flags loaded into the CS and SS segment descriptors are 0xA9B and 0xC93 respectively}
     \insop \inslinea \inslineb \inslineb \inslineb \inslineb \inslineb \inslineb \inslineb \insend
   \insname{10}{SYSRET}{Return from Fast System Call}{4-705}{Returns from an OS system-call handler to user code at privilege level 3, it is a companion instruction to SYSCALL. It loads RIP from RCX and RFLAGS from (R11 AND 0x3C7FD7H) OR 2. If the operand size is 64-bit it remains in 64-bit mode else it enters compatibility mode and only the low 32 bits of the registers are loaded. The CS selector is loaded with (IA32\_STAR[63:48] + 16) OR 3 if the operand size is 64-bit else it is loaded with IA32\_STAR[63:48] OR 3, and SS is loaded with (IA32\_STAR[63:48] + 8) OR 3. The flags loaded into the CS segment descriptor are 0xAFB if the operand size is 64-bit and 0xCFB if not and 0xCF3 for the SS segment descriptor}
@@ -1455,7 +1787,6 @@ Some instructions can be prefixed with LOCK, this makes the instruction atomic a
 
   \institle{Stack}
 
-  % TODO: check this
   \insname{9}{PUSH}{Push data onto the stack}{4-520}{Decrements the Stack Pointer by the operand size, then moves OP1 to the memory location pointed to by the it. It is recommended to only push values the same size as the pointer size to prevent a misaligned stack. Values less than the operand size are sign-extended to the operand size however segment registers are zero-extended. The operand size can be overridden by prefixes however its based on the current stack segment D flag. In long mode, 32-bit registers and the CS, DS, ES and SS registers cannot be encoded}
     \insopx{(r|m)'8} \insmid
     \insopx{i'64} \insmid
@@ -1568,21 +1899,6 @@ Some instructions can be prefixed with LOCK, this makes the instruction atomic a
 
   \cite{cc-table}
 }
-
-% TODO: Finish this section a bit better
-% In long mode, to access many of its features the REX prefix has to be placed before an instruction.
-% REX must be encoded to access
-% 64-bit operands (if the instruction does not default to it)
-% an extended register (R8-15, XMM8-15, YMM8-15, CR8-15, DR8-15)
-% Uniform byte register (SPL, BPL, SIL, DIL)
-% it cannot be encoded when using a high byte register (AH, BH, CH, DH)
-% default 64-bit instructions in long mode are:
-% CALL (near), ENTER, LEAVE, LGDT, LIDT, LLDT, LOOP, LOOPcc, LTR, MOV CR(n), MOV DR(n), POP r|m, POP r, POP FS, POP GS, POPFQ, PUSH i8, PUSH i32, PUSH r|m, PUSH r, PUSH FS, PUSH GS, PUSHFQ, RET (near)
-% Almost every assembler automatically uses the necessary REX prefixes when required so it is not needed to add
-% It can be done by using db followed by the required byte in the line above the instruction
-% Sometimes REX can cause AH,BH,CH,DH to be interpreted as SPL, BPL, SIL, DIL
-
-% TODO: db, equ, \$ etc
 
 \layout{
   \section{Interrupts}
@@ -1699,7 +2015,6 @@ Some instructions can be prefixed with LOCK, this makes the instruction atomic a
   In protected mode, if there was no CPL change when calling the interrupt then the stack uses the interrupted program's stack,
   it pushes: EFLAGS, CS, EIP, then the Error Code (if there was an error code).
   If there was a CPL change then it switches the stack (SS and ESP for the handler are obtained from the TSS) and pushes to the new one: SS, ESP, EFLAGS, CS, EIP, then the Error Code (if there was an error code), furthermore in this case \texttt{IRET also restores the original stack}.
-  % TODO: shadow stack?
 
   \bigskip \cite[Chapter~7.12.1]{sdm3} \bigskip
 }
@@ -1765,10 +2080,8 @@ Handlers can be either 16-bit or 32-bit and interrupt-stack-pushes are the same 
     \end{tabular}
   \end{table}
 
-  % TODO: finish
-  Format is different for \#PF and \#CF.
-  Reserved portion may not be pushed in order to align the stack.
-  IRET does not pop off error code so ISR must do it.
+  Format is different for \#PF and \#CF, and reserved portion may not be pushed in order to align the stack.
+  IRET does not pop the error code off the stack so ISR must do it.
 
   \bigskip \cite[Chapter~7.13]{sdm3}
 }
@@ -2273,6 +2586,18 @@ The following is a list of the APIC registers along with their offsets to the AP
   Where type is 0111100000 for an Interrupt Gate or 0111000000 for a Trap Gate
 
   \bigskip \cite[Chapter~7.14]{sdm3} \cite[Chapter~3.5]{sdm3}
+}
+
+\layout{
+  \subsection{Real Mode Interrupts}
+
+  In real mode, interrupts are handled similarly to how they are handled in protected mode.
+  It utilises the interrupt vector table, each entry in the table is 32-bits;
+  the first two bytes stores the offset and the second two stores the CS of the interrupt handler.
+  The base address of the table is at physical address 0 and its limit is 3FFH.
+  When and interrupt is called it pushes the CS, IP and the low 16 bits of EFLAGS onto the stack, then indexes into the interrupt table using the interrupt vector and calls the handler, the handler returns by using the \texttt{IRET} instruction which restores program state.
+
+  \bigskip \cite[22.1.4]{sdm3}
 }
 
 \subsection{BIOS interrupts}
