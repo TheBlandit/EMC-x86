@@ -2,7 +2,7 @@ BITS 16 ; Produce 16 bit code
 ORG 0x7c00 ; Set the origin to 0x7c00 which is where BIOS loads the bootloader
 
 _start:
-    jmp 0:.ClearCS ; Set CS to 0 (some bios load at 7C00:0000 instead of 0000:7C000)
+    jmp 0:.ClearCS ; Set CS to 0 (some bios load at 07C0:0000 instead of 0000:7C000)
 
 .ClearCS:
     mov ax, 0xb800          ; Set AX to the video memory segment (0xb800)

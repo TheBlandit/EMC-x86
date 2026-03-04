@@ -126,6 +126,52 @@
 % TODO: BIOS + UEFI
 % BIOS - enable A20
 
+\layout{
+  \subsection{IBM-PC Compatible Environment}
+
+  An IBM-PC Compatible is any PC that is hardware and software compatible with the IBM PC and later models.
+  Like the original IBM PC, they use an x86 processor and run BIOS/UEFI firmware on boot.
+
+  \bigskip \cite{ibm-compatible}
+}
+
+\layout{
+  \subsubsection{A20 Line}
+
+  The A20 Address Line is the physical representation of the 21st bit of any memory access.
+  It was introduced when the IBM-AT (Intel 286) was introduced which was able to address up to 16-MiB of memory (instead of the 1-MiB of the 8086).
+  In order to remain compatible with the 8086 which had memory wraparound (physical address = linear address AND 0xFFFFF), the A20 line is disabled by default.
+  On newer processors there is an A20M pin on the processor to control it (by default the A20 line is enabled but may be disabled by the BIOS).
+  This means that any bootloader has to enable the A20 line so that all memory can be used.
+
+  \bigskip
+
+  The following code can be used to enable the A20 gate on computers since the IBM PS/2: \\
+  \texttt{in al, 0x92} \\
+  \texttt{or al, 2} \\
+  \texttt{out 0x92, al}
+
+  \bigskip \cite{osdev-a20}
+}
+
+\layout{
+  \subsubsection{BIOS}
+
+  The BIOS (Basic Input/Output System) was created to offer generalised low-level services to early system programmers, it would allow programs to call standard BIOS functions that could carry out the hardware-dependent operations.
+  The BIOS also supports a memory-mapped region used for displaying text on to the screen (called VGA text mode), furthermore the BIOS is usually only accessed in real mode.
+  To access a BIOS function, the AH register is set to a particular value then \texttt{INT opcode} calls the BIOS interrupt (which then calls the specific function specified by AH), other registers may hold arguments to the function or return values from it.
+  The BIOS starts executing user code at 0000:7C00 (others may use 07C0:0000).
+
+  \bigskip \cite{bios}
+}
+
+% \layout{
+%   \subsubsection{UEFI}
+%
+%   The Unified Extensible Firmware Interface replaces the BIOS (however it can provides backwards compatibility with it).
+%
+% }
+
 %\subsection{Branch prediction}
 % TODO: Spectre/meltdown, pipelining
 
@@ -154,16 +200,16 @@
   \end{itemize}
 }
 
-\subsection{Multiprocessor}
-
-In multiprocessor (multithreaded) environments, the processor is able to execute processes in parallel.
-This can lead to race conditions if not handled correctly.
-
-% Store buffer:
-
-x86 processors store writes to memory in a store buffer.
-It allows the processor to continue execution without having to wait for a write to cache/main memory to complete.
-The store buffer is flushed when: a LOCK or a MFENCE/SFENCE is used, an I/O instruction executes or an exception/interrupt is generated \cite[Chapter~13.10]{sdm3}.
+% \subsection{Multiprocessor}
+%
+% In multiprocessor (multithreaded) environments, the processor is able to execute processes in parallel.
+% This can lead to race conditions if not handled correctly.
+%
+% % Store buffer:
+%
+% x86 processors store writes to memory in a store buffer.
+% It allows the processor to continue execution without having to wait for a write to cache/main memory to complete.
+% The store buffer is flushed when: a LOCK or a MFENCE/SFENCE is used, an I/O instruction executes or an exception/interrupt is generated \cite[Chapter~13.10]{sdm3}.
 
 % TODO: reorder buffer + out of order execution + multithreading + locks + mutex + synchronisation + visibility
 
@@ -2597,12 +2643,6 @@ The following is a list of the APIC registers along with their offsets to the AP
 
   \bigskip \cite[22.1.4]{sdm3}
 }
-
-\subsection{BIOS Interrupts}
-
-% TODO: this
-
-% \subsection{UEFI interrupts}
 
 \layout{
   \subsection{Syscalls}
