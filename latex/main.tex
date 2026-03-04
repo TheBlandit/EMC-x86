@@ -1098,8 +1098,6 @@ Additionally in IA-32e mode, system descriptors are expended to 16 bytes (occupy
   \bigskip \cite[Chapter~3.5.1]{sdm3}
 }
 
-% TODO: check if these are needed: sections, tss
-
 \layout{
   \subsection{Paging}
 
@@ -1442,73 +1440,11 @@ The following tables describe the layout of the paging structures (M = MAXPHYADD
 }
 
 \layout{
-  \subsection{32-bit TSS}
-
-  Layout of the 32-bit TSS:
-  \begin{table}[H]
-    \centering
-    \begin{tabular}{|c|l|}
-      \hline \textbf{Bytes} & \textbf{Description} \\ \hline
-      1:0 & Previous Task Link \\
-      3:2 & Rsvd. \\
-      7:4 & ESP0 \\
-      9:8 & SS0 \\
-      11:10 & Rsvd. \\
-      15:12 & ESP1 \\
-      17:16 & SS1 \\
-      19:18 & Rsvd. \\
-      23:20 & ESP2 \\
-      25:24 & SS2 \\
-      27:26 & Rsvd. \\
-      31:28 & CR3 \\
-      35:32 & EIP \\
-      39:36 & EFLAGS \\
-      43:40 & EAX \\
-      47:44 & ECX \\
-      51:48 & EDX \\
-      55:52 & EBX \\
-      59:56 & ESP \\
-      63:60 & EBP \\
-      67:64 & ESI \\
-      71:68 & EDI \\
-      73:72 & ES \\
-      75:74 & Rsvd. \\
-      77:76 & CS \\
-      79:78 & Rsvd. \\
-      81:80 & SS \\
-      83:82 & Rsvd. \\
-      85:84 & DS \\
-      87:86 & Rsvd. \\
-      89:88 & FS \\
-      91:90 & Rsvd. \\
-      93:92 & GS \\
-      95:94 & Rsvd. \\
-      97:96 & LDT Segment Selector \\
-      99:98 & Rsvd. \\
-      101:100 & Rsvd.* \\
-      103:102 & I/O Map Base Address \\
-      107:104 & SSP \\ \hline
-    \end{tabular}
-  \end{table}
-
-  * If bit 0 is set then a debug exception is raised when a task switch to this task occurs.
-} \bigskip
-
-\layout{
-  The TSS contains both dynamic and static fields, dynamic fields are changed by the processor when the task saves state, static fields are not changed.
-  The dynamic fields are: general purpose registers, segment selectors, EFLAGS, EIP, and Previous Task Link (previous TSS segment selector), all other fields are static.
-  The SS and ESP fields are logical addresses used for privilege levels 0, 1, and 2.
-  SSP contains the shadow stack pointer.
-
-  \bigskip \cite[Chapter~9.2.1]{sdm3}
-}
-
-\layout{
   \subsection{Segment Descriptors}
 
   There are two different segment descriptors used for handling the TSS: TSS descriptor and task-gate descriptor.
 
-  The TSS descriptor can only be stores in the GDT, and has the same format as segment descriptors. % TODO: this not true???
+  The TSS descriptor can only be stores in the GDT and has the same format as segment descriptors, its D/B and L flags are set to 0.
   Its limit must be large enough to contain the entire TSS, larger limits are used for I/O maps.
   Only processes whose CPL is equal to or less than the DPL of the TSS can dispatch it with a call or jump.
 
@@ -1577,6 +1513,68 @@ The following tables describe the layout of the paging structures (M = MAXPHYADD
   \end{table}
 
   \cite[Chapter~9.6]{sdm3}
+}
+
+\layout{
+  \subsection{32-bit TSS}
+
+  Layout of the 32-bit TSS:
+  \begin{table}[H]
+    \centering
+    \begin{tabular}{|c|l|}
+      \hline \textbf{Bytes} & \textbf{Description} \\ \hline
+      1:0 & Previous Task Link \\
+      3:2 & Rsvd. \\
+      7:4 & ESP0 \\
+      9:8 & SS0 \\
+      11:10 & Rsvd. \\
+      15:12 & ESP1 \\
+      17:16 & SS1 \\
+      19:18 & Rsvd. \\
+      23:20 & ESP2 \\
+      25:24 & SS2 \\
+      27:26 & Rsvd. \\
+      31:28 & CR3 \\
+      35:32 & EIP \\
+      39:36 & EFLAGS \\
+      43:40 & EAX \\
+      47:44 & ECX \\
+      51:48 & EDX \\
+      55:52 & EBX \\
+      59:56 & ESP \\
+      63:60 & EBP \\
+      67:64 & ESI \\
+      71:68 & EDI \\
+      73:72 & ES \\
+      75:74 & Rsvd. \\
+      77:76 & CS \\
+      79:78 & Rsvd. \\
+      81:80 & SS \\
+      83:82 & Rsvd. \\
+      85:84 & DS \\
+      87:86 & Rsvd. \\
+      89:88 & FS \\
+      91:90 & Rsvd. \\
+      93:92 & GS \\
+      95:94 & Rsvd. \\
+      97:96 & LDT Segment Selector \\
+      99:98 & Rsvd. \\
+      101:100 & Rsvd.* \\
+      103:102 & I/O Map Base Address \\
+      107:104 & SSP \\ \hline
+    \end{tabular}
+  \end{table}
+
+  * If bit 0 is set then a debug exception is raised when a task switch to this task occurs.
+} \bigskip
+
+\layout{
+  The TSS contains both dynamic and static fields, dynamic fields are changed by the processor when the task saves state, static fields are not changed.
+  The dynamic fields are: general purpose registers, segment selectors, EFLAGS, EIP, and Previous Task Link (previous TSS segment selector), all other fields are static.
+  The SS and ESP fields are logical addresses used for privilege levels 0, 1, and 2.
+  SSP contains the shadow stack pointer.
+
+  \bigskip \cite[Chapter~9.2.1]{sdm3}
 }
 
 \layout{
@@ -2600,13 +2598,15 @@ The following is a list of the APIC registers along with their offsets to the AP
   \bigskip \cite[22.1.4]{sdm3}
 }
 
-\subsection{BIOS interrupts}
+\subsection{BIOS Interrupts}
+
+% TODO: this
 
 % \subsection{UEFI interrupts}
 
-\subsection{Syscalls}
-
 \layout{
+  \subsection{Syscalls}
+
   In order for a program to request resources from the OS it has to hand over control of the processor to the OS via a syscall/interrupt.
   32-bit programs use the interrupt \texttt{int 80h}, while 64-bit programs use the instruction \texttt{syscall}.
   The parameters for the syscall are placed in specific registers, the following is a list of registers used and their use in syscalls:
@@ -2769,10 +2769,23 @@ bootloader.asm
 \chfile{interrupts}
 \chfile{shared\_constants}
 
+\pagebreak
+
 \section{References}
 
 \hbadness=10000
 \bibliographystyle{unsrt}
 \bibliography{refs}
+
+\layout{
+  \section{Acknowledgements}
+
+  Thank you to EMS for supporting this project, in particular:
+  \begin{itemize}
+    \item Dr Aeran Fleming
+    \item Dr Ed Horncastle
+    \item Michael Andrejczuk
+  \end{itemize}
+}
 
 \end{document}
