@@ -122,9 +122,7 @@
   \cite[Chapter~2.1]{sdm1}
 }
 
-%\subsection{IBM compatible}
-% TODO: BIOS + UEFI
-% BIOS - enable A20
+% TODO: UEFI
 
 \layout{
   \subsection{IBM-PC Compatible Environment}
@@ -1224,7 +1222,6 @@ Additionally in IA-32e mode, system descriptors are expended to 16 bytes (occupy
   \begin{table}[H]
     \centering
     \begin{tabular}{|p{0.165\linewidth}|p{0.09\linewidth}|l|p{0.105\linewidth}|p{0.14\linewidth}|p{0.18\linewidth}|}
-      % \hline \textbf{Paging Structure} & \textbf{Entry Name} & \textbf{Paging Mode} & \textbf{Physical Address of Structure} & \textbf{Bits Selecting Entry} & \textbf{Page Mapping} \\ \hline
       \hline \textbf{Paging Structure} & \pgtable{0.09}{Entry Name} & \textbf{Paging Mode} & \pgtable{0.105}{Physical Address of Structure} & \pgtable{0.14}{Bits Selecting Entry} & \textbf{Page Mapping} \\ \hline
       \multirow[l]{2}{\linewidth}{PML5 table} & \multirow[l]{2}{\linewidth}{PML5E} & 32-bit, PAE, 4-level & \multicolumn{3}{c|}{N/A} \\ \cline{3-6}
        & & 5-level & CR3 & 56:48 & N/A (PS must be 0) \\ \hline
@@ -1315,7 +1312,7 @@ The following tables describe the layout of the paging structures (M = MAXPHYADD
   \begin{table}[H]
     \centering
     \begin{tabular}{|*{10}{>{\centering\arraybackslash}p{0.099\linewidth}|}}
-      \hline \textbf{Bits} & \textbf{CR3} & \textbf{PML5E: PLM4E} & \textbf{PLM4E: PDPTE} & \textbf{PDPTE: 1GB} & \textbf{PDPTE: PDE} & \textbf{PDE: 2MB} & \textbf{PDE: PTE} & \textbf{PTE: 4KB} & \textbf{Not Present} \\ \hline
+      \hline \textbf{Bits} & \textbf{CR3} & \textbf{PML5E: PML4E} & \textbf{PML4E: PDPTE} & \textbf{PDPTE: 1GB} & \textbf{PDPTE: PDE} & \textbf{PDE: 2MB} & \textbf{PDE: PTE} & \textbf{PTE: 4KB} & \textbf{Not Present} \\ \hline
       63 & \multirow{4}*{Rsvd.} & XD & XD & XD & XD & XD & XD & XD & \multirow{15}{*}{Ign.} \\ \cline{1-1} \cline{3-9}
       62:59 & & \multirow{2}*{Ign.} & \multirow{2}*{Ign.} & Prot & \multirow{2}*{Ign.} & Prot & \multirow{2}*{Ign.} & Prot & \\ \cline{1-1} \cline{5-5} \cline{7-7} \cline{9-9}
       58:52 & & & & Ign. & & Ign. & & Ign. & \\ \cline{1-1} \cline{3-9}
@@ -2308,7 +2305,7 @@ The following is a list of the APIC registers along with their offsets to the AP
   3C0H & Rsvd. & \\
   3D0H & Rsvd. & \\
   3E0H & Divide Configuration Register (for Timer) & RW \\
-  0F0H & Rsvd. & \\
+  3F0H & Rsvd. & \\
 \end{longtable}
 
 \cite[Chapter~12.4.1]{sdm3} \bigskip
